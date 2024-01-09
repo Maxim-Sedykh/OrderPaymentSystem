@@ -3,9 +3,37 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34316.72
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{029ABAF9-C5D5-488E-88EA-28181DF1FE67}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{72494A2B-14A4-4964-BD1D-A4B46F3C21A6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{6715E464-8539-4421-9ADD-2D88EDD8CA27}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderPaymentSystem.Domain", "OrderPaymentSystem.Domain\OrderPaymentSystem.Domain.csproj", "{D9BB517D-C51E-4823-B806-5BFAB9319635}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderPaymentSystem.Api", "OrderPaymentSystem.Api\OrderPaymentSystem.Api.csproj", "{9DE52DDA-5B38-46E6-9C09-C679166EB1E5}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D9BB517D-C51E-4823-B806-5BFAB9319635}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9BB517D-C51E-4823-B806-5BFAB9319635}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9BB517D-C51E-4823-B806-5BFAB9319635}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9BB517D-C51E-4823-B806-5BFAB9319635}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DE52DDA-5B38-46E6-9C09-C679166EB1E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DE52DDA-5B38-46E6-9C09-C679166EB1E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DE52DDA-5B38-46E6-9C09-C679166EB1E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DE52DDA-5B38-46E6-9C09-C679166EB1E5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D9BB517D-C51E-4823-B806-5BFAB9319635} = {029ABAF9-C5D5-488E-88EA-28181DF1FE67}
+		{9DE52DDA-5B38-46E6-9C09-C679166EB1E5} = {6715E464-8539-4421-9ADD-2D88EDD8CA27}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {651B92B9-C01E-46BF-8BC9-913460277ED7}
