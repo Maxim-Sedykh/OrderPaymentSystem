@@ -12,17 +12,19 @@ namespace OrderPaymentSystem.Domain.Entity
     {
         public long Id { get; set; }
 
-        public string Name { get; set; }
+        public long UserId { get; set; }
 
-        public int Login { get; set; }
+        public User User { get; set; }
 
-        public string Password { get; set; }
+        public List<Order> Orders { get; set; }
+
+        public List<Report> Reports { get; set; }
+
+        public long OrdersProcessed { get; set; }
+
+        public int HoursWorked { get; set; }
 
         public Position Position { get; set; }
-
-        public string PhoneNumber { get; set; }
-
-        public string Email { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
@@ -31,9 +33,5 @@ namespace OrderPaymentSystem.Domain.Entity
         public DateTime UpdatedAt { get; set; }
 
         public long UpdatedBy { get; set; }
-
-        public List<Report> Reports { get; set; }
-
-        public List<Order> Orders { get; set; }
     }
 }

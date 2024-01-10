@@ -8,5 +8,7 @@ namespace OrderPaymentSystem.Domain.Enum
 {
     public enum Position
     {
+        Employee = 0,
+        SeniorEmployee = 1
     }
 }

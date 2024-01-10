@@ -7,15 +7,17 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Domain.Entity
 {
-    public class Report: IEntityId<long>, IAuditable
+    public class Product : IEntityId<int>, IAuditable
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
 
-        public decimal TotalRevenues { get; set; }
+        public string ProductName { get; set; }
 
-        public decimal Profit { get; set; }
+        public string Description { get; set; }
 
-        public int NumberOfOrders { get; set; }
+        public decimal Cost { get; set; }
+
+        public List<Warehouse> Warehouses { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
@@ -25,8 +27,6 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public long UpdatedBy { get; set; }
 
-        public long EmployeeId { get; set; }
-
-        public Employee Employee { get; set; }
+        public List<Order> Orders { get; set; }
     }
 }

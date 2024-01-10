@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.Domain.Entity
+namespace OrderPaymentSystem.Domain.Enum
 {
-    public class Client
+    public enum OrderStatus
     {
     }
 }
