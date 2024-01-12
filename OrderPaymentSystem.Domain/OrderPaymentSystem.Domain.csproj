@@ -7,9 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Dto\" />
     <Folder Include="Settings\" />
-    <Folder Include="Result\" />
   </ItemGroup>
 
 </Project>

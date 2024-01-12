@@ -11,9 +11,9 @@ namespace OrderPaymentSystem.Domain.Entity
     {
         public long Id { get; set; }
 
-        public decimal TotalRevenues { get; set; }
+        public string Name { get; set; }
 
-        public decimal Profit { get; set; }
+        public decimal TotalRevenues { get; set; }
 
         public int NumberOfOrders { get; set; }
 

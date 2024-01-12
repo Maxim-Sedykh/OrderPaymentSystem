@@ -15,6 +15,8 @@ namespace OrderPaymentSystem.DAL.Configurations
         public void Configure(EntityTypeBuilder<Report> builder)
         {
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
+
+            builder.Property(x => x.Name).IsRequired().HasMaxLength(100);
         }
     }
 }
