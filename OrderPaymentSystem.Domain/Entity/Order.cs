@@ -12,6 +12,8 @@ namespace OrderPaymentSystem.Domain.Entity
     {
         public long Id { get; set; }
 
+        public long NumberOfOrder { get; set; }
+
         public long CustomerId { get; set; }
 
         public Customer Customer { get; set; }
@@ -34,8 +36,8 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public long CreatedBy { get; set; }
 
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
-        public long UpdatedBy { get; set; }
+        public long? UpdatedBy { get; set; }
     }
 }

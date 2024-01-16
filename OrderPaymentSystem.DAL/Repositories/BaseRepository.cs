@@ -21,17 +21,17 @@ namespace OrderPaymentSystem.DAL.Repositories
             return _dbContext.Set<TEntity>();
         }
 
-        public Task<TEntity> CreateAsync(TEntity entity)
+        public async Task<TEntity> CreateAsync(TEntity entity)
         {
             if (entity == null)
             {
                 throw new ArgumentException("Entity is null");
             }
 
-            _dbContext.Add(entity);
-            _dbContext.SaveChangesAsync();
+            await _dbContext.AddAsync(entity);
+            _dbContext.SaveChanges();
 
-            return Task.FromResult(entity);
+            return entity;
         }
 
         public Task<TEntity> RemoveAsync(TEntity entity)
@@ -42,7 +42,7 @@ namespace OrderPaymentSystem.DAL.Repositories
             }
 
             _dbContext.Remove(entity);
-            _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
 
             return Task.FromResult(entity);
         }
@@ -55,7 +55,7 @@ namespace OrderPaymentSystem.DAL.Repositories
             }
 
             _dbContext.Update(entity);
-            _dbContext.SaveChangesAsync();
+            _dbContext.SaveChanges();
 
             return Task.FromResult(entity);
         }

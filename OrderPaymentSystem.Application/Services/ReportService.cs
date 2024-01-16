@@ -73,7 +73,7 @@ namespace OrderPaymentSystem.Application.Services
                     Name = dto.Name,
                     TotalRevenues = totalRevenues,
                     NumberOfOrders = orders.Length,
-                    EmployeeId = employee.Id
+                    EmployeeId = employee.Id,
                 };
 
                 await _reportRepository.CreateAsync(report);
@@ -127,43 +127,44 @@ namespace OrderPaymentSystem.Application.Services
         }
 
         /// <inheritdoc/>
-        public async Task<BaseResult<ReportDto>> GerReportByIdAsync(long id)
+        public Task<BaseResult<ReportDto>> GetReportByIdAsync(long id)
         {
             ReportDto? report;
             try
             {
-                report = await _reportRepository.GetAll()
+                report = _reportRepository.GetAll()
+                    .AsEnumerable()
                     .Select(x => new ReportDto(x.Id, x.Name, x.TotalRevenues, x.NumberOfOrders, x.CreatedAt.ToLongDateString()))
-                    .FirstOrDefaultAsync(x => x.Id == id);
+                    .FirstOrDefault(x => x.Id == id);
             }
             catch (Exception ex)
             {
                 _logger.Error(ex, ex.Message);
-                return new BaseResult<ReportDto>()
+                return Task.FromResult(new BaseResult<ReportDto>()
                 {
                     ErrorMessage = ErrorMessage.InternalServerError,
                     ErrorCode = (int)ErrorCodes.InternalServerError
-                };
+                });
             }
 
             if (report == null)
             {
                 _logger.Warning($"Отчёт с {id} не найден", id);
-                return new BaseResult<ReportDto>()
+                return Task.FromResult(new BaseResult<ReportDto>()
                 {
                     ErrorMessage = ErrorMessage.ReportNotFound,
                     ErrorCode = (int)ErrorCodes.ReportNotFound
-                };
+                });
             }
 
-            return new BaseResult<ReportDto>()
+            return Task.FromResult(new BaseResult<ReportDto>()
             {
                 Data = report,
-            };
+            });
         }
 
         /// <inheritdoc/>
-        public async Task<CollectionResult<ReportDto>> GerReportsAsync(long employeeId)
+        public async Task<CollectionResult<ReportDto>> GetReportsAsync(long employeeId)
         {
             ReportDto[] reports;
             try

@@ -1,4 +1,6 @@
 using OrderPaymentSystem.DAL.DependencyInjection;
+using OrderPaymentSystem.Application.DependencyInjection;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +11,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+
 builder.Services.AddDataAccessLayer(builder.Configuration);
+builder.Services.AddApplication();
 
 var app = builder.Build();
 

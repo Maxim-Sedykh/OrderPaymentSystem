@@ -14,18 +14,18 @@ namespace OrderPaymentSystem.Domain.Interfaces.Services
     public interface IReportService
     {
         /// <summary>
-        /// Получение всех отчётов пользователя
+        /// Получение всех отчётов сотрудника
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<CollectionResult<ReportDto>> GerReportsAsync(long id);
+        Task<CollectionResult<ReportDto>> GetReportsAsync(long id);
 
         /// <summary>
         /// Получение отчёта по идентификатору
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<BaseResult<ReportDto>> GerReportByIdAsync(long id);
+        Task<BaseResult<ReportDto>> GetReportByIdAsync(long id);
 
         /// <summary>
         /// Создание отчёта с базовыми параметрами

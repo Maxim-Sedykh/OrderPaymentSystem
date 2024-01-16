@@ -18,7 +18,7 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public string Patronymic { get; set; }
 
-        public int Login { get; set; }
+        public string Login { get; set; }
 
         public string Password { get; set; }
 
@@ -30,9 +30,9 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public long CreatedBy { get; set; }
 
-        public DateTime UpdatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
 
-        public long UpdatedBy { get; set; }
+        public long? UpdatedBy { get; set; }
 
         public Employee Employee { get; set; }
 
