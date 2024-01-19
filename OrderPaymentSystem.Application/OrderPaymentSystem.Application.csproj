@@ -15,6 +15,7 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\OrderPaymentSystem.DAL\OrderPaymentSystem.DAL.csproj" />
 		<ProjectReference Include="..\OrderPaymentSystem.Domain\OrderPaymentSystem.Domain.csproj" />
 	</ItemGroup>
 

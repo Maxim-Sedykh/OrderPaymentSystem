@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.DAL;
 using OrderPaymentSystem.Domain.Dto.Report;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
@@ -29,7 +30,7 @@ namespace OrderPaymentSystem.Application.Services
         private readonly ILogger _logger;
 
         public ReportService(IBaseRepository<Report> reportRepository, ILogger logger, IBaseRepository<Employee> employeeRepository,
-            IReportValidator reportValidator, IBaseRepository<Order> orderRepository, IMapper mapper)
+            IReportValidator reportValidator, IBaseRepository<Order> orderRepository, IMapper mapper, ApplicationDbContext db)
         {
             _reportRepository = reportRepository;
             _logger = logger;
