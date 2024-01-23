@@ -23,7 +23,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "OrderPaymentSystem Swagger v1.0");
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "OrderPaymentSystem Swagger v2.0");
+        c.SwaggerEndpoint("/swagger/v2/swagger.json", "OrderPaymentSystem Swagger v2.0");
         c.RoutePrefix = string.Empty;
     });
 }
