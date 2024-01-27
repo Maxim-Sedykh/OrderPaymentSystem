@@ -8,11 +8,17 @@ namespace OrderPaymentSystem.Domain.Enum
 {
     public enum ErrorCodes
     {
-        ReportsNotFound = 0,
-        ReportNotFound = 1,
-        ReportAlreadyExist = 2,
+        ProductsNotFound = 0,
+        ProductNotFound = 1,
+        ProductAlreadyExist = 2,
 
-        EmployeeNotFound = 10,
+        UserNotFound = 31,
+        UserAlreadyExist = 32,
+
+        PasswordNotEqualsPasswordConfirm = 41,
+        PasswordIsWrong = 42,
+
+
 
         InternalServerError = 500
     }

@@ -19,9 +19,6 @@ namespace OrderPaymentSystem.DAL.Configurations
             builder.HasData(new User
             {
                 Id = 1,
-                Name = "Maxim",
-                Surname = "Sedykh",
-                Patronymic = "Olegovich",
                 Login = "Maximlog",
                 Password = "1234567",
                 Email = "max_se@bk.ru",
@@ -31,9 +28,6 @@ namespace OrderPaymentSystem.DAL.Configurations
             new User
             {
                 Id = 2,
-                Name = "Larisa",
-                Surname = "Sedykh",
-                Patronymic = "Vyacheslavovna",
                 Login = "SomeNewLogin",
                 Password = "25252525",
                 Email = "larisa_sed@mail.ru",
@@ -44,9 +38,6 @@ namespace OrderPaymentSystem.DAL.Configurations
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
             builder.Property(x => x.Login).IsRequired().HasMaxLength(50);
             builder.Property(x => x.Password).IsRequired();
-            builder.Property(x => x.Name).IsRequired().HasMaxLength(50);
-            builder.Property(x => x.Surname).IsRequired().HasMaxLength(50);
-            builder.Property(x => x.Patronymic).HasMaxLength(50);
 
             builder.Property(e => e.PhoneNumber)
                 .HasMaxLength(25)
@@ -60,16 +51,10 @@ namespace OrderPaymentSystem.DAL.Configurations
                 .HasConversion(email => EmailValidation.FormatEmail(email),
                 dbEmail => dbEmail);
 
-
-            builder.HasOne(x => x.Employee)
-                    .WithOne(up => up.User)
-                    .HasPrincipalKey<User>(u => u.Id)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasOne(x => x.Customer)
-                    .WithOne(up => up.User)
-                    .HasPrincipalKey<User>(u => u.Id)
-                    .OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany<Order>(x => x.Orders)
+                .WithOne(x => x.User)
+                .HasForeignKey(x => x.UserId)
+                .HasPrincipalKey(x => x.Id);
         }
     }
 }

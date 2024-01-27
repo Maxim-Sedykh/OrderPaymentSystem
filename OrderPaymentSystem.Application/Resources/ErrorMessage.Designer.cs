@@ -61,15 +61,6 @@ namespace OrderPaymentSystem.Application.Resources {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Сотрудник не найден.
-        /// </summary>
-        internal static string EmployeeNotFound {
-            get {
-                return ResourceManager.GetString("EmployeeNotFound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Ищет локализованную строку, похожую на Внутренняя ошибка сервера.
         /// </summary>
         internal static string InternalServerError {
@@ -79,29 +70,65 @@ namespace OrderPaymentSystem.Application.Resources {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Отчёт уже существует.
+        ///   Ищет локализованную строку, похожую на Неверный пароль.
         /// </summary>
-        internal static string ReportAlreadyExist {
+        internal static string PasswordIsWrong {
             get {
-                return ResourceManager.GetString("ReportAlreadyExist", resourceCulture);
+                return ResourceManager.GetString("PasswordIsWrong", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Отчёт не найден.
+        ///   Ищет локализованную строку, похожую на Пароли не равны.
         /// </summary>
-        internal static string ReportNotFound {
+        internal static string PasswordNotEqualsPasswordConfirm {
             get {
-                return ResourceManager.GetString("ReportNotFound", resourceCulture);
+                return ResourceManager.GetString("PasswordNotEqualsPasswordConfirm", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Отчёты не найдены.
+        ///   Ищет локализованную строку, похожую на Товар уже существует.
         /// </summary>
-        internal static string ReportsNotFound {
+        internal static string ProductAlreadyExist {
             get {
-                return ResourceManager.GetString("ReportsNotFound", resourceCulture);
+                return ResourceManager.GetString("ProductAlreadyExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Товар не найден.
+        /// </summary>
+        internal static string ProductNotFound {
+            get {
+                return ResourceManager.GetString("ProductNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Товары не найдены.
+        /// </summary>
+        internal static string ProductsNotFound {
+            get {
+                return ResourceManager.GetString("ProductsNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Пользователь уже существует.
+        /// </summary>
+        internal static string UserAlreadyExist {
+            get {
+                return ResourceManager.GetString("UserAlreadyExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Пользователь не найден.
+        /// </summary>
+        internal static string UserNotFound {
+            get {
+                return ResourceManager.GetString("UserNotFound", resourceCulture);
             }
         }
     }

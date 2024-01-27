@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using OrderPaymentSystem.Domain.Dto.Report;
+using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Entity;
 using System;
 using System.Collections.Generic;
@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Application.Mapping
 {
-    public class ReportMapping: Profile
+    public class UserMapping:Profile
     {
-        public ReportMapping()
+        public UserMapping()
         {
-            CreateMap<Report, ReportDto>().ReverseMap();
+            CreateMap<User, UserDto>().ReverseMap();
         }
     }
 }

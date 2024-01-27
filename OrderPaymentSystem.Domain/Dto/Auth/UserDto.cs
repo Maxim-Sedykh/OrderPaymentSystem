@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.Domain.Dto.Report
+namespace OrderPaymentSystem.Domain.Dto.Auth
 {
-    public record UpdateReportDto(long Id, string Name);
+    public record UserDto(string Login, string PhoneNumber, string Email);
 }

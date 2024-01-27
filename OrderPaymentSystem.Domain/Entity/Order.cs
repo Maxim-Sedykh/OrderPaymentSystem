@@ -14,13 +14,9 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public long NumberOfOrder { get; set; }
 
-        public long CustomerId { get; set; }
+        public long UserId { get; set; }
 
-        public Customer Customer { get; set; }
-
-        public long EmployeeId { get; set; }
-
-        public Employee Employee { get; set; }
+        public User User { get; set; }
 
         public int ProductId { get; set; }
 

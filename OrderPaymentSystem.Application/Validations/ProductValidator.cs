@@ -11,38 +11,30 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Application.Validations
 {
-    public class ReportValidator : IReportValidator
+    public class ProductValidator : IProductValidator
     {
-        public BaseResult CreateValidator(Report report, Employee employee)
+        public BaseResult CreateValidator(Product product)
         {
-            if (report != null)
+            if (product != null)
             {
                 return new BaseResult()
                 {
-                    ErrorMessage = ErrorMessage.ReportAlreadyExist,
-                    ErrorCode = (int)ErrorCodes.ReportAlreadyExist
+                    ErrorMessage = ErrorMessage.ProductAlreadyExist,
+                    ErrorCode = (int)ErrorCodes.ProductAlreadyExist
                 };
             }
 
-            if (employee ==  null)
-            {
-                return new BaseResult()
-                {
-                    ErrorMessage = ErrorMessage.EmployeeNotFound,
-                    ErrorCode = (int)ErrorCodes.EmployeeNotFound
-                };
-            }
             return new BaseResult();
         }
 
-        public BaseResult ValidateOnNull(Report model)
+        public BaseResult ValidateOnNull(Product model)
         {
             if (model == null)
             {
                 return new BaseResult()
                 {
-                    ErrorMessage = ErrorMessage.ReportNotFound,
-                    ErrorCode = (int)ErrorCodes.ReportNotFound
+                    ErrorMessage = ErrorMessage.ProductNotFound,
+                    ErrorCode = (int)ErrorCodes.ProductNotFound
                 };
             }
             return new BaseResult();

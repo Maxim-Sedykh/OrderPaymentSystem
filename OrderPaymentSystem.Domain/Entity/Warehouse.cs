@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Domain.Entity
 {
-    public class Warehouse : IEntityId<int>, IAuditable
+    public class Warehouse : IEntityId<long>, IAuditable
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
 
         public int ProductId { get; set; }
 

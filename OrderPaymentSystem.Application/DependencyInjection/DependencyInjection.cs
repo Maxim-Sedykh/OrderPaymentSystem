@@ -4,7 +4,7 @@ using OrderPaymentSystem.Application.Mapping;
 using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Application.Validations;
 using OrderPaymentSystem.Application.Validations.FluentValidations;
-using OrderPaymentSystem.Domain.Dto.Report;
+using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
@@ -21,18 +21,20 @@ namespace OrderPaymentSystem.Application.DependencyInjection
     {
         public static void AddApplication(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(ReportMapping));
+            services.AddAutoMapper(typeof(ProductMapping));
 
             InitServices(services);
         }
 
         private static void InitServices(this IServiceCollection services)
         {
-            services.AddScoped<IReportValidator, ReportValidator>();
-            services.AddScoped<IValidator<CreateReportDto>, CreateReportValidator>();
-            services.AddScoped<IValidator<UpdateReportDto>, UpdateReportValidator>();
+            services.AddScoped<IProductValidator, ProductValidator>();
+            services.AddScoped<IValidator<CreateProductDto>, CreateProductValidator>();
+            services.AddScoped<IValidator<ProductDto>, UpdateProductValidator>();
 
-            services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IUserTokenService, UserTokenService>();
         }
     }
 }

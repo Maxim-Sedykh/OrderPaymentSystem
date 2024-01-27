@@ -13,6 +13,23 @@ namespace OrderPaymentSystem.DAL.Configurations
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {
+            builder.HasData(new Product
+            {
+                Id = 1,
+                ProductName = "Алмазная мозаика",
+                Description = "Очень красивая мозаика",
+                Cost = 1500,
+                CreatedAt = DateTime.UtcNow,
+            },
+            new Product
+            {
+                Id = 2,
+                ProductName = "Ночник",
+                Description = "Красивый ночник в виде панды",
+                Cost = 600,
+                CreatedAt = DateTime.UtcNow,
+            });
+
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
 
             builder.Property(x => x.ProductName).IsRequired().HasMaxLength(50);

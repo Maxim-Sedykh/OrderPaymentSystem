@@ -117,24 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="EmployeeNotFound" xml:space="preserve">
-    <value>Сотрудник не найден</value>
-    <comment>Описание ошибки работы с сотрудником</comment>
-  </data>
   <data name="InternalServerError" xml:space="preserve">
     <value>Внутренняя ошибка сервера</value>
-    <comment>Описание ошибки сервера</comment>
   </data>
-  <data name="ReportAlreadyExist" xml:space="preserve">
-    <value>Отчёт уже существует</value>
-    <comment>Описание ошибки работы с созданием отчёта</comment>
+  <data name="PasswordIsWrong" xml:space="preserve">
+    <value>Неверный пароль</value>
   </data>
-  <data name="ReportNotFound" xml:space="preserve">
-    <value>Отчёт не найден</value>
-    <comment>Описание ошибки работы с отчётом</comment>
+  <data name="PasswordNotEqualsPasswordConfirm" xml:space="preserve">
+    <value>Пароли не равны</value>
   </data>
-  <data name="ReportsNotFound" xml:space="preserve">
-    <value>Отчёты не найдены</value>
-    <comment>Описание ошибки работы с отчётами</comment>
+  <data name="ProductAlreadyExist" xml:space="preserve">
+    <value>Товар уже существует</value>
+  </data>
+  <data name="ProductNotFound" xml:space="preserve">
+    <value>Товар не найден</value>
+  </data>
+  <data name="ProductsNotFound" xml:space="preserve">
+    <value>Товары не найдены</value>
+  </data>
+  <data name="UserAlreadyExist" xml:space="preserve">
+    <value>Пользователь уже существует</value>
+  </data>
+  <data name="UserNotFound" xml:space="preserve">
+    <value>Пользователь не найден</value>
   </data>
 </root>

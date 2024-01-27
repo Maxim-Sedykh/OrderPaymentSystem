@@ -12,12 +12,6 @@ namespace OrderPaymentSystem.Domain.Entity
     {
         public long Id { get; set; }
 
-        public string Name { get; set; }
-
-        public string Surname { get; set; }
-
-        public string Patronymic { get; set; }
-
         public string Login { get; set; }
 
         public string Password { get; set; }
@@ -34,8 +28,9 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public long? UpdatedBy { get; set; }
 
-        public Employee Employee { get; set; }
+        public List<Order> Orders { get; set; }
 
-        public Customer Customer { get; set; }
+        public UserToken UserToken { get; set; }    
+        
     }
 }

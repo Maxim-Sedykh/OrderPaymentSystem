@@ -3,31 +3,31 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.DAL;
-using OrderPaymentSystem.Domain.Dto.Report;
+using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Api.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
-    public class ReportController : ControllerBase
+    public class ProductController : ControllerBase
     {
-        private readonly IReportService _reportService;
+        private readonly IProductService _productService;
 
-        public ReportController(IReportService reportService)
+        public ProductController(IProductService productService)
         {
-            _reportService = reportService;
+            _productService = productService;
         }
 
         /// <summary>
-        /// Получение отчётов по ID
+        /// Получение товара по ID
         /// </summary>
         /// <param name="id"></param>
         /// <remarks>
-        /// Request for getting reports
+        /// Request for getting products
         /// 
         ///     GET
         ///     {
@@ -35,14 +35,14 @@ namespace OrderPaymentSystem.Api.Controllers
         ///     }
         ///     
         /// </remarks>
-        /// <response code="200">Если отчёт был получен</response>
-        /// <response code="400">Если отчёт не был получен</response>
+        /// <response code="200">Если товар был получен</response>
+        /// <response code="400">Если товар не был получен</response>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<BaseResult<ReportDto>>> GetReport(long id)
+        public async Task<ActionResult<BaseResult<ProductDto>>> GetProduct(int id)
         {
-            var response = await _reportService.GetReportByIdAsync(id);
+            var response = await _productService.GetProductByIdAsync(id);
             if (response.IsSuccess)
             {
                 return Ok(response);
@@ -51,26 +51,19 @@ namespace OrderPaymentSystem.Api.Controllers
         }
 
         /// <summary>
-        /// Получение отчётов пользователя по ID
+        /// Получение всех товаров
         /// </summary>
-        /// <param name="employeeId"></param>
         /// <remarks>
-        /// Request for getting employee reports
-        /// 
-        ///     GET
-        ///     {
-        ///         "employeeid": 1
-        ///     }
-        ///     
+        /// Request for getting all products
         /// </remarks>
-        /// <response code="200">Если отчёт был получен</response>
-        /// <response code="400">Если отчёт не был получен</response>
-        [HttpGet("reports/{employeeId}")]
+        /// <response code="200">Если товары были получены</response>
+        /// <response code="400">Если товары не были получены</response>
+        [HttpGet("products")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<BaseResult<ReportDto>>> GetEmployeeReports(long employeeId)
+        public async Task<ActionResult<BaseResult<ProductDto>>> GetAllProducts()
         {
-            var response = await _reportService.GetReportsAsync(employeeId);
+            var response = await _productService.GetProductsAsync();
             if (response.IsSuccess)
             {
                 return Ok(response);
@@ -79,11 +72,11 @@ namespace OrderPaymentSystem.Api.Controllers
         }
 
         /// <summary>
-        /// Удаление отчёта
+        /// Удаление товара
         /// </summary>
         /// <param name="id"></param>
         /// <remarks>
-        /// Request for delete report
+        /// Request for delete product
         /// 
         ///     DELETE
         ///     {
@@ -91,14 +84,14 @@ namespace OrderPaymentSystem.Api.Controllers
         ///     }
         ///     
         /// </remarks>
-        /// <response code="200">Если отчёт удалился</response>
-        /// <response code="400">Если отчёт не был удалён</response>
+        /// <response code="200">Если товар удалился</response>
+        /// <response code="400">Если товар не был удалён</response>
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<BaseResult<ReportDto>>> Delete(long id)
+        public async Task<ActionResult<BaseResult<ProductDto>>> DeleteProduct(int id)
         {
-            var response = await _reportService.DeleteReportAsync(id);
+            var response = await _productService.DeleteProductAsync(id);
             if (response.IsSuccess)
             {
                 return Ok(response);
@@ -107,29 +100,28 @@ namespace OrderPaymentSystem.Api.Controllers
         }
 
         /// <summary>
-        /// Создание отчёта
+        /// Создание товара
         /// </summary>
         /// <param name="dto"></param>
         /// <remarks>
-        /// Request for create report
+        /// Request for create product
         /// 
         ///     POST
         ///     {
-        ///         "name": "Test#1",
-        ///         "totalrevenues": 10,
-        ///         "numbersoforder": 10,
-        ///         "employeeid": 1
+        ///         "productname": "Гвозди",
+        ///         "description": "Хорошие гвозди большого размера",
+        ///         "cost": 300
         ///     }
         ///     
         /// </remarks>
-        /// <response code="200">Если отчёт создался</response>
-        /// <response code="400">Если отчёт не был создан</response>
+        /// <response code="200">Если товар создался</response>
+        /// <response code="400">Если товар не был создан</response>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<BaseResult<ReportDto>>> Create([FromBody] CreateReportDto dto)
+        public async Task<ActionResult<BaseResult<ProductDto>>> CreateProduct([FromBody] CreateProductDto dto)
         {
-            var response = await _reportService.CreateReportAsync(dto);
+            var response = await _productService.CreateProductAsync(dto);
             if (response.IsSuccess)
             {
                 return Ok(response);
@@ -138,27 +130,29 @@ namespace OrderPaymentSystem.Api.Controllers
         }
 
         /// <summary>
-        /// Обновление отчёта
+        /// Обновление товара
         /// </summary>
         /// <param name="dto"></param>
         /// <remarks>
-        /// Request for update report
+        /// Request for update product
         /// 
         ///     PUT
         ///     {
-        ///         "id"": 1
-        ///         "name": "Test#1"
+        ///         "id": 1
+        ///         "productname": "Шурупы",
+        ///         "description": "Качественные шурупы из Китая большого размера",
+        ///         "cost": 400
         ///     }
         ///     
         /// </remarks>
-        /// <response code="200">Если отчёт обновился</response>
-        /// <response code="400">Если отчёт не был обновлён</response>
+        /// <response code="200">Если товар обновился</response>
+        /// <response code="400">Если товар не был обновлён</response>
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<BaseResult<ReportDto>>> Update([FromBody] UpdateReportDto dto)
+        public async Task<ActionResult<BaseResult<ProductDto>>> UpdateProduct([FromBody] UpdateProductDto dto)
         {
-            var response = await _reportService.UpdateReportAsync(dto);
+            var response = await _productService.UpdateProductAsync(dto);
             if (response.IsSuccess)
             {
                 return Ok(response);

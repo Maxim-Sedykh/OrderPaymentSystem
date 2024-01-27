@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.DAL.Interceptors;
 using OrderPaymentSystem.DAL.Repositories;
+using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using System;
@@ -33,13 +34,11 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
             var types = new List<Type>()
             {
                 typeof(User),
-                typeof(Customer),
-                typeof(Employee),
                 typeof(Order),
                 typeof(Payment),
                 typeof(Product),
-                typeof(Report),
-                typeof(Warehouse)
+                typeof(Warehouse),
+                typeof(UserDto)
             };
 
             foreach (var type in types)
