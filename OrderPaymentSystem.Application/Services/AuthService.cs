@@ -49,7 +49,7 @@ namespace OrderPaymentSystem.Application.Services
                     };
                 }
 
-                if (!IsVerifyPassword(user.Password, dto.Password))
+                if (!IsVerifyPassword(HashPassword(user.Password), dto.Password))
                 {
                     return new BaseResult<TokenDto>()
                     {

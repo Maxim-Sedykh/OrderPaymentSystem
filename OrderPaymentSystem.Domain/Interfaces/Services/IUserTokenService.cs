@@ -1,4 +1,6 @@
-﻿using System;
+﻿using OrderPaymentSystem.Domain.Dto;
+using OrderPaymentSystem.Domain.Result;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -12,5 +14,9 @@ namespace OrderPaymentSystem.Domain.Interfaces.Services
         string GenerateAccessToken(IEnumerable<Claim> claims);
 
         string GenerateRefreshToken();
+
+        ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken);
+
+        Task<BaseResult<TokenDto>> RefreshToken(TokenDto dto);
     }
 }

@@ -70,6 +70,24 @@ namespace OrderPaymentSystem.Application.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Не валидный запрос клиента.
+        /// </summary>
+        internal static string InvalidClientRequest {
+            get {
+                return ResourceManager.GetString("InvalidClientRequest", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Не валидный токен.
+        /// </summary>
+        internal static string InvalidToken {
+            get {
+                return ResourceManager.GetString("InvalidToken", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Неверный пароль.
         /// </summary>
         internal static string PasswordIsWrong {

@@ -25,7 +25,14 @@ namespace OrderPaymentSystem.DAL.Configurations
                     RefreshToken = "jbodfiujbINOIU3O4$",
                     RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7),
                     UserId = 1,
-                }
+                },
+                new UserToken()
+                {
+                    Id = 2,
+                    RefreshToken = "hgiroej[giertjivfs",
+                    RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7),
+                    UserId = 2,
+                },
             });
         }
     }

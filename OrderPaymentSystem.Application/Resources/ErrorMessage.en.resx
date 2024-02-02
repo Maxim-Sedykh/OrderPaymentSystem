@@ -120,6 +120,12 @@
   <data name="InternalServerError" xml:space="preserve">
     <value>Internal server error</value>
   </data>
+  <data name="InvalidClientRequest" xml:space="preserve">
+    <value>invalid client request</value>
+  </data>
+  <data name="InvalidToken" xml:space="preserve">
+    <value>invalid token</value>
+  </data>
   <data name="PasswordIsWrong" xml:space="preserve">
     <value>Password is wrong</value>
   </data>
