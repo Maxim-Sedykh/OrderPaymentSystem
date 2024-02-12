@@ -27,11 +27,12 @@ namespace OrderPaymentSystem.Application.Services
         private readonly string _issuer;
         private readonly string _audience;
 
-        public UserTokenService(IOptions<JwtSettings> options)
+        public UserTokenService(IOptions<JwtSettings> options, IBaseRepository<User> userRepository)
         {
             _jwtKey = options.Value.JwtKey;
             _issuer = options.Value.Issuer;
             _audience = options.Value.Audience;
+            _userRepository = userRepository;
         }
 
         public string GenerateAccessToken(IEnumerable<Claim> claims)
@@ -59,7 +60,10 @@ namespace OrderPaymentSystem.Application.Services
                 ValidateIssuer = true,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey)),
-                ValidateLifetime = true
+                ValidateLifetime = true,
+                ValidAudience = _audience,
+                ValidIssuer = _issuer,
+
             };
             var tokenHandler = new JwtSecurityTokenHandler();
             var claimsPrincipal = tokenHandler.ValidateToken(accessToken, tokenValidationParameters, out var securityToken);

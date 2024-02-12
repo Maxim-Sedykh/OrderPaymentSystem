@@ -38,7 +38,7 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
                 typeof(Payment),
                 typeof(Product),
                 typeof(Warehouse),
-                typeof(UserDto)
+                typeof(UserToken)
             };
 
             foreach (var type in types)

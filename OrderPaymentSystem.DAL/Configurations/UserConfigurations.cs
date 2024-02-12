@@ -55,6 +55,11 @@ namespace OrderPaymentSystem.DAL.Configurations
                 .WithOne(x => x.User)
                 .HasForeignKey(x => x.UserId)
                 .HasPrincipalKey(x => x.Id);
+
+            builder.HasOne(x => x.UserToken)
+                    .WithOne(x => x.User)
+                    .HasPrincipalKey<User>(x => x.Id)
+                    .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

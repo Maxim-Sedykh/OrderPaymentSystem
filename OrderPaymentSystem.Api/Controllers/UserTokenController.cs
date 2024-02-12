@@ -24,6 +24,8 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
+        /// 
+        [Route("refresh")]
         [HttpPost]
         public async Task<ActionResult<BaseResult<TokenDto>>> RefreshToken([FromBody] TokenDto dto)
         {

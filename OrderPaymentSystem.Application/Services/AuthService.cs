@@ -27,12 +27,14 @@ namespace OrderPaymentSystem.Application.Services
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
 
-        public AuthService(IBaseRepository<User> userRepository, ILogger logger, IMapper mapper, IUserTokenService userTokenService)
+        public AuthService(IBaseRepository<User> userRepository, ILogger logger, IMapper mapper, IUserTokenService userTokenService,
+            IBaseRepository<UserToken> userTokenRepository)
         {
             _userRepository = userRepository;
             _logger = logger;
             _mapper = mapper;
             _userTokenService = userTokenService;
+            _userTokenRepository = userTokenRepository;
         }
 
         public async Task<BaseResult<TokenDto>> Login(LoginUserDto dto)
@@ -49,7 +51,7 @@ namespace OrderPaymentSystem.Application.Services
                     };
                 }
 
-                if (!IsVerifyPassword(HashPassword(user.Password), dto.Password))
+                if (!IsVerifyPassword(user.Password, dto.Password))
                 {
                     return new BaseResult<TokenDto>()
                     {
@@ -83,6 +85,8 @@ namespace OrderPaymentSystem.Application.Services
                 {
                     userToken.RefreshToken = refreshToken;
                     userToken.RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7);
+
+                    await _userTokenRepository.UpdateAsync(userToken);
                 }
 
                 return new BaseResult<TokenDto>()
@@ -156,7 +160,7 @@ namespace OrderPaymentSystem.Application.Services
         private string HashPassword(string password)
         {
             var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
-            return BitConverter.ToString(bytes).ToLower();
+            return Convert.ToBase64String(bytes);
         }
 
         private bool IsVerifyPassword(string userPasswordHash, string userPassword)

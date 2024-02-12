@@ -110,22 +110,10 @@ namespace OrderPaymentSystem.Application.Services
         public Task<BaseResult<ProductDto>> GetProductByIdAsync(int id)
         {
             ProductDto? product;
-            try
-            {
-                product = _productRepository.GetAll()
-                    .Select(x => new ProductDto(x.Id, x.ProductName, x.Description, x.Cost, x.CreatedAt.ToLongDateString()))
-                    .AsEnumerable()
-                    .FirstOrDefault(x => x.Id == id);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                return Task.FromResult(new BaseResult<ProductDto>()
-                {
-                    ErrorMessage = ErrorMessage.InternalServerError,
-                    ErrorCode = (int)ErrorCodes.InternalServerError
-                });
-            }
+            product = _productRepository.GetAll()
+                .Select(x => new ProductDto(x.Id, x.ProductName, x.Description, x.Cost, x.CreatedAt.ToLongDateString()))
+                .AsEnumerable()
+                .FirstOrDefault(x => x.Id == id);
 
             if (product == null)
             {

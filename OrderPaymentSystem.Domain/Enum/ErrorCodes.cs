@@ -14,6 +14,7 @@ namespace OrderPaymentSystem.Domain.Enum
 
         UserNotFound = 31,
         UserAlreadyExist = 32,
+        UserUnauthorizedAccess = 33,
 
         PasswordNotEqualsPasswordConfirm = 41,
         PasswordIsWrong = 42,
