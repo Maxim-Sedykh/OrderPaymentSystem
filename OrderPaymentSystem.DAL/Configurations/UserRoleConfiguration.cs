@@ -9,11 +9,15 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.DAL.Configurations
 {
-    public class WarehouseConfigurations : IEntityTypeConfiguration<Warehouse>
+    public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
     {
-        public void Configure(EntityTypeBuilder<Warehouse> builder)
+        public void Configure(EntityTypeBuilder<UserRole> builder)
         {
-            builder.Property(x => x.Id).ValueGeneratedOnAdd();
+            builder.HasData(new UserRole()
+            {
+                UserId = 1,
+                RoleId = 2,
+            });
         }
     }
 }

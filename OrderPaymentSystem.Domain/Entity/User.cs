@@ -16,9 +16,7 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public string Password { get; set; }
 
-        public string PhoneNumber { get; set; }
-
-        public string Email { get; set; }
+        public List<Role> Roles { get; set; }
 
         public DateTime CreatedAt { get; set; }
 

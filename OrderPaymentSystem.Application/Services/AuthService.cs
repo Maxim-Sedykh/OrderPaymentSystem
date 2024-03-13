@@ -136,8 +136,6 @@ namespace OrderPaymentSystem.Application.Services
                 {
                     Login = dto.Login,
                     Password = hashUserPassword,
-                    PhoneNumber = dto.PhoneNumber,
-                    Email = dto.Email
                 };
                 await _userRepository.CreateAsync(user);
 

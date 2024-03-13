@@ -16,4 +16,8 @@
     <ProjectReference Include="..\OrderPaymentSystem.Domain\OrderPaymentSystem.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+
 </Project>

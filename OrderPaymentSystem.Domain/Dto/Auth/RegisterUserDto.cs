@@ -6,6 +6,5 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Domain.Dto.Auth
 {
-    public record RegisterUserDto(string Login, string Password, string PasswordConfirm,
-        string PhoneNumber, string Email);
+    public record RegisterUserDto(string Login, string Password, string PasswordConfirm);
 }
