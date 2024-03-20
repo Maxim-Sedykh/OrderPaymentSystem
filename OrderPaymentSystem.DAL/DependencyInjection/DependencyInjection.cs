@@ -5,6 +5,7 @@ using OrderPaymentSystem.DAL.Interceptors;
 using OrderPaymentSystem.DAL.Repositories;
 using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using System;
 using System.Collections.Generic;
@@ -26,7 +27,9 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
             { 
                 options.UseNpgsql(connectionString); 
             });
+
             services.InitRepositories();
+            services.InitUnitOfWork();
         }
 
         private static void InitRepositories(this IServiceCollection services)
@@ -48,6 +51,11 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
                 var implementationType = typeof(BaseRepository<>).MakeGenericType(type);
                 services.AddScoped(interfaceType, implementationType);
             }
+        }
+
+        private static void InitUnitOfWork(this IServiceCollection services)
+        {
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
         }
     }
 }

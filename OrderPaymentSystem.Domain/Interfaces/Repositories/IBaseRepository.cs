@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OrderPaymentSystem.Domain.Interfaces.Databases;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Domain.Interfaces.Repositories
 {
-    public interface IBaseRepository<TEntity>
+    public interface IBaseRepository<TEntity> : IStateSaveChanges
     {
         IQueryable<TEntity> GetAll();
 
         Task<TEntity> CreateAsync(TEntity entity);
 
-        Task<TEntity> UpdateAsync(TEntity entity);
+        TEntity Update(TEntity entity);
 
-        Task<TEntity> RemoveAsync(TEntity entity);
+        void Remove(TEntity entity);
     }
 }

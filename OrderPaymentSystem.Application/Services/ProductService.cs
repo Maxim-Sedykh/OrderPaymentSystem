@@ -57,6 +57,8 @@ namespace OrderPaymentSystem.Application.Services
                 product = _mapper.Map<Product>(dto);
 
                 await _productRepository.CreateAsync(product);
+                await _productRepository.SaveChangesAsync();
+
                 return new BaseResult<ProductDto>()
                 {
                     Data = _mapper.Map<ProductDto>(product),
@@ -89,7 +91,10 @@ namespace OrderPaymentSystem.Application.Services
                         ErrorCode = result.ErrorCode
                     };
                 }
-                await _productRepository.RemoveAsync(product);
+
+                _productRepository.Remove(product);
+                await _productRepository.SaveChangesAsync();
+
                 return new BaseResult<ProductDto>()
                 {
                     Data = _mapper.Map<ProductDto>(product),
@@ -188,10 +193,12 @@ namespace OrderPaymentSystem.Application.Services
                 product.Description = dto.Description;
                 product.Cost = dto.Cost;
 
-                await _productRepository.UpdateAsync(product);
+                var updatedProduct = _productRepository.Update(product);
+                await _productRepository.SaveChangesAsync();
+
                 return new BaseResult<ProductDto>()
                 {
-                    Data = _mapper.Map<ProductDto>(product),
+                    Data = _mapper.Map<ProductDto>(updatedProduct),
                 };
             }
             catch (Exception ex)

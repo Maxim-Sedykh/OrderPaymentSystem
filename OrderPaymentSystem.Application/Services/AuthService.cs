@@ -5,6 +5,7 @@ using OrderPaymentSystem.Domain.Dto;
 using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
@@ -21,16 +22,16 @@ namespace OrderPaymentSystem.Application.Services
 {
     public class AuthService : IAuthService
     {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseRepository<User> _userRepository;
         private readonly IBaseRepository<UserToken> _userTokenRepository;
         private readonly IBaseRepository<Role> _roleRepository;
-        private readonly IBaseRepository<UserRole> _userRoleRepository;
         private readonly IUserTokenService _userTokenService;
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
 
         public AuthService(IBaseRepository<User> userRepository, ILogger logger, IMapper mapper, IUserTokenService userTokenService,
-            IBaseRepository<UserToken> userTokenRepository, IBaseRepository<Role> roleRepository, IBaseRepository<UserRole> userRoleRepository)
+            IBaseRepository<UserToken> userTokenRepository, IBaseRepository<Role> roleRepository, IUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
             _logger = logger;
@@ -38,7 +39,7 @@ namespace OrderPaymentSystem.Application.Services
             _userTokenService = userTokenService;
             _userTokenRepository = userTokenRepository;
             _roleRepository = roleRepository;
-            _userRoleRepository = userRoleRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<BaseResult<TokenDto>> Login(LoginUserDto dto)
@@ -90,7 +91,9 @@ namespace OrderPaymentSystem.Application.Services
                     userToken.RefreshToken = refreshToken;
                     userToken.RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7);
 
-                    await _userTokenRepository.UpdateAsync(userToken);
+                    _userTokenRepository.Update(userToken);
+
+                    await _userTokenRepository.SaveChangesAsync();
                 }
 
                 return new BaseResult<TokenDto>()
@@ -136,29 +139,47 @@ namespace OrderPaymentSystem.Application.Services
                     };
                 }
                 var hashUserPassword = HashPassword(dto.Password);
-                user = new User()
-                {
-                    Login = dto.Login,
-                    Password = hashUserPassword,
-                };
-                await _userRepository.CreateAsync(user);
 
-                var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == "User");
-                if (role == null)
+                using (var transaction = await _unitOfWork.BeginTransactionAsync())
                 {
-                    return new BaseResult<UserDto>()
+                    try
                     {
-                        ErrorCode = (int)ErrorCodes.RoleNotFound,
-                        ErrorMessage = ErrorMessage.RoleNotFound,
-                    };
-                }
+                        user = new User()
+                        {
+                            Login = dto.Login,
+                            Password = hashUserPassword,
+                        };
+                        await _unitOfWork.Users.CreateAsync(user);
 
-                UserRole userRole = new UserRole()
-                {
-                    UserId = user.Id,
-                    RoleId = role.Id
-                };
-                await _userRoleRepository.CreateAsync(userRole);
+                        await _unitOfWork.SaveChangesAsync();
+
+                        var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == nameof(Roles.User));
+                        if (role == null)
+                        {
+                            return new BaseResult<UserDto>()
+                            {
+                                ErrorCode = (int)ErrorCodes.RoleNotFound,
+                                ErrorMessage = ErrorMessage.RoleNotFound,
+                            };
+                        }
+
+                        UserRole userRole = new UserRole()
+                        {
+                            UserId = user.Id,
+                            RoleId = role.Id
+                        };
+
+                        await _unitOfWork.UserRoles.CreateAsync(userRole);
+
+                        await _unitOfWork.SaveChangesAsync();
+
+                        await transaction.CommitAsync();
+                    }
+                    catch (Exception)
+                    {
+                        await transaction.RollbackAsync();
+                    }
+                }
 
                 return new BaseResult<UserDto>()
                 {
