@@ -11,30 +11,30 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Application.Validations
 {
-    public class ProductValidator : IProductValidator
+    public class RoleValidator : IRoleValidator
     {
-        public BaseResult CreateProductValidator(Product product)
+        public BaseResult CreateRoleValidator(Role role)
         {
-            if (product != null)
+            if (role != null)
             {
                 return new BaseResult()
                 {
-                    ErrorMessage = ErrorMessage.ProductAlreadyExist,
-                    ErrorCode = (int)ErrorCodes.ProductAlreadyExist
+                    ErrorMessage = ErrorMessage.RoleAlreadyExist,
+                    ErrorCode = (int)ErrorCodes.RoleAlreadyExist
                 };
             }
 
             return new BaseResult();
         }
 
-        public BaseResult ValidateOnNull(Product model)
+        public BaseResult ValidateOnNull(Role model)
         {
             if (model == null)
             {
                 return new BaseResult()
                 {
-                    ErrorMessage = ErrorMessage.ProductNotFound,
-                    ErrorCode = (int)ErrorCodes.ProductNotFound
+                    ErrorMessage = ErrorMessage.RoleNotFound,
+                    ErrorCode = (int)ErrorCodes.RoleNotFound
                 };
             }
             return new BaseResult();

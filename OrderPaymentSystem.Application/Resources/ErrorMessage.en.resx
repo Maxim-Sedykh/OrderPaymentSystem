@@ -136,15 +136,24 @@
     <value>Product already exist</value>
   </data>
   <data name="ProductNotFound" xml:space="preserve">
-    <value>Product  not found</value>
+    <value>Product is not found</value>
   </data>
   <data name="ProductsNotFound" xml:space="preserve">
-    <value>Products not found</value>
+    <value>Products is not found</value>
+  </data>
+  <data name="RoleAlreadyExist" xml:space="preserve">
+    <value>Role with this name is already exist</value>
+  </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>Role is not found</value>
   </data>
   <data name="UserAlreadyExist" xml:space="preserve">
     <value>User already exist</value>
   </data>
+  <data name="UserAlreadyExistThisRole" xml:space="preserve">
+    <value>User already exist with this role</value>
+  </data>
   <data name="UserNotFound" xml:space="preserve">
-    <value>User not found</value>
+    <value>User is not found</value>
   </data>
 </root>

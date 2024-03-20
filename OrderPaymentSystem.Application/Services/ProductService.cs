@@ -44,7 +44,7 @@ namespace OrderPaymentSystem.Application.Services
             {
                 var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.ProductName == dto.ProductName);
 
-                var result = _productValidator.CreateValidator(product);
+                var result = _productValidator.CreateProductValidator(product);
                 if (!result.IsSuccess)
                 {
                     return new BaseResult<ProductDto>()

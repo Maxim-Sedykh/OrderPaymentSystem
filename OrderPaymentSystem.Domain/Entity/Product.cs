@@ -17,8 +17,6 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public decimal Cost { get; set; }
 
-        public List<Warehouse> Warehouses { get; set; }
-
         public DateTime CreatedAt { get; set; }
 
         public long CreatedBy { get; set; }
@@ -27,6 +25,6 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public long? UpdatedBy { get; set; }
 
-        public List<Order> Orders { get; set; }
+        public ICollection<Order> Orders { get; set; }
     }
 }

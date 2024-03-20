@@ -23,25 +23,31 @@ namespace OrderPaymentSystem.Application.Services
     {
         private readonly IBaseRepository<User> _userRepository;
         private readonly IBaseRepository<UserToken> _userTokenRepository;
+        private readonly IBaseRepository<Role> _roleRepository;
+        private readonly IBaseRepository<UserRole> _userRoleRepository;
         private readonly IUserTokenService _userTokenService;
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
 
         public AuthService(IBaseRepository<User> userRepository, ILogger logger, IMapper mapper, IUserTokenService userTokenService,
-            IBaseRepository<UserToken> userTokenRepository)
+            IBaseRepository<UserToken> userTokenRepository, IBaseRepository<Role> roleRepository, IBaseRepository<UserRole> userRoleRepository)
         {
             _userRepository = userRepository;
             _logger = logger;
             _mapper = mapper;
             _userTokenService = userTokenService;
             _userTokenRepository = userTokenRepository;
+            _roleRepository = roleRepository;
+            _userRoleRepository = userRoleRepository;
         }
 
         public async Task<BaseResult<TokenDto>> Login(LoginUserDto dto)
         {
             try
             {
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == dto.Login);
+                var user = await _userRepository.GetAll()
+                    .Include(x => x.Roles)
+                    .FirstOrDefaultAsync(x => x.Login == dto.Login);
                 if (user == null)
                 {
                     return new BaseResult<TokenDto>()
@@ -60,13 +66,11 @@ namespace OrderPaymentSystem.Application.Services
                     };
                 }
 
-                var claims = new List<Claim>()
-                {
-                    new Claim(ClaimTypes.Name, user.Login),
-                    new Claim(ClaimTypes.Role, "User")
-                };
-                var accessToken = _userTokenService.GenerateAccessToken(claims);
+                var userRoles = user.Roles;
+                var claims = userRoles.Select(x => new Claim(ClaimTypes.Role, x.Name)).ToList();
+                claims.Add(new Claim(ClaimTypes.Name, user.Login));
 
+                var accessToken = _userTokenService.GenerateAccessToken(claims);
                 var userToken = await _userTokenRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == user.Id);
                 var refreshToken = _userTokenService.GenerateRefreshToken();
 
@@ -138,6 +142,23 @@ namespace OrderPaymentSystem.Application.Services
                     Password = hashUserPassword,
                 };
                 await _userRepository.CreateAsync(user);
+
+                var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == "User");
+                if (role == null)
+                {
+                    return new BaseResult<UserDto>()
+                    {
+                        ErrorCode = (int)ErrorCodes.RoleNotFound,
+                        ErrorMessage = ErrorMessage.RoleNotFound,
+                    };
+                }
+
+                UserRole userRole = new UserRole()
+                {
+                    UserId = user.Id,
+                    RoleId = role.Id
+                };
+                await _userRoleRepository.CreateAsync(userRole);
 
                 return new BaseResult<UserDto>()
                 {

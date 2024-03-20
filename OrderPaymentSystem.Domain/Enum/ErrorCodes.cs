@@ -15,11 +15,13 @@ namespace OrderPaymentSystem.Domain.Enum
         UserNotFound = 31,
         UserAlreadyExist = 32,
         UserUnauthorizedAccess = 33,
+        UserAlreadyExistThisRole = 34,
 
         PasswordNotEqualsPasswordConfirm = 41,
         PasswordIsWrong = 42,
 
-
+        RoleNotFound = 51,
+        RoleAlreadyExist = 52,
 
         InternalServerError = 500
     }

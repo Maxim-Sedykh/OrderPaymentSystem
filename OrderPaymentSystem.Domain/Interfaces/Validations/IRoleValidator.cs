@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Domain.Interfaces.Validations
 {
-    public interface IProductValidator : IBaseValidator<Product>
+    public interface IRoleValidator : IBaseValidator<Role>
     {
         /// <summary>
-        /// Проверяется наличие товара, если товар с переданным названием есть в БД, то сознать точно такой же нельзя
+        /// При создании роли проверяется, есть ли роль с таким же названием
         /// </summary>
         /// <param name="product"></param>
         /// <returns></returns>
-        BaseResult CreateProductValidator(Product product);
+        BaseResult CreateRoleValidator(Role product);
     }
 }

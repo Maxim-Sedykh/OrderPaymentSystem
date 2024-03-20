@@ -16,7 +16,7 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public string Password { get; set; }
 
-        public List<Role> Roles { get; set; }
+        public ICollection<Role> Roles { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
@@ -26,7 +26,7 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public long? UpdatedBy { get; set; }
 
-        public List<Order> Orders { get; set; }
+        public ICollection<Order> Orders { get; set; }
 
         public UserToken UserToken { get; set; }    
         

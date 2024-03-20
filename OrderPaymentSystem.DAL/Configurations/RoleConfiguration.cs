@@ -24,12 +24,12 @@ namespace OrderPaymentSystem.DAL.Configurations
             },
             new Role
             {
-                Id = 1,
+                Id = 2,
                 Name = "Admin"
             }, 
             new Role
             {
-                Id = 1,
+                Id = 3,
                 Name = "Moderator"
             });
 

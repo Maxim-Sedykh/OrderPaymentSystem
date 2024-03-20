@@ -141,8 +141,17 @@
   <data name="ProductsNotFound" xml:space="preserve">
     <value>Товары не найдены</value>
   </data>
+  <data name="RoleAlreadyExist" xml:space="preserve">
+    <value>Роль с таким названием уже существует</value>
+  </data>
+  <data name="RoleNotFound" xml:space="preserve">
+    <value>Роль не найдена</value>
+  </data>
   <data name="UserAlreadyExist" xml:space="preserve">
     <value>Пользователь уже существует</value>
+  </data>
+  <data name="UserAlreadyExistThisRole" xml:space="preserve">
+    <value>Пользователь с этой ролью уже существует</value>
   </data>
   <data name="UserNotFound" xml:space="preserve">
     <value>Пользователь не найден</value>

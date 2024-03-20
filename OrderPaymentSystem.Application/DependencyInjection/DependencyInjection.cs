@@ -21,7 +21,7 @@ namespace OrderPaymentSystem.Application.DependencyInjection
     {
         public static void AddApplication(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(ProductMapping));
+            services.AddAutoMapper(typeof(RoleMapping));
 
             InitServices(services);
         }
@@ -29,12 +29,14 @@ namespace OrderPaymentSystem.Application.DependencyInjection
         private static void InitServices(this IServiceCollection services)
         {
             services.AddScoped<IProductValidator, ProductValidator>();
+            services.AddScoped<IRoleValidator, RoleValidator>();
             services.AddScoped<IValidator<CreateProductDto>, CreateProductValidator>();
             services.AddScoped<IValidator<ProductDto>, UpdateProductValidator>();
 
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserTokenService, UserTokenService>();
+            services.AddScoped<IRoleService, RoleService>();
         }
     }
 }

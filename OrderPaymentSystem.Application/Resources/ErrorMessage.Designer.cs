@@ -133,11 +133,38 @@ namespace OrderPaymentSystem.Application.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Роль с таким названием уже существует.
+        /// </summary>
+        internal static string RoleAlreadyExist {
+            get {
+                return ResourceManager.GetString("RoleAlreadyExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Роль не найдена.
+        /// </summary>
+        internal static string RoleNotFound {
+            get {
+                return ResourceManager.GetString("RoleNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Пользователь уже существует.
         /// </summary>
         internal static string UserAlreadyExist {
             get {
                 return ResourceManager.GetString("UserAlreadyExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Пользователь с этой ролью уже существует.
+        /// </summary>
+        internal static string UserAlreadyExistThisRole {
+            get {
+                return ResourceManager.GetString("UserAlreadyExistThisRole", resourceCulture);
             }
         }
         
