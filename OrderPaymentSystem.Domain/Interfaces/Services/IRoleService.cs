@@ -1,5 +1,6 @@
 ﻿using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Dto.Role;
+using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Result;
 using System;
@@ -42,5 +43,19 @@ namespace OrderPaymentSystem.Domain.Interfaces.Services
         /// <param name="dto"></param>
         /// <returns></returns>
         Task<BaseResult<UserRoleDto>> AddRoleForUserAsync(UserRoleDto dto);
+
+        /// <summary>
+        /// Удаление роли у пользователя
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        Task<BaseResult<UserRoleDto>> DeleteRoleForUserAsync(DeleteUserRoleDto dto);
+
+        /// <summary>
+        /// Обновление роли у пользователя
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        Task<BaseResult<UserRoleDto>> UpdateRoleForUserAsync(UpdateUserRoleDto dto);
     }
 }

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.Domain.Dto.Role
+namespace OrderPaymentSystem.Domain.Dto.UserRole
 {
-    public record UserRoleDto(
+    public record DeleteUserRoleDto(
             string Login,
-            string RoleName
+            long RoleId
         );
 }

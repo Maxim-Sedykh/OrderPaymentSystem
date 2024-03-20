@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Dto.Role;
+using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
@@ -121,14 +122,73 @@ namespace OrderPaymentSystem.Api.Controllers
         ///     }
         ///     
         /// </remarks>
-        /// <response code="200">Если роль создалась</response>
-        /// <response code="400">Если роль не была создана</response>
-        [HttpPost("addRole")]
+        /// <response code="200">Если роль для пользователя создалась</response>
+        /// <response code="400">Если роль для пользователя не была создана</response>
+        [HttpPost("add-user-role")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> AddRoleForUser([FromBody] UserRoleDto dto)
         {
             var response = await _roleService.AddRoleForUserAsync(dto);
+            if (response.IsSuccess)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        /// <summary>
+        /// Удаление роли у пользователя
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <remarks>
+        /// Request for delete role for user
+        /// 
+        ///     POST
+        ///     {
+        ///         "login": "User first",
+        ///         "roleName": "Admin",
+        ///     }
+        ///     
+        /// </remarks>
+        /// <response code="200">Если роль для пользователя удалилась</response>
+        /// <response code="400">Если роль для пользователя не была удалена</response>
+        [HttpDelete("delete-user-role")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<BaseResult<Role>>> DeleteRoleForUser([FromBody] DeleteUserRoleDto dto)
+        {
+            var response = await _roleService.DeleteRoleForUserAsync(dto);
+            if (response.IsSuccess)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        /// <summary>
+        /// Обновление роли пользователя
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <remarks>
+        /// Request for delete role for user
+        /// 
+        ///     POST
+        ///     {
+        ///         "login": "User first",
+        ///         "fromRoleId": 7,
+        ///         "ToRoleId": 1,
+        ///     }
+        ///     
+        /// </remarks>
+        /// <response code="200">Если роль для пользователя обновилась</response>
+        /// <response code="400">Если роль для пользователя не была удалена</response>
+        [HttpPut("update-user-role")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<BaseResult<Role>>> UpdateRoleForUser([FromBody] UpdateUserRoleDto dto)
+        {
+            var response = await _roleService.UpdateRoleForUserAsync(dto);
             if (response.IsSuccess)
             {
                 return Ok(response);

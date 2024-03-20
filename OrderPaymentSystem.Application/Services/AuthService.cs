@@ -44,76 +44,64 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<BaseResult<TokenDto>> Login(LoginUserDto dto)
         {
-            try
+            var user = await _userRepository.GetAll()
+                .Include(x => x.Roles)
+                .FirstOrDefaultAsync(x => x.Login == dto.Login);
+            if (user == null)
             {
-                var user = await _userRepository.GetAll()
-                    .Include(x => x.Roles)
-                    .FirstOrDefaultAsync(x => x.Login == dto.Login);
-                if (user == null)
-                {
-                    return new BaseResult<TokenDto>()
-                    {
-                        ErrorMessage = ErrorMessage.UserNotFound,
-                        ErrorCode = (int)ErrorCodes.UserNotFound,
-                    };
-                }
-
-                if (!IsVerifyPassword(user.Password, dto.Password))
-                {
-                    return new BaseResult<TokenDto>()
-                    {
-                        ErrorMessage = ErrorMessage.PasswordIsWrong,
-                        ErrorCode = (int)ErrorCodes.PasswordIsWrong,
-                    };
-                }
-
-                var userRoles = user.Roles;
-                var claims = userRoles.Select(x => new Claim(ClaimTypes.Role, x.Name)).ToList();
-                claims.Add(new Claim(ClaimTypes.Name, user.Login));
-
-                var accessToken = _userTokenService.GenerateAccessToken(claims);
-                var userToken = await _userTokenRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == user.Id);
-                var refreshToken = _userTokenService.GenerateRefreshToken();
-
-                if (userToken == null)
-                {
-                    userToken = new UserToken()
-                    {
-                        UserId = user.Id,
-                        RefreshToken = refreshToken,
-                        RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7)
-                    };
-
-                    await _userTokenRepository.CreateAsync(userToken);
-                }
-                else
-                {
-                    userToken.RefreshToken = refreshToken;
-                    userToken.RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7);
-
-                    _userTokenRepository.Update(userToken);
-
-                    await _userTokenRepository.SaveChangesAsync();
-                }
-
                 return new BaseResult<TokenDto>()
                 {
-                    Data = new TokenDto()
-                    {
-                        AccessToken = accessToken,
-                        RefreshToken = refreshToken,
-                    }
+                    ErrorMessage = ErrorMessage.UserNotFound,
+                    ErrorCode = (int)ErrorCodes.UserNotFound,
                 };
             }
-            catch (Exception ex)
+
+            if (!IsVerifyPassword(user.Password, dto.Password))
             {
-                _logger.Error(ex, ex.Message);
                 return new BaseResult<TokenDto>()
                 {
-                    ErrorMessage = ErrorMessage.InternalServerError,
-                    ErrorCode = (int)ErrorCodes.InternalServerError
+                    ErrorMessage = ErrorMessage.PasswordIsWrong,
+                    ErrorCode = (int)ErrorCodes.PasswordIsWrong,
                 };
             }
+
+            var userRoles = user.Roles;
+            var claims = userRoles.Select(x => new Claim(ClaimTypes.Role, x.Name)).ToList();
+            claims.Add(new Claim(ClaimTypes.Name, user.Login));
+
+            var accessToken = _userTokenService.GenerateAccessToken(claims);
+            var userToken = await _userTokenRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == user.Id);
+            var refreshToken = _userTokenService.GenerateRefreshToken();
+
+            if (userToken == null)
+            {
+                userToken = new UserToken()
+                {
+                    UserId = user.Id,
+                    RefreshToken = refreshToken,
+                    RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7)
+                };
+
+                await _userTokenRepository.CreateAsync(userToken);
+            }
+            else
+            {
+                userToken.RefreshToken = refreshToken;
+                userToken.RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7);
+
+                _userTokenRepository.Update(userToken);
+
+                await _userTokenRepository.SaveChangesAsync();
+            }
+
+            return new BaseResult<TokenDto>()
+            {
+                Data = new TokenDto()
+                {
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                }
+            };
         }
 
         public async Task<BaseResult<UserDto>> Register(RegisterUserDto dto)
@@ -127,74 +115,62 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            try
+            var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == dto.Login);
+            if (user != null)
             {
-                var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == dto.Login);
-                if (user != null)
+                return new BaseResult<UserDto>()
                 {
-                    return new BaseResult<UserDto>()
+                    ErrorMessage = ErrorMessage.UserAlreadyExist,
+                    ErrorCode = (int)ErrorCodes.UserAlreadyExist,
+                };
+            }
+            var hashUserPassword = HashPassword(dto.Password);
+
+            using (var transaction = await _unitOfWork.BeginTransactionAsync())
+            {
+                try
+                {
+                    user = new User()
                     {
-                        ErrorMessage = ErrorMessage.UserAlreadyExist,
-                        ErrorCode = (int)ErrorCodes.UserAlreadyExist,
+                        Login = dto.Login,
+                        Password = hashUserPassword,
                     };
-                }
-                var hashUserPassword = HashPassword(dto.Password);
+                    await _unitOfWork.Users.CreateAsync(user);
 
-                using (var transaction = await _unitOfWork.BeginTransactionAsync())
-                {
-                    try
+                    await _unitOfWork.SaveChangesAsync();
+
+                    var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == nameof(Roles.User));
+                    if (role == null)
                     {
-                        user = new User()
+                        return new BaseResult<UserDto>()
                         {
-                            Login = dto.Login,
-                            Password = hashUserPassword,
+                            ErrorCode = (int)ErrorCodes.RoleNotFound,
+                            ErrorMessage = ErrorMessage.RoleNotFound,
                         };
-                        await _unitOfWork.Users.CreateAsync(user);
-
-                        await _unitOfWork.SaveChangesAsync();
-
-                        var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == nameof(Roles.User));
-                        if (role == null)
-                        {
-                            return new BaseResult<UserDto>()
-                            {
-                                ErrorCode = (int)ErrorCodes.RoleNotFound,
-                                ErrorMessage = ErrorMessage.RoleNotFound,
-                            };
-                        }
-
-                        UserRole userRole = new UserRole()
-                        {
-                            UserId = user.Id,
-                            RoleId = role.Id
-                        };
-
-                        await _unitOfWork.UserRoles.CreateAsync(userRole);
-
-                        await _unitOfWork.SaveChangesAsync();
-
-                        await transaction.CommitAsync();
                     }
-                    catch (Exception)
+
+                    UserRole userRole = new UserRole()
                     {
-                        await transaction.RollbackAsync();
-                    }
-                }
+                        UserId = user.Id,
+                        RoleId = role.Id
+                    };
 
-                return new BaseResult<UserDto>()
+                    await _unitOfWork.UserRoles.CreateAsync(userRole);
+
+                    await _unitOfWork.SaveChangesAsync();
+
+                    await transaction.CommitAsync();
+                }
+                catch (Exception)
                 {
-                    Data = _mapper.Map<UserDto>(user),
-                };
+                    await transaction.RollbackAsync();
+                }
             }
-            catch (Exception ex)
+
+            return new BaseResult<UserDto>()
             {
-                _logger.Error(ex, ex.Message);
-                return new BaseResult<UserDto>()
-                {
-                    ErrorMessage = ErrorMessage.InternalServerError,
-                    ErrorCode = (int)ErrorCodes.InternalServerError
-                };
-            }
+                Data = _mapper.Map<UserDto>(user),
+            };
         }
 
         private string HashPassword(string password)
