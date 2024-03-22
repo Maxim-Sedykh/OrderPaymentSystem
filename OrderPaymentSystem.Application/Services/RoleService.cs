@@ -1,8 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.Domain.Dto.Auth;
-using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
@@ -12,12 +11,8 @@ using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validations;
 using OrderPaymentSystem.Domain.Result;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
+using OrderPaymentSystem.Domain.Settings;
+using OrderPaymentSystem.Producer.Interfaces;
 
 namespace OrderPaymentSystem.Application.Services
 {
@@ -28,10 +23,13 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<User> _userRepository;
         private readonly IBaseRepository<UserRole> _userRoleRepository;
         private readonly IRoleValidator _roleValidator;
+        private readonly IMessageProducer _messageProducer;
+        private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly IMapper _mapper;
 
         public RoleService(IBaseRepository<Role> roleRepository, IBaseRepository<User> userRepository,
-            IRoleValidator roleValidator, IBaseRepository<UserRole> userRoleRepository, IMapper mapper, IUnitOfWork unitOfWork)
+            IRoleValidator roleValidator, IBaseRepository<UserRole> userRoleRepository, IMapper mapper, IUnitOfWork unitOfWork,
+            IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions)
         {
             _roleRepository = roleRepository;
             _userRepository = userRepository;
@@ -39,6 +37,8 @@ namespace OrderPaymentSystem.Application.Services
             _userRoleRepository = userRoleRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
+            _messageProducer = messageProducer;
+            _rabbitMqOptions = rabbitMqOptions;
         }
 
         public async Task<BaseResult<UserRoleDto>> AddRoleForUserAsync(UserRoleDto dto)
@@ -78,6 +78,8 @@ namespace OrderPaymentSystem.Application.Services
                 await _userRoleRepository.CreateAsync(userRole);
                 await _userRoleRepository.SaveChangesAsync();
 
+                _messageProducer.SendMessage(userRole, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+
                 return new BaseResult<UserRoleDto>()
                 {
                     Data = new UserRoleDto(user.Login, role.Name)
@@ -112,6 +114,8 @@ namespace OrderPaymentSystem.Application.Services
             await _roleRepository.CreateAsync(role);
             await _roleRepository.SaveChangesAsync();
 
+            _messageProducer.SendMessage(role, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+
             return new BaseResult<RoleDto>
             {
                 Data = _mapper.Map<RoleDto>(role),
@@ -133,6 +137,8 @@ namespace OrderPaymentSystem.Application.Services
 
             _roleRepository.Remove(role);
             await _roleRepository.SaveChangesAsync();
+
+            _messageProducer.SendMessage(role, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<RoleDto>()
             {
@@ -157,6 +163,8 @@ namespace OrderPaymentSystem.Application.Services
 
             var updatedRole = _roleRepository.Update(role);
             await _roleRepository.SaveChangesAsync();
+
+            _messageProducer.SendMessage(role, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<RoleDto>()
             {
@@ -195,6 +203,8 @@ namespace OrderPaymentSystem.Application.Services
                 .FirstOrDefaultAsync(x => x.UserId == user.Id);
             _userRoleRepository.Remove(userRole);
             await _userRoleRepository.SaveChangesAsync();
+
+            _messageProducer.SendMessage(userRole, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<UserRoleDto>()
             {

@@ -8,6 +8,7 @@ using System.Text;
 
 namespace OrderPaymentSystem.Api
 {
+    
     public static class Startup
     {
         /// <summary>

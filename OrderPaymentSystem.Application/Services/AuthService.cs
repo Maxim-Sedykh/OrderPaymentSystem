@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto;
 using OrderPaymentSystem.Domain.Dto.Auth;
@@ -9,14 +10,11 @@ using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
-using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using OrderPaymentSystem.Domain.Settings;
+using OrderPaymentSystem.Producer.Interfaces;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Application.Services
 {
@@ -27,14 +25,13 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<UserToken> _userTokenRepository;
         private readonly IBaseRepository<Role> _roleRepository;
         private readonly IUserTokenService _userTokenService;
-        private readonly ILogger _logger;
         private readonly IMapper _mapper;
 
-        public AuthService(IBaseRepository<User> userRepository, ILogger logger, IMapper mapper, IUserTokenService userTokenService,
-            IBaseRepository<UserToken> userTokenRepository, IBaseRepository<Role> roleRepository, IUnitOfWork unitOfWork)
+        public AuthService(IBaseRepository<User> userRepository, IMapper mapper, IUserTokenService userTokenService,
+            IBaseRepository<UserToken> userTokenRepository, IBaseRepository<Role> roleRepository, IUnitOfWork unitOfWork,
+            IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions)
         {
             _userRepository = userRepository;
-            _logger = logger;
             _mapper = mapper;
             _userTokenService = userTokenService;
             _userTokenRepository = userTokenRepository;

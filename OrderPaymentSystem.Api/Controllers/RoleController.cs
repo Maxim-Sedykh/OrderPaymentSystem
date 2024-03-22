@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using OrderPaymentSystem.Application.Services;
-using OrderPaymentSystem.Domain.Dto.Product;
+﻿using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;

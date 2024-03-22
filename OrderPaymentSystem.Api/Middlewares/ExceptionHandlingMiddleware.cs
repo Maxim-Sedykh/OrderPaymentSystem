@@ -1,5 +1,4 @@
-﻿using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Result;
+﻿using OrderPaymentSystem.Domain.Result;
 using System.Net;
 using ILogger = Serilog.ILogger;
 

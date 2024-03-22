@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.DAL;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
@@ -14,8 +9,9 @@ using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validations;
 using OrderPaymentSystem.Domain.Result;
+using OrderPaymentSystem.Domain.Settings;
+using OrderPaymentSystem.Producer.Interfaces;
 using Serilog;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace OrderPaymentSystem.Application.Services
@@ -25,90 +21,73 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<Product> _productRepository;
         private readonly IMapper _mapper;
         private readonly IProductValidator _productValidator;
-        private readonly ILogger _logger;
+        private readonly IMessageProducer _messageProducer;
+        private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
 
         public ProductService(IBaseRepository<Product> productRepository,
-            IMapper mapper, IProductValidator productValidator, ILogger logger)
+            IMapper mapper, IProductValidator productValidator, ILogger logger,
+            IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions)
         {
             _productRepository = productRepository;
             _mapper = mapper;
             _productValidator = productValidator;
-            _logger = logger;
+            _messageProducer = messageProducer;
+            _rabbitMqOptions = rabbitMqOptions;
         }
 
 
         /// <inheritdoc/>
         public async Task<BaseResult<ProductDto>> CreateProductAsync(CreateProductDto dto)
         {
-            try
+            var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.ProductName == dto.ProductName);
+
+            var result = _productValidator.CreateProductValidator(product);
+            if (!result.IsSuccess)
             {
-                var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.ProductName == dto.ProductName);
-
-                var result = _productValidator.CreateProductValidator(product);
-                if (!result.IsSuccess)
-                {
-                    return new BaseResult<ProductDto>()
-                    {
-                        ErrorMessage = result.ErrorMessage,
-                        ErrorCode = result.ErrorCode
-                    };
-                }
-
-                product = _mapper.Map<Product>(dto);
-
-                await _productRepository.CreateAsync(product);
-                await _productRepository.SaveChangesAsync();
-
                 return new BaseResult<ProductDto>()
                 {
-                    Data = _mapper.Map<ProductDto>(product),
+                    ErrorMessage = result.ErrorMessage,
+                    ErrorCode = result.ErrorCode
                 };
             }
-            catch (Exception ex)
+
+            product = _mapper.Map<Product>(dto);
+
+            await _productRepository.CreateAsync(product);
+            await _productRepository.SaveChangesAsync();
+
+            _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+
+            return new BaseResult<ProductDto>()
             {
-                _logger.Error(ex, ex.Message);
-                return new BaseResult<ProductDto>()
-                {
-                    ErrorMessage = ErrorMessage.InternalServerError,
-                    ErrorCode = (int)ErrorCodes.InternalServerError
-                };
-            }
+                Data = _mapper.Map<ProductDto>(product),
+            };
         }
 
         /// <inheritdoc/>
         public async Task<BaseResult<ProductDto>> DeleteProductAsync(int id)
         {
-            try
+            var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            var result = _productValidator.ValidateOnNull(product);
+
+            if (!result.IsSuccess)
             {
-                var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
-                var result = _productValidator.ValidateOnNull(product);
-
-                if (!result.IsSuccess)
-                {
-                    return new BaseResult<ProductDto>()
-                    {
-                        ErrorMessage = result.ErrorMessage,
-                        ErrorCode = result.ErrorCode
-                    };
-                }
-
-                _productRepository.Remove(product);
-                await _productRepository.SaveChangesAsync();
-
                 return new BaseResult<ProductDto>()
                 {
-                    Data = _mapper.Map<ProductDto>(product),
+                    ErrorMessage = result.ErrorMessage,
+                    ErrorCode = result.ErrorCode
                 };
             }
-            catch (Exception ex)
+
+            _productRepository.Remove(product);
+            await _productRepository.SaveChangesAsync();
+
+            _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+
+            return new BaseResult<ProductDto>()
             {
-                _logger.Error(ex, ex.Message);
-                return new BaseResult<ProductDto>()
-                {
-                    ErrorMessage = ErrorMessage.InternalServerError,
-                    ErrorCode = (int)ErrorCodes.InternalServerError
-                };
-            }
+                Data = _mapper.Map<ProductDto>(product),
+            };
         }
 
         /// <inheritdoc/>
@@ -122,13 +101,14 @@ namespace OrderPaymentSystem.Application.Services
 
             if (product == null)
             {
-                _logger.Warning($"Продукт с {id} не найден", id);
                 return Task.FromResult(new BaseResult<ProductDto>()
                 {
                     ErrorMessage = ErrorMessage.ProductNotFound,
                     ErrorCode = (int)ErrorCodes.ProductNotFound
                 });
             }
+
+            _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return Task.FromResult(new BaseResult<ProductDto>()
             {
@@ -140,31 +120,21 @@ namespace OrderPaymentSystem.Application.Services
         public async Task<CollectionResult<ProductDto>> GetProductsAsync()
         {
             ProductDto[] products;
-            try
-            {
-                products = await _productRepository.GetAll()
-                    .Select(x => new ProductDto(x.Id, x.ProductName, x.Description, x.Cost, x.CreatedAt.ToLongDateString()))
-                    .ToArrayAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, ex.Message);
-                return new CollectionResult<ProductDto>()
-                {
-                    ErrorMessage = ErrorMessage.InternalServerError,
-                    ErrorCode = (int)ErrorCodes.InternalServerError
-                };
-            }
+
+            products = await _productRepository.GetAll()
+                .Select(x => new ProductDto(x.Id, x.ProductName, x.Description, x.Cost, x.CreatedAt.ToLongDateString()))
+                .ToArrayAsync();
 
             if (!products.Any())
             {
-                _logger.Warning(ErrorMessage.ProductsNotFound, products.Length);
                 return new CollectionResult<ProductDto>()
                 {
                     ErrorMessage = ErrorMessage.ProductsNotFound,
                     ErrorCode = (int)ErrorCodes.ProductsNotFound
                 };
             }
+
+            _messageProducer.SendMessage(products, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new CollectionResult<ProductDto>()
             {
@@ -176,40 +146,30 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<BaseResult<ProductDto>> UpdateProductAsync(UpdateProductDto dto)
         {
-            try
+            var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.Id);
+            var result = _productValidator.ValidateOnNull(product);
+
+            if (!result.IsSuccess)
             {
-                var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.Id);
-                var result = _productValidator.ValidateOnNull(product);
-
-                if (!result.IsSuccess)
-                {
-                    return new BaseResult<ProductDto>()
-                    {
-                        ErrorMessage = result.ErrorMessage,
-                        ErrorCode = result.ErrorCode
-                    };
-                }
-                product.ProductName = dto.ProductName;//Проверить работает ли здесь мапинг
-                product.Description = dto.Description;
-                product.Cost = dto.Cost;
-
-                var updatedProduct = _productRepository.Update(product);
-                await _productRepository.SaveChangesAsync();
-
                 return new BaseResult<ProductDto>()
                 {
-                    Data = _mapper.Map<ProductDto>(updatedProduct),
+                    ErrorMessage = result.ErrorMessage,
+                    ErrorCode = result.ErrorCode
                 };
             }
-            catch (Exception ex)
+            product.ProductName = dto.ProductName;
+            product.Description = dto.Description;
+            product.Cost = dto.Cost;
+
+            var updatedProduct = _productRepository.Update(product);
+            await _productRepository.SaveChangesAsync();
+
+            _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+
+            return new BaseResult<ProductDto>()
             {
-                _logger.Error(ex, ex.Message);
-                return new BaseResult<ProductDto>()
-                {
-                    ErrorMessage = ErrorMessage.InternalServerError,
-                    ErrorCode = (int)ErrorCodes.InternalServerError
-                };
-            }
+                Data = _mapper.Map<ProductDto>(updatedProduct),
+            };
         }
     }
 }
