@@ -16,6 +16,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddAuthenticationAndAuthorization(builder);
 builder.Services.AddSwagger();
+builder.Services.AddHttpContextAccessor();
 
 builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
 

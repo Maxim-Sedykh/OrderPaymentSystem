@@ -12,8 +12,6 @@ namespace OrderPaymentSystem.Domain.Entity
     {
         public long Id { get; set; }
 
-        public long NumberOfOrder { get; set; }
-
         public long UserId { get; set; }
 
         public User User { get; set; }
@@ -22,9 +20,11 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public Product Product { get; set; }
 
-        public Payment Payment { get; set; }
+        public long BasketId { get; set; }
 
-        public decimal OrderPrice { get; set; }
+        public Basket Basket { get; set; }
+
+        public int ProductCount { get; set; }
 
         public OrderStatus OrderStatus { get; set; }
 

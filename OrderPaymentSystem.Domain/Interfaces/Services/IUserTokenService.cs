@@ -1,4 +1,4 @@
-﻿using OrderPaymentSystem.Domain.Dto;
+﻿using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Result;
 using System;
 using System.Collections.Generic;

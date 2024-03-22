@@ -20,6 +20,7 @@ namespace OrderPaymentSystem.DAL.Configurations
                 Description = "Очень красивая мозаика",
                 Cost = 1500,
                 CreatedAt = DateTime.UtcNow,
+                CreatedBy = 1
             },
             new Product
             {
@@ -28,6 +29,7 @@ namespace OrderPaymentSystem.DAL.Configurations
                 Description = "Красивый ночник в виде панды",
                 Cost = 600,
                 CreatedAt = DateTime.UtcNow,
+                CreatedBy = 1
             });
 
             builder.Property(x => x.Id).ValueGeneratedOnAdd();

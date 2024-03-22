@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.Domain.Dto;
+using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;

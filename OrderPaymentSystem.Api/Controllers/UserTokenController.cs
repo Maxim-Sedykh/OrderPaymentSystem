@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using OrderPaymentSystem.Domain.Dto;
+using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 

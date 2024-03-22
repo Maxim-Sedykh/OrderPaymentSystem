@@ -10,7 +10,7 @@ namespace OrderPaymentSystem.Api.Controllers
     /// <summary>
     /// Контроллер для работы с товарами
     /// </summary>
-    [Authorize]
+    //[Authorize]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]

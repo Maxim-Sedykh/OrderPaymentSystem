@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,15 +20,17 @@ namespace OrderPaymentSystem.DAL.Configurations
             {
                 Id = 1,
                 Login = "Maximlog",
-                Password = "1234567",
+                Password = HashPasswordHelper.HashPassword("1234567"),
                 CreatedAt = DateTime.UtcNow,
+                CreatedBy = 1,
             },
             new User
             {
                 Id = 2,
                 Login = "SomeNewLogin",
-                Password = "25252525",
+                Password = HashPasswordHelper.HashPassword("25252525"),
                 CreatedAt = DateTime.UtcNow,
+                CreatedBy = 1,
             });
 
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
@@ -50,7 +53,6 @@ namespace OrderPaymentSystem.DAL.Configurations
                     l => l.HasOne<Role>().WithMany().HasForeignKey(x => x.RoleId),
                     l => l.HasOne<User>().WithMany().HasForeignKey(x => x.UserId)
                 );
-
         }
     }
 }

@@ -30,7 +30,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <remarks>
-        /// Request for create role
+        /// Request for create role:
         /// 
         ///     POST
         ///     {
@@ -58,7 +58,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <remarks>
-        /// Sample request:
+        /// Request for update role:
         /// 
         ///     PUT
         ///     {
@@ -87,11 +87,11 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <remarks>
-        /// Sample request:
+        /// Request for delete role:
         /// 
         ///     DELETE
         ///     {
-        ///         "id": 1
+        ///         "id": 3
         ///     }
         ///     
         /// </remarks>
@@ -149,7 +149,7 @@ namespace OrderPaymentSystem.Api.Controllers
         ///     POST
         ///     {
         ///         "login": "User first",
-        ///         "roleName": "Admin",
+        ///         "roleId": 1,
         ///     }
         ///     
         /// </remarks>
@@ -173,7 +173,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <remarks>
-        /// Request for delete role for user
+        /// Request for update role for user
         /// 
         ///     POST
         ///     {

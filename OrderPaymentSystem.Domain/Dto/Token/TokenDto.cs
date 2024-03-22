@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.Domain.Dto
+namespace OrderPaymentSystem.Domain.Dto.Token
 {
     public class TokenDto
     {

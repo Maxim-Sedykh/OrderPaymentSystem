@@ -3,15 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.DAL.Interceptors;
 using OrderPaymentSystem.DAL.Repositories;
-using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 
 namespace OrderPaymentSystem.DAL.DependencyInjection
 {
@@ -26,7 +21,7 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
         {
             var connectionString = configuration.GetConnectionString("PostgresSQL");
 
-            services.AddSingleton<DateInterceptor>();
+            services.AddSingleton<AuditInterceptor>();
             services.AddDbContext<ApplicationDbContext>(options => 
             { 
                 options.UseNpgsql(connectionString); 
@@ -46,7 +41,8 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
                 typeof(Product),
                 typeof(UserToken),
                 typeof(UserRole),
-                typeof(Role)
+                typeof(Role),
+                typeof(Basket)
             };
 
             foreach (var type in types)

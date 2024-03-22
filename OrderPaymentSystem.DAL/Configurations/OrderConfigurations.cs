@@ -14,11 +14,6 @@ namespace OrderPaymentSystem.DAL.Configurations
         public void Configure(EntityTypeBuilder<Order> builder)
         {
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
-
-            builder.HasOne(x => x.Payment)
-                    .WithOne(x => x.Order)
-                    .HasPrincipalKey<Order>(x => x.Id)
-                    .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

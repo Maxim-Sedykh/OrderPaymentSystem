@@ -2,10 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.Domain.Dto;
 using OrderPaymentSystem.Domain.Dto.Auth;
+using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Helpers;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
@@ -66,6 +67,7 @@ namespace OrderPaymentSystem.Application.Services
             var userRoles = user.Roles;
             var claims = userRoles.Select(x => new Claim(ClaimTypes.Role, x.Name)).ToList();
             claims.Add(new Claim(ClaimTypes.Name, user.Login));
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, Convert.ToString(user.Id)));
 
             var accessToken = _userTokenService.GenerateAccessToken(claims);
             var userToken = await _userTokenRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == user.Id);
@@ -123,7 +125,7 @@ namespace OrderPaymentSystem.Application.Services
                     ErrorCode = (int)ErrorCodes.UserAlreadyExist,
                 };
             }
-            var hashUserPassword = HashPassword(dto.Password);
+            var hashUserPassword = HashPasswordHelper.HashPassword(dto.Password);
 
             using (var transaction = await _unitOfWork.BeginTransactionAsync())
             {
@@ -137,6 +139,13 @@ namespace OrderPaymentSystem.Application.Services
                     await _unitOfWork.Users.CreateAsync(user);
 
                     await _unitOfWork.SaveChangesAsync();
+
+                    Basket userBasket = new Basket()
+                    {
+                        UserId = user.Id,
+                    };
+
+                    await _unitOfWork.Baskets.CreateAsync(userBasket);
 
                     var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == nameof(Roles.User));
                     if (role == null)
@@ -172,15 +181,9 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
-        private string HashPassword(string password)
-        {
-            var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(password));
-            return Convert.ToBase64String(bytes);
-        }
-
         private bool IsVerifyPassword(string userPasswordHash, string userPassword)
         {
-            var hash = HashPassword(userPassword);
+            var hash = HashPasswordHelper.HashPassword(userPassword);
             return userPasswordHash == hash;
         }
     }
