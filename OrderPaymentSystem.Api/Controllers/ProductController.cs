@@ -7,7 +7,10 @@ using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Api.Controllers
 {
-    //[Authorize]
+    /// <summary>
+    /// Контроллер для работы с товарами
+    /// </summary>
+    [Authorize]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]

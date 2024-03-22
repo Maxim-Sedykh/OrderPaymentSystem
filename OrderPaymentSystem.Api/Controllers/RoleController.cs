@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
@@ -8,6 +9,10 @@ using System.Net.Mime;
 
 namespace OrderPaymentSystem.Api.Controllers
 {
+    /// <summary>
+    /// Контроллер для работы с ролями пользователя
+    /// </summary>
+    [Authorize(Roles = "Admin")]
     [Consumes(MediaTypeNames.Application.Json)]
     [Route("api/[controller]")]
     [ApiController]

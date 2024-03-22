@@ -8,7 +8,9 @@ using System.Text;
 
 namespace OrderPaymentSystem.Api
 {
-    
+    /// <summary>
+    /// Класс для подключения сервисов
+    /// </summary>
     public static class Startup
     {
         /// <summary>
@@ -16,7 +18,7 @@ namespace OrderPaymentSystem.Api
         /// </summary>
         /// <param name="services"></param>
         public static void AddAuthenticationAndAuthorization(this IServiceCollection services, WebApplicationBuilder builder)
-        {
+        { 
             services.AddAuthorization();
             services.AddAuthentication(options =>
             {

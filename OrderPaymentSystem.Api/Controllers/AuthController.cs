@@ -5,6 +5,9 @@ using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Api.Controllers
 {
+    /// <summary>
+    /// Контроллер для работы с авторизацией
+    /// </summary>
     [ApiController]
     public class AuthController : ControllerBase
     {

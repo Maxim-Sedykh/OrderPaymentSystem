@@ -17,7 +17,11 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
 {
     public static class DependencyInjection
     {
-
+        /// <summary>
+        /// Внедрение зависимостей слоя DAL
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="configuration"></param>
         public static void AddDataAccessLayer(this IServiceCollection services, IConfiguration configuration)
         {
             var connectionString = configuration.GetConnectionString("PostgresSQL");

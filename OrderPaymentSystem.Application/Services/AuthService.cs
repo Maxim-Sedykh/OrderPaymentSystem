@@ -39,6 +39,7 @@ namespace OrderPaymentSystem.Application.Services
             _unitOfWork = unitOfWork;
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<TokenDto>> Login(LoginUserDto dto)
         {
             var user = await _userRepository.GetAll()
@@ -101,6 +102,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<UserDto>> Register(RegisterUserDto dto)
         {
             if (dto.Password != dto.PasswordConfirm)

@@ -17,6 +17,9 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Application.DependencyInjection
 {
+    /// <summary>
+    /// Внедрение зависимостей слоя Application
+    /// </summary>
     public static class DependencyInjection
     {
         public static void AddApplication(this IServiceCollection services)

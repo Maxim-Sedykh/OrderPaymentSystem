@@ -5,6 +5,9 @@ using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Api.Controllers
 {
+    /// <summary>
+    /// Контроллер для обновления токена пользователя
+    /// </summary>
     [Route("api/[controller]")]
     [ApiController]
     public class UserTokenController : Controller

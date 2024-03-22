@@ -41,6 +41,7 @@ namespace OrderPaymentSystem.Application.Services
             _rabbitMqOptions = rabbitMqOptions;
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<UserRoleDto>> AddRoleForUserAsync(UserRoleDto dto)
         {
             var user = await _userRepository.GetAll()
@@ -93,6 +94,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<RoleDto>> CreateRoleAsync(CreateRoleDto dto)
         {
             var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == dto.Name);
@@ -122,6 +124,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<RoleDto>> DeleteRoleAsync(long id)
         {
             var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
@@ -146,6 +149,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<RoleDto>> UpdateRoleAsync(RoleDto dto)
         {
             var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.Id);
@@ -172,6 +176,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<UserRoleDto>> DeleteRoleForUserAsync(DeleteUserRoleDto dto)
         {
             var user = await _userRepository.GetAll()
@@ -212,6 +217,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<UserRoleDto>> UpdateRoleForUserAsync(UpdateUserRoleDto dto)
         {
             var user = await _userRepository.GetAll()

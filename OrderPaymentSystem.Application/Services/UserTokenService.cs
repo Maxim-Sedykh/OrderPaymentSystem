@@ -30,6 +30,7 @@ namespace OrderPaymentSystem.Application.Services
             _userRepository = userRepository;
         }
 
+        /// <inheritdoc/>
         public string GenerateAccessToken(IEnumerable<Claim> claims)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
@@ -39,6 +40,7 @@ namespace OrderPaymentSystem.Application.Services
             return token;
         }
 
+        /// <inheritdoc/>
         public string GenerateRefreshToken()
         {
             var randomNumbers = new byte[32];
@@ -47,6 +49,7 @@ namespace OrderPaymentSystem.Application.Services
             return Convert.ToBase64String(randomNumbers);
         }
 
+        /// <inheritdoc/>
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken)
         {
             var tokenValidationParameters = new TokenValidationParameters()
@@ -70,6 +73,7 @@ namespace OrderPaymentSystem.Application.Services
             return claimsPrincipal;
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<TokenDto>> RefreshToken(TokenDto dto)
         {
             string accessToken = dto.AccessToken;
