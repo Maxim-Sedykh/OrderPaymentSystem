@@ -60,5 +60,15 @@ namespace OrderPaymentSystem.DAL.Repositories
 
             return entity;
         }
+
+        public void RemoveRange(IEnumerable<TEntity> entities)
+        {
+            if (entities == null)
+            {
+                throw new ArgumentException("Entities is null");
+            }
+
+            _dbContext.RemoveRange(entities);
+        }
     }
 }

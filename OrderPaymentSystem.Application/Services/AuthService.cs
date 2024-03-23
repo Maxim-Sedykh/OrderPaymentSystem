@@ -14,8 +14,6 @@ using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
 using OrderPaymentSystem.Producer.Interfaces;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace OrderPaymentSystem.Application.Services
 {

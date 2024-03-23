@@ -11,7 +11,6 @@ using OrderPaymentSystem.Domain.Interfaces.Validations;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
 using OrderPaymentSystem.Producer.Interfaces;
-using Serilog;
 
 
 namespace OrderPaymentSystem.Application.Services
@@ -25,8 +24,8 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
 
         public ProductService(IBaseRepository<Product> productRepository,
-            IMapper mapper, IProductValidator productValidator, ILogger logger,
-            IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions)
+            IMapper mapper, IProductValidator productValidator, IMessageProducer messageProducer,
+            IOptions<RabbitMqSettings> rabbitMqOptions)
         {
             _productRepository = productRepository;
             _mapper = mapper;
@@ -157,18 +156,29 @@ namespace OrderPaymentSystem.Application.Services
                     ErrorCode = result.ErrorCode
                 };
             }
-            product.ProductName = dto.ProductName;
-            product.Description = dto.Description;
-            product.Cost = dto.Cost;
 
-            var updatedProduct = _productRepository.Update(product);
-            await _productRepository.SaveChangesAsync();
+            if (product.ProductName != dto.ProductName && product.Description != dto.Description
+                && product.Cost != dto.Cost)
+            {
+                product.ProductName = dto.ProductName;
+                product.Description = dto.Description;
+                product.Cost = dto.Cost;
 
-            _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+                var updatedProduct = _productRepository.Update(product);
+                await _productRepository.SaveChangesAsync();
+
+                _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+
+                return new BaseResult<ProductDto>()
+                {
+                    Data = _mapper.Map<ProductDto>(updatedProduct),
+                };
+            }
 
             return new BaseResult<ProductDto>()
             {
-                Data = _mapper.Map<ProductDto>(updatedProduct),
+                ErrorMessage = ErrorMessage.NoChangesFound,
+                ErrorCode = (int)ErrorCodes.NoChangesFound
             };
         }
     }

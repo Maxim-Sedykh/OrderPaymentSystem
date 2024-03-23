@@ -10,9 +10,9 @@ namespace OrderPaymentSystem.Domain.Dto.Order
     public record OrderDto(
             long Id,
             long UserId,
+            long BasketId,
             long ProductId,
             int ProductCount,
-            OrderStatus OrderStatus,
-            DateTime CreatedAt
+            string CreatedAt
         );
 }

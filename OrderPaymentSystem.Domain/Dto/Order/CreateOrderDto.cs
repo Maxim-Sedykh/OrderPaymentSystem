@@ -13,7 +13,8 @@ namespace OrderPaymentSystem.Domain.Dto.Order
     /// <param name="ProductCount"></param>
     public record CreateOrderDto
     (
-        string ProductId,
+        long UserId,
+        int ProductId,
         int ProductCount
     );
 }

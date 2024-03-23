@@ -47,6 +47,11 @@ namespace OrderPaymentSystem.DAL.Configurations
                     .HasPrincipalKey<User>(x => x.Id)
                     .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasOne(x => x.Basket)
+                    .WithOne(x => x.User)
+                    .HasPrincipalKey<User>(x => x.Id)
+                    .OnDelete(DeleteBehavior.Cascade);
+
             builder.HasMany(x => x.Roles)
                 .WithMany(x => x.Users)
                 .UsingEntity<UserRole>(

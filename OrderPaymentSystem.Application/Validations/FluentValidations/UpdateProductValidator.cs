@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations
 {
-    public class UpdateProductValidator : AbstractValidator<ProductDto>
+    public class UpdateProductValidator : AbstractValidator<UpdateProductDto>
     {
         public UpdateProductValidator()
         {

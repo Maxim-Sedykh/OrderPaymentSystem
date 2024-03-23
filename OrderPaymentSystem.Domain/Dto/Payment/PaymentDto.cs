@@ -12,7 +12,8 @@ namespace OrderPaymentSystem.Domain.Dto.Payment
             long Id,
             long BasketId,
             decimal AmountOfPayment,
+            decimal CashChange,
             PaymentMethod PaymentMethod,
-            DateTime CreatedAt
+            string CreatedAt
         );
 }

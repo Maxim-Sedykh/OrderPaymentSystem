@@ -38,7 +38,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если товар был получен</response>
         /// <response code="400">Если товар не был получен</response>
-        [HttpGet("{id}")]
+        [HttpGet("product/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> GetProduct(int id)
@@ -87,7 +87,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если товар удалился</response>
         /// <response code="400">Если товар не был удалён</response>
-        [HttpDelete("{id}")]
+        [HttpDelete("delete-product/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> DeleteProduct(int id)
@@ -117,7 +117,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если товар создался</response>
         /// <response code="400">Если товар не был создан</response>
-        [HttpPost]
+        [HttpPost("create-product")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> CreateProduct([FromBody] CreateProductDto dto)
@@ -148,7 +148,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если товар обновился</response>
         /// <response code="400">Если товар не был обновлён</response>
-        [HttpPut]
+        [HttpPut("update-product")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> UpdateProduct([FromBody] UpdateProductDto dto)

@@ -24,9 +24,9 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public Basket Basket { get; set; }
 
-        public int ProductCount { get; set; }
+        public decimal OrderCost { get; set; }
 
-        public OrderStatus OrderStatus { get; set; }
+        public int ProductCount { get; set; }
 
         public DateTime CreatedAt { get; set; }
 

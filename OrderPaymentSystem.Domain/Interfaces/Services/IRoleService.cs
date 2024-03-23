@@ -17,6 +17,12 @@ namespace OrderPaymentSystem.Domain.Interfaces.Services
     public interface IRoleService
     {
         /// <summary>
+        /// Получение всех ролей
+        /// </summary>
+        /// <returns></returns>
+        Task<CollectionResult<RoleDto>> GetAllRoles();
+
+        /// <summary>
         /// Добавление роли
         /// </summary>
         /// <param name="dto"></param>

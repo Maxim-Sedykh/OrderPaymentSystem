@@ -9,32 +9,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.Application.Validations
+namespace OrderPaymentSystem.Application.Validations.EntityValidators
 {
-    public class ProductValidator : IProductValidator
+    public class UserValidator : IUserValidator
     {
-        public BaseResult CreateProductValidator(Product product)
+        public BaseResult CreateUserValidate(User user)
         {
-            if (product != null)
+            if (user != null)
             {
                 return new BaseResult()
                 {
-                    ErrorMessage = ErrorMessage.ProductAlreadyExist,
-                    ErrorCode = (int)ErrorCodes.ProductAlreadyExist
+                    ErrorMessage = ErrorMessage.UserAlreadyExist,
+                    ErrorCode = (int)ErrorCodes.UserAlreadyExist
                 };
             }
 
             return new BaseResult();
         }
 
-        public BaseResult ValidateOnNull(Product model)
+        public BaseResult ValidateOnNull(User user)
         {
-            if (model == null)
+            if (user == null)
             {
                 return new BaseResult()
                 {
-                    ErrorMessage = ErrorMessage.ProductNotFound,
-                    ErrorCode = (int)ErrorCodes.ProductNotFound
+                    ErrorMessage = ErrorMessage.UserNotFound,
+                    ErrorCode = (int)ErrorCodes.UserNotFound
                 };
             }
             return new BaseResult();

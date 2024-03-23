@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BasketNotFound" xml:space="preserve">
+    <value>User basket not found</value>
+  </data>
   <data name="InternalServerError" xml:space="preserve">
     <value>Internal server error</value>
   </data>
@@ -126,11 +129,29 @@
   <data name="InvalidToken" xml:space="preserve">
     <value>invalid token</value>
   </data>
+  <data name="NoChangesFound" xml:space="preserve">
+    <value>No changes found</value>
+  </data>
+  <data name="NotEnoughPayFunds" xml:space="preserve">
+    <value>There are not enough funds to pay</value>
+  </data>
+  <data name="OrderNotFound" xml:space="preserve">
+    <value>Order is not found</value>
+  </data>
+  <data name="OrdersNotFound" xml:space="preserve">
+    <value>Orders is not found</value>
+  </data>
   <data name="PasswordIsWrong" xml:space="preserve">
     <value>Password is wrong</value>
   </data>
   <data name="PasswordNotEqualsPasswordConfirm" xml:space="preserve">
     <value>Password not equals password confirm</value>
+  </data>
+  <data name="PaymentNotFound" xml:space="preserve">
+    <value>Payment is not found</value>
+  </data>
+  <data name="PaymentsNotFound" xml:space="preserve">
+    <value>Payments is not found</value>
   </data>
   <data name="ProductAlreadyExist" xml:space="preserve">
     <value>Product already exist</value>
@@ -147,6 +168,9 @@
   <data name="RoleNotFound" xml:space="preserve">
     <value>Role is not found</value>
   </data>
+  <data name="RolesNotFound" xml:space="preserve">
+    <value>Roles is not found</value>
+  </data>
   <data name="UserAlreadyExist" xml:space="preserve">
     <value>User already exist</value>
   </data>
@@ -155,5 +179,8 @@
   </data>
   <data name="UserNotFound" xml:space="preserve">
     <value>User is not found</value>
+  </data>
+  <data name="UserRolesNotFound" xml:space="preserve">
+    <value>User roles is nof found</value>
   </data>
 </root>

@@ -61,6 +61,15 @@ namespace OrderPaymentSystem.Application.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Корзина пользователя не найдена.
+        /// </summary>
+        internal static string BasketNotFound {
+            get {
+                return ResourceManager.GetString("BasketNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Внутренняя ошибка сервера.
         /// </summary>
         internal static string InternalServerError {
@@ -88,6 +97,42 @@ namespace OrderPaymentSystem.Application.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Изменений не найдено.
+        /// </summary>
+        internal static string NoChangesFound {
+            get {
+                return ResourceManager.GetString("NoChangesFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Не хватает средств для оплаты.
+        /// </summary>
+        internal static string NotEnoughPayFunds {
+            get {
+                return ResourceManager.GetString("NotEnoughPayFunds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Заказ не найден.
+        /// </summary>
+        internal static string OrderNotFound {
+            get {
+                return ResourceManager.GetString("OrderNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Заказы не найдены.
+        /// </summary>
+        internal static string OrdersNotFound {
+            get {
+                return ResourceManager.GetString("OrdersNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Неверный пароль.
         /// </summary>
         internal static string PasswordIsWrong {
@@ -102,6 +147,24 @@ namespace OrderPaymentSystem.Application.Resources {
         internal static string PasswordNotEqualsPasswordConfirm {
             get {
                 return ResourceManager.GetString("PasswordNotEqualsPasswordConfirm", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Платёж не найден.
+        /// </summary>
+        internal static string PaymentNotFound {
+            get {
+                return ResourceManager.GetString("PaymentNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Платежи не найдены.
+        /// </summary>
+        internal static string PaymentsNotFound {
+            get {
+                return ResourceManager.GetString("PaymentsNotFound", resourceCulture);
             }
         }
         
@@ -151,6 +214,15 @@ namespace OrderPaymentSystem.Application.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Роли не найдены.
+        /// </summary>
+        internal static string RolesNotFound {
+            get {
+                return ResourceManager.GetString("RolesNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Пользователь уже существует.
         /// </summary>
         internal static string UserAlreadyExist {
@@ -174,6 +246,15 @@ namespace OrderPaymentSystem.Application.Resources {
         internal static string UserNotFound {
             get {
                 return ResourceManager.GetString("UserNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Роли пользователей.
+        /// </summary>
+        internal static string UserRolesNotFound {
+            get {
+                return ResourceManager.GetString("UserRolesNotFound", resourceCulture);
             }
         }
     }

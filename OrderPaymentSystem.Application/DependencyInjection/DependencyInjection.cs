@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.Application.Mapping;
 using OrderPaymentSystem.Application.Services;
-using OrderPaymentSystem.Application.Validations;
+using OrderPaymentSystem.Application.Validations.EntityValidators;
 using OrderPaymentSystem.Application.Validations.FluentValidations;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
@@ -30,7 +30,8 @@ namespace OrderPaymentSystem.Application.DependencyInjection
 
             InitServices(services);
 
-            InitValidators(services);
+            InitFluentValidators(services);
+            InitEntityValidators(services);
         }
 
         private static void InitServices(this IServiceCollection services)
@@ -39,14 +40,25 @@ namespace OrderPaymentSystem.Application.DependencyInjection
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IUserTokenService, UserTokenService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IOrderService, OrderService>();
+            services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IBasketService, BasketService>();
         }
 
-        private static void InitValidators(this IServiceCollection services)
+        private static void InitFluentValidators(this IServiceCollection services)
         {
-            services.AddScoped<IProductValidator, ProductValidator>();
-            services.AddScoped<IRoleValidator, RoleValidator>();
             services.AddScoped<IValidator<CreateProductDto>, CreateProductValidator>();
-            services.AddScoped<IValidator<ProductDto>, UpdateProductValidator>();
+            services.AddScoped<IValidator<UpdateProductDto>, UpdateProductValidator>();
+        }
+
+        private static void InitEntityValidators(this IServiceCollection services)
+        {
+            services.AddScoped<IUserValidator, UserValidator>();
+            services.AddScoped<IRoleValidator, RoleValidator>();
+            services.AddScoped<IBaseValidator<Order>, OrderValidator>();
+            services.AddScoped<IBaseValidator<Basket>, BasketValidator>();
+            services.AddScoped<IPaymentValidator, PaymentValidator>();
+            services.AddScoped<IProductValidator, ProductValidator>();
         }
     }
 }

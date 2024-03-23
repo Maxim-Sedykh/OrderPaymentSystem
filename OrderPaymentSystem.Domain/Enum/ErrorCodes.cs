@@ -22,6 +22,19 @@ namespace OrderPaymentSystem.Domain.Enum
 
         RoleNotFound = 51,
         RoleAlreadyExist = 52,
+        UserRolesNotFound = 53,
+        RolesNotFound = 54,
+
+        OrderNotFound = 61,
+        OrdersNotFound = 62,
+
+        BasketNotFound = 71,
+
+        PaymentNotFound = 81,
+        PaymentsNotFound = 82,
+        NotEnoughPayFunds = 83,
+
+        NoChangesFound = 411,
 
         InternalServerError = 500
     }

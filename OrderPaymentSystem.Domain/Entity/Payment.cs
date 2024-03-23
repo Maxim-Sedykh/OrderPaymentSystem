@@ -16,7 +16,11 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public Basket Basket { get; set; }
 
+        public decimal CostOfOrders { get; set; }
+
         public decimal AmountOfPayment { get; set; }
+
+        public decimal CashChange { get; set; }
 
         public PaymentMethod PaymentMethod { get; set; }
 

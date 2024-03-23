@@ -286,5 +286,25 @@ namespace OrderPaymentSystem.Application.Services
                 Data = new UserRoleDto(user.Login, newRoleForUser.Name)
             };
         }
+
+        public async Task<CollectionResult<RoleDto>> GetAllRoles()
+        {
+            var roles = await _roleRepository.GetAll().Select(x => new RoleDto(x.Id, x.Name)).ToArrayAsync();
+
+            if (roles.Length == 0)
+            {
+                return new CollectionResult<RoleDto>()
+                {
+                    ErrorMessage = ErrorMessage.RolesNotFound,
+                    ErrorCode = (int)ErrorCodes.RolesNotFound
+                };
+            }
+
+            return new CollectionResult<RoleDto>()
+            {
+                Count = roles.Length,
+                Data = roles
+            };
+        }
     }
 }

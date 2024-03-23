@@ -8,7 +8,7 @@ namespace OrderPaymentSystem.Domain.Dto.Order
 {
     public record UpdateOrderDto(
             long Id,
-            string ProductId,
+            int ProductId,
             int ProductCount
         );
 }

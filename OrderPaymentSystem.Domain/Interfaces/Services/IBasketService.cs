@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Dto.Order;
+﻿using OrderPaymentSystem.Domain.Dto.Basket;
+using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Result;
 using System;
@@ -18,12 +19,18 @@ namespace OrderPaymentSystem.Domain.Interfaces.Services
         /// Добавление заказа в корзину пользователя
         /// </summary>
         /// <returns></returns>
-        Task<CollectionResult<OrderDto>> GetUserBasketOrdersAsync();
+        Task<CollectionResult<OrderDto>> GetBasketOrdersAsync(long basketId);
 
         /// <summary>
         /// Получение всех заказов из корзины пользователя
         /// </summary>
         /// <returns></returns>
-        Task<CollectionResult<OrderDto>> ClearUserBasketAsync();
+        Task<CollectionResult<OrderDto>> ClearBasketAsync(long basketId);
+
+        /// <summary>
+        /// Получение информации о корзине пользователя
+        /// </summary>
+        /// <returns></returns>
+        Task<BaseResult<BasketDto>> GetBasketByIdAsync(long basketId);
     }
 }

@@ -9,32 +9,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.Application.Validations
+namespace OrderPaymentSystem.Application.Validations.EntityValidators
 {
-    public class RoleValidator : IRoleValidator
+    public class PaymentValidator : IPaymentValidator
     {
-        public BaseResult CreateRoleValidator(Role role)
+        public BaseResult PaymentAmountVlidator(decimal costOfBasketOrders, decimal AmountOfPayment)
         {
-            if (role != null)
+            if (costOfBasketOrders > AmountOfPayment)
             {
                 return new BaseResult()
                 {
-                    ErrorMessage = ErrorMessage.RoleAlreadyExist,
-                    ErrorCode = (int)ErrorCodes.RoleAlreadyExist
+                    ErrorMessage = ErrorMessage.NotEnoughPayFunds,
+                    ErrorCode = (int)ErrorCodes.NotEnoughPayFunds
                 };
             }
-
             return new BaseResult();
         }
 
-        public BaseResult ValidateOnNull(Role model)
+        public BaseResult ValidateOnNull(Payment payment)
         {
-            if (model == null)
+            if (payment == null)
             {
                 return new BaseResult()
                 {
-                    ErrorMessage = ErrorMessage.RoleNotFound,
-                    ErrorCode = (int)ErrorCodes.RoleNotFound
+                    ErrorMessage = ErrorMessage.PaymentNotFound,
+                    ErrorCode = (int)ErrorCodes.PaymentNotFound
                 };
             }
             return new BaseResult();

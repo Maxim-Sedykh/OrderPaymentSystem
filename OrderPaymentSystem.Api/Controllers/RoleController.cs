@@ -12,7 +12,7 @@ namespace OrderPaymentSystem.Api.Controllers
     /// <summary>
     /// Контроллер для работы с ролями пользователя
     /// </summary>
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [Consumes(MediaTypeNames.Application.Json)]
     [Route("api/[controller]")]
     [ApiController]
@@ -191,6 +191,22 @@ namespace OrderPaymentSystem.Api.Controllers
         public async Task<ActionResult<BaseResult<Role>>> UpdateRoleForUser([FromBody] UpdateUserRoleDto dto)
         {
             var response = await _roleService.UpdateRoleForUserAsync(dto);
+            if (response.IsSuccess)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        /// <summary>
+        /// Получение ролей пользоватекля
+        /// </summary>
+        [HttpGet("get-all-roles")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<CollectionResult<RoleDto>>> GetAllRoles()
+        {
+            var response = await _roleService.GetAllRoles();
             if (response.IsSuccess)
             {
                 return Ok(response);

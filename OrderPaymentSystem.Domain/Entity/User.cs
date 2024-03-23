@@ -28,6 +28,8 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public ICollection<Order> Orders { get; set; }
 
+        public Basket Basket { get; set; }
+
         public UserToken UserToken { get; set; }    
         
     }
