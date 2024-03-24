@@ -3,8 +3,18 @@ using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.Application.Mapping;
 using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Application.Validations.EntityValidators;
-using OrderPaymentSystem.Application.Validations.FluentValidations;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Order;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Product;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Role;
+using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
+using OrderPaymentSystem.Domain.Dto.Auth;
+using OrderPaymentSystem.Domain.Dto.Order;
+using OrderPaymentSystem.Domain.Dto.Payment;
 using OrderPaymentSystem.Domain.Dto.Product;
+using OrderPaymentSystem.Domain.Dto.Role;
+using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
@@ -45,10 +55,29 @@ namespace OrderPaymentSystem.Application.DependencyInjection
             services.AddScoped<IBasketService, BasketService>();
         }
 
-        private static void InitFluentValidators(this IServiceCollection services)
+        public static void InitFluentValidators(this IServiceCollection services)
         {
-            services.AddScoped<IValidator<CreateProductDto>, CreateProductValidator>();
-            services.AddScoped<IValidator<UpdateProductDto>, UpdateProductValidator>();
+            var validatorsTypes = new List<Type>()
+            {
+                typeof(CreateProductValidator),
+                typeof(UpdateProductValidator),
+                typeof(CreatePaymentValidator),
+                typeof(UpdatePaymentValidation),
+                typeof(UpdateOrderValidation),
+                typeof(CreateOrderValidation),
+                typeof(LoginUserValidator),
+                typeof(RegisterUserValidation),
+                typeof(CreateRoleValidation),
+                typeof(DeleteUserRoleValidation),
+                typeof(UpdateUserRoleValidation),
+                typeof(UserRoleValidation),
+                typeof(RoleValidation)
+            };
+
+            foreach (var validatorType in validatorsTypes)
+            {
+                services.AddValidatorsFromAssembly(validatorType.Assembly);
+            }
         }
 
         private static void InitEntityValidators(this IServiceCollection services)

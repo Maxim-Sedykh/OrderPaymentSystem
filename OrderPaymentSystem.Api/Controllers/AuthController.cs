@@ -1,7 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using OrderPaymentSystem.Application.Validations.EntityValidators;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
 using OrderPaymentSystem.Domain.Dto.Auth;
+using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
+using FluentValidation.AspNetCore;
 
 namespace OrderPaymentSystem.Api.Controllers
 {
@@ -12,10 +17,15 @@ namespace OrderPaymentSystem.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly LoginUserValidator _loginUserValidator;
+        private readonly RegisterUserValidation _registerUserValidator;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, LoginUserValidator loginUserValidator,
+            RegisterUserValidation registerUserValidator)
         {
             _authService = authService;
+            _loginUserValidator = loginUserValidator;
+            _registerUserValidator = registerUserValidator;
         }
 
         /// <summary>
@@ -26,6 +36,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<BaseResult>> Register([FromBody] RegisterUserDto dto)
         {
+            var validationResult = await _registerUserValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _authService.Register(dto);
             if (response.IsSuccess)
             {
@@ -42,6 +59,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<BaseResult>> Login([FromBody] LoginUserDto dto)
         {
+            var validationResult = await _loginUserValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _authService.Login(dto);
             if (response.IsSuccess)
             {

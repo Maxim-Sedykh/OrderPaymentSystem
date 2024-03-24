@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
@@ -23,13 +24,14 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<User> _userRepository;
         private readonly IBaseRepository<UserRole> _userRoleRepository;
         private readonly IRoleValidator _roleValidator;
+        private readonly IUserValidator _userValidator;
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly IMapper _mapper;
 
         public RoleService(IBaseRepository<Role> roleRepository, IBaseRepository<User> userRepository,
             IRoleValidator roleValidator, IBaseRepository<UserRole> userRoleRepository, IMapper mapper, IUnitOfWork unitOfWork,
-            IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions)
+            IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions, IUserValidator userValidator)
         {
             _roleRepository = roleRepository;
             _userRepository = userRepository;
@@ -39,6 +41,7 @@ namespace OrderPaymentSystem.Application.Services
             _unitOfWork = unitOfWork;
             _messageProducer = messageProducer;
             _rabbitMqOptions = rabbitMqOptions;
+            _userValidator = userValidator;
         }
 
         /// <inheritdoc/>
@@ -48,12 +51,13 @@ namespace OrderPaymentSystem.Application.Services
                 .Include(x => x.Roles)
                 .FirstOrDefaultAsync(x => x.Login == dto.Login);
 
-            if (user == null)
+            var result = _userValidator.ValidateOnNull(user);
+            if (!result.IsSuccess)
             {
-                return new BaseResult<UserRoleDto>
+                return new BaseResult<UserRoleDto>()
                 {
-                    ErrorCode = (int)ErrorCodes.UserNotFound,
-                    ErrorMessage = ErrorMessage.UserNotFound,
+                    ErrorMessage = result.ErrorMessage,
+                    ErrorCode = result.ErrorCode
                 };
             }
 
@@ -183,12 +187,13 @@ namespace OrderPaymentSystem.Application.Services
                 .Include(x => x.Roles)
                 .FirstOrDefaultAsync(x => x.Login == dto.Login);
 
-            if (user == null)
+            var userNullValidation = _userValidator.ValidateOnNull(user);
+            if (!userNullValidation.IsSuccess)
             {
-                return new BaseResult<UserRoleDto>
+                return new BaseResult<UserRoleDto>()
                 {
-                    ErrorCode = (int)ErrorCodes.UserNotFound,
-                    ErrorMessage = ErrorMessage.UserNotFound,
+                    ErrorMessage = userNullValidation.ErrorMessage,
+                    ErrorCode = userNullValidation.ErrorCode
                 };
             }
 
@@ -224,12 +229,13 @@ namespace OrderPaymentSystem.Application.Services
                 .Include(x => x.Roles)
                 .FirstOrDefaultAsync(x => x.Login == dto.Login);
 
-            if (user == null)
+            var userNullValidation = _userValidator.ValidateOnNull(user);
+            if (!userNullValidation.IsSuccess)
             {
-                return new BaseResult<UserRoleDto>
+                return new BaseResult<UserRoleDto>()
                 {
-                    ErrorCode = (int)ErrorCodes.UserNotFound,
-                    ErrorMessage = ErrorMessage.UserNotFound,
+                    ErrorMessage = userNullValidation.ErrorMessage,
+                    ErrorCode = userNullValidation.ErrorCode
                 };
             }
 

@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Role;
+using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
@@ -19,10 +22,22 @@ namespace OrderPaymentSystem.Api.Controllers
     public class RoleController : ControllerBase
     {
         private readonly IRoleService _roleService;
+        private readonly CreateRoleValidation _createRoleValidation;
+        private readonly DeleteUserRoleValidation _deleteUserRoleValidation;
+        private readonly UpdateUserRoleValidation _updateUserRoleValidation;
+        private readonly UserRoleValidation _userRoleValidation;
+        private readonly RoleValidation _roleValidation;
 
-        public RoleController(IRoleService roleService)
+        public RoleController(IRoleService roleService, CreateRoleValidation createRoleValidation,
+            DeleteUserRoleValidation deleteUserRoleValidation, UpdateUserRoleValidation updateUserRoleValidation,
+            UserRoleValidation userRoleValidation, RoleValidation roleValidation)
         {
             _roleService = roleService;
+            _createRoleValidation = createRoleValidation;
+            _deleteUserRoleValidation = deleteUserRoleValidation;
+            _updateUserRoleValidation = updateUserRoleValidation;
+            _userRoleValidation = userRoleValidation;
+            _roleValidation = roleValidation;
         }
 
         /// <summary>
@@ -45,6 +60,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> CreateRole([FromBody] CreateRoleDto dto)
         {
+            var validationResult = await _createRoleValidation.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _roleService.CreateRoleAsync(dto);
             if (response.IsSuccess)
             {
@@ -74,6 +96,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> UpdateRole([FromBody] RoleDto dto)
         {
+            var validationResult = await _roleValidation.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _roleService.UpdateRoleAsync(dto);
             if (response.IsSuccess)
             {
@@ -131,6 +160,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> AddRoleForUser([FromBody] UserRoleDto dto)
         {
+            var validationResult = await _userRoleValidation.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _roleService.AddRoleForUserAsync(dto);
             if (response.IsSuccess)
             {
@@ -160,6 +196,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> DeleteRoleForUser([FromBody] DeleteUserRoleDto dto)
         {
+            var validationResult = await _deleteUserRoleValidation.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _roleService.DeleteRoleForUserAsync(dto);
             if (response.IsSuccess)
             {
@@ -190,6 +233,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> UpdateRoleForUser([FromBody] UpdateUserRoleDto dto)
         {
+            var validationResult = await _updateUserRoleValidation.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _roleService.UpdateRoleForUserAsync(dto);
             if (response.IsSuccess)
             {

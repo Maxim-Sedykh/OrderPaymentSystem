@@ -65,13 +65,13 @@ namespace OrderPaymentSystem.Application.Services
 
             var costOfBasketOrders = basket.Orders.Sum(o => o.OrderCost);
 
-            var paymentCreateValidationResult = _paymentValidator.PaymentAmountVlidator(costOfBasketOrders, dto.AmountOfPayment);
-            if (!paymentCreateValidationResult.IsSuccess)
+            var paymentValidationResult = _paymentValidator.PaymentAmountVlidator(costOfBasketOrders, dto.AmountOfPayment);
+            if (!paymentValidationResult.IsSuccess)
             {
                 return new BaseResult<PaymentDto>()
                 {
-                    ErrorMessage = paymentCreateValidationResult.ErrorMessage,
-                    ErrorCode = paymentCreateValidationResult.ErrorCode
+                    ErrorMessage = paymentValidationResult.ErrorMessage,
+                    ErrorCode = paymentValidationResult.ErrorCode
                 };
             }
 

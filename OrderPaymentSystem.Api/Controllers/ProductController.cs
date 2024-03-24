@@ -1,6 +1,8 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Product;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
@@ -17,6 +19,8 @@ namespace OrderPaymentSystem.Api.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly UpdateProductValidator _updateProductValidator;
+        private readonly CreateProductValidator _createProductValidator;
 
         public ProductController(IProductService productService)
         {
@@ -122,6 +126,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> CreateProduct([FromBody] CreateProductDto dto)
         {
+            var validationResult = await _createProductValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _productService.CreateProductAsync(dto);
             if (response.IsSuccess)
             {
@@ -153,6 +164,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> UpdateProduct([FromBody] UpdateProductDto dto)
         {
+            var validationResult = await _updateProductValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _productService.UpdateProductAsync(dto);
             if (response.IsSuccess)
             {

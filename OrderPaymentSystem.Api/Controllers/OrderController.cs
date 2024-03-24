@@ -1,6 +1,9 @@
 ﻿using Asp.Versioning;
+using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Order;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Interfaces.Services;
@@ -18,10 +21,15 @@ namespace OrderPaymentSystem.Api.Controllers
     public class OrderController : ControllerBase
     {
         private readonly IOrderService _orderService;
+        private readonly UpdateOrderValidation _updateOrderValidator;
+        private readonly CreateOrderValidation _createOrderValidator;
 
-        public OrderController(IOrderService orderService)
+        public OrderController(IOrderService orderService, UpdateOrderValidation updateOrderValidator,
+            CreateOrderValidation createOrderValidator)
         {
             _orderService = orderService;
+            _updateOrderValidator = updateOrderValidator;
+            _createOrderValidator = createOrderValidator;
         }
 
         /// <summary>
@@ -123,6 +131,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> CreateOrder([FromBody] CreateOrderDto dto)
         {
+            var validationResult = await _createOrderValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _orderService.CreateOrderAsync(dto);
             if (response.IsSuccess)
             {
@@ -153,6 +168,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> UpdateOrder([FromBody] UpdateOrderDto dto)
         {
+            var validationResult = await _updateOrderValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _orderService.UpdateOrderAsync(dto);
             if (response.IsSuccess)
             {

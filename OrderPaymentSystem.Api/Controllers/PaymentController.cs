@@ -1,6 +1,8 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Order;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Payment;
 using OrderPaymentSystem.Domain.Dto.Product;
@@ -19,10 +21,15 @@ namespace OrderPaymentSystem.Api.Controllers
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
+        private readonly UpdatePaymentValidation _updatePaymentValidator;
+        private readonly CreatePaymentValidator _createPaymentValidator;
 
-        public PaymentController(IPaymentService paymentService)
+        public PaymentController(IPaymentService paymentService, UpdatePaymentValidation updatePaymentValidator,
+            CreatePaymentValidator createPaymentValidator)
         {
             _paymentService = paymentService;
+            _updatePaymentValidator = updatePaymentValidator;
+            _createPaymentValidator = createPaymentValidator;
         }
 
         /// <summary>
@@ -131,6 +138,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<PaymentDto>>> CreatePayment([FromBody] CreatePaymentDto dto)
         {
+            var validationResult = await _createPaymentValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _paymentService.CreatePaymentAsync(dto);
             if (response.IsSuccess)
             {
@@ -161,6 +175,13 @@ namespace OrderPaymentSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> UpdatePayment([FromBody] UpdatePaymentDto dto)
         {
+            var validationResult = await _updatePaymentValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors);
+            }
+
             var response = await _paymentService.UpdatePaymentAsync(dto);
             if (response.IsSuccess)
             {
