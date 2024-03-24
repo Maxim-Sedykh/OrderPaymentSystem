@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Enum;
+﻿using OrderPaymentSystem.Domain.ComplexTypes;
+using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,8 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public decimal AmountOfPayment { get; set; }
 
+        public Address DeliveryAddress { get; set; }
+
         public decimal CashChange { get; set; }
 
         public PaymentMethod PaymentMethod { get; set; }
@@ -31,5 +34,7 @@ namespace OrderPaymentSystem.Domain.Entity
         public DateTime? UpdatedAt { get; set; }
 
         public long? UpdatedBy { get; set; }
+
+        public ICollection<Order> Orders { get; set; }
     }
 }

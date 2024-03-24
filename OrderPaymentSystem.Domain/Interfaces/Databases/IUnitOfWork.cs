@@ -20,5 +20,9 @@ namespace OrderPaymentSystem.Domain.Interfaces.Databases
         IBaseRepository<UserRole> UserRoles { get; set; }
 
         IBaseRepository<Basket> Baskets { get; set; }
+
+        IBaseRepository<Payment> Payments { get; set; }
+
+        IBaseRepository<Order> Orders { get; set; }
     }
 }

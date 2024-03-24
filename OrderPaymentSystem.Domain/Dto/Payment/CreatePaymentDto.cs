@@ -10,6 +10,10 @@ namespace OrderPaymentSystem.Domain.Dto.Payment
     public record CreatePaymentDto(
             long BasketId,
             decimal AmountOfPayment,
-            PaymentMethod PaymentMethod
+            PaymentMethod PaymentMethod,
+            string Street,
+            string City,
+            string Country,
+            string Zipcode
         );
 }

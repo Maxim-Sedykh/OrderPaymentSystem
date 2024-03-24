@@ -18,15 +18,20 @@ namespace OrderPaymentSystem.DAL.Repositories
         public IBaseRepository<Role> Roles { get; set; }
         public IBaseRepository<Basket> Baskets { get; set; }
         public IBaseRepository<UserRole> UserRoles { get; set; }
+        public IBaseRepository<Payment> Payments { get; set; }
+        public IBaseRepository<Order> Orders { get; set; }
 
         public UnitOfWork(ApplicationDbContext context, IBaseRepository<User> users, IBaseRepository<Role> roles,
-            IBaseRepository<UserRole> userRoles, IBaseRepository<Basket> baskets)
+            IBaseRepository<UserRole> userRoles, IBaseRepository<Basket> baskets, IBaseRepository<Payment> payments,
+            IBaseRepository<Order> orders)
         {
             _context = context;
             Users = users;
             Roles = roles;
             UserRoles = userRoles;
             Baskets = baskets;
+            Payments = payments;
+            Orders = orders;
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync()

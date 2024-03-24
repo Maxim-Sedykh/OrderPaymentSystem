@@ -2,48 +2,47 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Domain.ComplexTypes;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Payment;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validations;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
 using OrderPaymentSystem.Producer.Interfaces;
+using System.Data;
 
 namespace OrderPaymentSystem.Application.Services
 {
     public class PaymentService : IPaymentService
     {
-        private readonly IBaseRepository<Payment> _paymentRepository;
-        private readonly IBaseRepository<Basket> _basketRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseValidator<Basket> _basketValidator;
         private readonly IPaymentValidator _paymentValidator;
         private readonly IMapper _mapper;
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
 
-        public PaymentService(IBaseRepository<Payment> paymentRepository, IMapper mapper, IMessageProducer messageProducer,
-            IOptions<RabbitMqSettings> rabbitMqOptions, IBaseRepository<Basket> basketRepository, IBaseValidator<Basket> basketValidator,
-            IPaymentValidator paymentValidator)
+        public PaymentService(IMapper mapper, IMessageProducer messageProducer,
+            IOptions<RabbitMqSettings> rabbitMqOptions, IBaseValidator<Basket> basketValidator,
+            IPaymentValidator paymentValidator, IUnitOfWork unitOfWord)
         {
-            _paymentRepository = paymentRepository;
             _mapper = mapper;
             _messageProducer = messageProducer;
             _rabbitMqOptions = rabbitMqOptions;
-            _basketRepository = basketRepository;
             _basketValidator = basketValidator;
             _paymentValidator = paymentValidator;
+            _unitOfWork = unitOfWord;
         }
 
         /// <inheritdoc/>
         public async Task<BaseResult<PaymentDto>> CreatePaymentAsync(CreatePaymentDto dto)
         {
-            var basket = await _basketRepository.GetAll()
-                .Include(x => x.Orders)
-                .FirstOrDefaultAsync(x => x.Id == dto.BasketId);
+            var basket = await _unitOfWork.Baskets.GetAll().FirstOrDefaultAsync(x => x.Id == dto.BasketId);
 
             var basketNullValidationResult = _basketValidator.ValidateOnNull(basket);
             if (!basketNullValidationResult.IsSuccess)
@@ -55,7 +54,11 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            if (basket.Orders.Count == 0)
+            var basketOrders = await _unitOfWork.Orders.GetAll()
+                .Where(x => x.Id == dto.BasketId)
+                .ToListAsync();
+
+            if (basketOrders.Count == 0)
             {
                 return new BaseResult<PaymentDto>()
                 {
@@ -64,7 +67,7 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            var costOfBasketOrders = basket.Orders.Sum(o => o.OrderCost);
+            var costOfBasketOrders = basketOrders.Sum(o => o.OrderCost);
 
             var paymentValidationResult = _paymentValidator.PaymentAmountVlidator(costOfBasketOrders, dto.AmountOfPayment);
             if (!paymentValidationResult.IsSuccess)
@@ -76,30 +79,64 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            Payment payment = new Payment()
+            using (var transaction = await _unitOfWork.BeginTransactionAsync())
             {
-                BasketId = basket.Id,
-                AmountOfPayment = dto.AmountOfPayment,
-                PaymentMethod = dto.PaymentMethod,
-                CostOfOrders = costOfBasketOrders,
-                CashChange = dto.AmountOfPayment - costOfBasketOrders
-            };
+                try 
+                {
+                    Payment payment = new Payment()
+                    {
+                        BasketId = basket.Id,
+                        AmountOfPayment = dto.AmountOfPayment,
+                        PaymentMethod = dto.PaymentMethod,
+                        CostOfOrders = costOfBasketOrders,
+                        CashChange = dto.AmountOfPayment - costOfBasketOrders,
+                        DeliveryAddress = new Address()
+                        {
+                            Street = dto.Street,
+                            City = dto.City,
+                            Country = dto.Country,
+                            ZipCode = dto.Zipcode
+                        }
+                    };
 
-            await _paymentRepository.CreateAsync(payment);
-            await _paymentRepository.SaveChangesAsync();
+                    await _unitOfWork.Payments.CreateAsync(payment);
 
-            _messageProducer.SendMessage(payment, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    basketOrders.ForEach(x => x.BasketId = null);
+                    basketOrders.ForEach(x => x.PaymentId = payment.Id);
+
+                    _unitOfWork.Orders.UpdateRange(basketOrders);
+
+                    _messageProducer.SendMessage(payment, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+
+                    await _unitOfWork.SaveChangesAsync();
+
+
+                    await transaction.CommitAsync();
+
+                    return new BaseResult<PaymentDto>()
+                    {
+                        Data = _mapper.Map<PaymentDto>(payment),
+                    };
+                }
+                catch (Exception)
+                {
+                    await transaction.RollbackAsync();
+                }
+            }
 
             return new BaseResult<PaymentDto>()
             {
-                Data = _mapper.Map<PaymentDto>(payment),
+                ErrorCode = (int)ErrorCodes.InternalServerError,
+                ErrorMessage = ErrorMessage.InternalServerError
             };
         }
 
         /// <inheritdoc/>
         public async Task<BaseResult<PaymentDto>> DeletePaymentAsync(long id)
         {
-            var payment = await _paymentRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            var payment = await _unitOfWork.Payments.GetAll().FirstOrDefaultAsync(x => x.Id == id);
 
             var paymentNullValidationResult = _paymentValidator.ValidateOnNull(payment);
 
@@ -112,8 +149,8 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            _paymentRepository.Remove(payment);
-            await _paymentRepository.SaveChangesAsync();
+            _unitOfWork.Payments.Remove(payment);
+            await _unitOfWork.Payments.SaveChangesAsync();
 
             _messageProducer.SendMessage(payment, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
@@ -125,7 +162,7 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<BaseResult<PaymentDto>> GetPaymentByIdAsync(long id)
         {
-            var payment = await _paymentRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            var payment = await _unitOfWork.Payments.GetAll().FirstOrDefaultAsync(x => x.Id == id);
 
             var paymentNullValidationResult = _paymentValidator.ValidateOnNull(payment);
 
@@ -147,8 +184,8 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<CollectionResult<OrderDto>> GetPaymentOrdersAsync(long id)
         {
-            var payment = await _paymentRepository.GetAll()
-                .Include(x => x.Basket.Orders)
+            var payment = await _unitOfWork.Payments.GetAll()
+                .Include(x => x.Orders)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             var paymentNullValidationResult = _paymentValidator.ValidateOnNull(payment);
@@ -162,7 +199,7 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            var result = payment.Basket.Orders.Select(x => _mapper.Map<OrderDto>(x)).ToList();
+            var result = payment.Orders.Select(x => _mapper.Map<OrderDto>(x)).ToList();
 
             return new CollectionResult<OrderDto>()
             {
@@ -176,7 +213,7 @@ namespace OrderPaymentSystem.Application.Services
         {
             PaymentDto[] payments;
 
-            payments = await _paymentRepository.GetAll()
+            payments = await _unitOfWork.Payments.GetAll()
                 .Select(x => _mapper.Map<PaymentDto>(x))
                 .ToArrayAsync();
 
@@ -201,7 +238,7 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<BaseResult<PaymentDto>> UpdatePaymentAsync(UpdatePaymentDto dto)
         {
-            var payment = await _paymentRepository.GetAll()
+            var payment = await _unitOfWork.Payments.GetAll()
                 .Include(x => x.Basket.Orders)
                 .FirstOrDefaultAsync(x => x.Id == dto.Id);
             var paymentNullValidationResult = _paymentValidator.ValidateOnNull(payment);
@@ -233,8 +270,8 @@ namespace OrderPaymentSystem.Application.Services
                 payment.AmountOfPayment = dto.AmountOfPayment;
                 payment.CashChange = dto.AmountOfPayment - costOfBasketOrders;
 
-                var updatedPayment = _paymentRepository.Update(payment);
-                await _paymentRepository.SaveChangesAsync();
+                var updatedPayment = _unitOfWork.Payments.Update(payment);
+                await _unitOfWork.Payments.SaveChangesAsync();
 
                 _messageProducer.SendMessage(updatedPayment, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 

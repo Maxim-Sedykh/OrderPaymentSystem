@@ -18,5 +18,7 @@ namespace OrderPaymentSystem.Domain.Interfaces.Repositories
         void Remove(TEntity entity);
 
         void RemoveRange(IEnumerable<TEntity> entities);
+
+        void UpdateRange(IEnumerable<TEntity> entities);
     }
 }

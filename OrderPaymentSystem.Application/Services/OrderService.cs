@@ -76,6 +76,7 @@ namespace OrderPaymentSystem.Application.Services
                 UserId = user.Id,
                 ProductId = dto.ProductId,
                 BasketId = user.Basket.Id,
+                PaymentId = null,
                 ProductCount = dto.ProductCount,
                 OrderCost = product.Cost * dto.ProductCount
             };

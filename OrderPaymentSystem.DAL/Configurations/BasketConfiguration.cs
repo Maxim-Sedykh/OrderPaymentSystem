@@ -37,7 +37,9 @@ namespace OrderPaymentSystem.DAL.Configurations
 
             builder.HasMany(x => x.Orders)
                     .WithOne(x => x.Basket)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .HasForeignKey(x => x.BasketId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .IsRequired(false);
         }
     }
 }

@@ -20,9 +20,13 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public Product Product { get; set; }
 
-        public long BasketId { get; set; }
+        public long? BasketId { get; set; }
 
-        public Basket Basket { get; set; }
+        public virtual Basket Basket { get; set; }
+
+        public long? PaymentId { get; set; }
+
+        public virtual Payment Payment { get; set; }
 
         public decimal OrderCost { get; set; }
 

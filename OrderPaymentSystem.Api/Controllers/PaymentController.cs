@@ -121,12 +121,16 @@ namespace OrderPaymentSystem.Api.Controllers
         /// <param name="dto"></param>
         /// <remarks>
         /// Request for create payment
-        /// 
+        ///     
         ///     POST
         ///     {
-        ///         "basketid": 1,
-        ///         "amountofpayment": 4000,
-        ///         "paymentmethod": 1
+        ///         "basketId": 0,
+        ///         "amountOfPayment": 0,
+        ///         "paymentMethod": 0,
+        ///         "street": "string",
+        ///         "city": "string",
+        ///         "country": "string",
+        ///         "zipcode": "string"
         ///     }
         ///     
         /// </remarks>

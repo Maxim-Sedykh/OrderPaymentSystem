@@ -14,6 +14,18 @@ namespace OrderPaymentSystem.DAL.Configurations
         public void Configure(EntityTypeBuilder<Payment> builder)
         {
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
+
+            builder.OwnsOne(c => c.DeliveryAddress, a =>
+            {
+                a.Property(x => x.Street).IsRequired().HasMaxLength(50);
+                a.Property(x => x.City).IsRequired().HasMaxLength(50);
+                a.Property(x => x.ZipCode).IsRequired().HasMaxLength(50);
+            });
+
+            builder.HasMany(x => x.Orders)
+                .WithOne(x => x.Payment)
+                .HasForeignKey(x => x.PaymentId)
+                .IsRequired(false);
         }
     }
 }
