@@ -38,6 +38,7 @@ namespace OrderPaymentSystem.Application.Services
             _paymentValidator = paymentValidator;
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<PaymentDto>> CreatePaymentAsync(CreatePaymentDto dto)
         {
             var basket = await _basketRepository.GetAll()
@@ -95,6 +96,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<PaymentDto>> DeletePaymentAsync(long id)
         {
             var payment = await _paymentRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
@@ -142,6 +144,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<CollectionResult<OrderDto>> GetPaymentOrdersAsync(long id)
         {
             var payment = await _paymentRepository.GetAll()
@@ -168,6 +171,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(long userId)
         {
             PaymentDto[] payments;
@@ -194,6 +198,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<PaymentDto>> UpdatePaymentAsync(UpdatePaymentDto dto)
         {
             var payment = await _paymentRepository.GetAll()

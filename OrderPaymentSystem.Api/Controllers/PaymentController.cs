@@ -1,7 +1,6 @@
 ﻿using Asp.Versioning;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OrderPaymentSystem.Application.Validations.FluentValidations.Order;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Payment;
@@ -14,7 +13,7 @@ namespace OrderPaymentSystem.Api.Controllers
     /// <summary>
     /// Контроллер для работы с платежами
     /// </summary>
-    //[Authorize]
+    [Authorize]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]

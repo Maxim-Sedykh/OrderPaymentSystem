@@ -1,9 +1,6 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
-using OrderPaymentSystem.Application.Validations.EntityValidators;
+﻿using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
 using OrderPaymentSystem.Domain.Dto.Auth;
-using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 

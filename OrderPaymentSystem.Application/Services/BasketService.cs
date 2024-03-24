@@ -35,6 +35,7 @@ namespace OrderPaymentSystem.Application.Services
             _basketValidator = basketValidator;
         }
 
+        /// <inheritdoc/>
         public async Task<CollectionResult<OrderDto>> ClearBasketAsync(long id)
         {
             var basket = await _basketRepository.GetAll()
@@ -74,6 +75,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<BaseResult<BasketDto>> GetBasketByIdAsync(long basketId)
         {
             var basket = await _basketRepository.GetAll()
@@ -96,6 +98,7 @@ namespace OrderPaymentSystem.Application.Services
             };
         }
 
+        /// <inheritdoc/>
         public async Task<CollectionResult<OrderDto>> GetBasketOrdersAsync(long basketId)
         {
             OrderDto[] userBasketOrders;

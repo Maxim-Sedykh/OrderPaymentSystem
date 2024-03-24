@@ -1,6 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
@@ -10,6 +9,7 @@ namespace OrderPaymentSystem.Api.Controllers
     /// <summary>
     /// Контроллер, предназначенный для работы с корзиной заказов пользователя
     /// </summary>
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class BasketController : ControllerBase
