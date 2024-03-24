@@ -9,21 +9,9 @@ using OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Product;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Role;
 using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
-using OrderPaymentSystem.Domain.Dto.Auth;
-using OrderPaymentSystem.Domain.Dto.Order;
-using OrderPaymentSystem.Domain.Dto.Payment;
-using OrderPaymentSystem.Domain.Dto.Product;
-using OrderPaymentSystem.Domain.Dto.Role;
-using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validations;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Application.DependencyInjection
 {
@@ -34,9 +22,7 @@ namespace OrderPaymentSystem.Application.DependencyInjection
     {
         public static void AddApplication(this IServiceCollection services)
         {
-            services.AddAutoMapper(typeof(ProductMapping));
-            services.AddAutoMapper(typeof(RoleMapping));
-            services.AddAutoMapper(typeof(UserMapping));
+            InitAutoMapper(services);
 
             InitServices(services);
 
@@ -53,6 +39,24 @@ namespace OrderPaymentSystem.Application.DependencyInjection
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<IBasketService, BasketService>();
+        }
+
+        private static void InitAutoMapper(this IServiceCollection services)
+        {
+            var validatorsTypes = new List<Type>()
+            {
+                typeof(ProductMapping),
+                typeof(RoleMapping),
+                typeof(UserMapping),
+                typeof(BasketMapping),
+                typeof(PaymentMapping),
+                typeof(OrderMapping)
+            };
+
+            foreach (var validatorType in validatorsTypes)
+            {
+                services.AddAutoMapper(validatorType);
+            }
         }
 
         public static void InitFluentValidators(this IServiceCollection services)

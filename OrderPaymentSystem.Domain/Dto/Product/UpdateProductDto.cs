@@ -6,5 +6,14 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Domain.Dto.Product
 {
-    public record UpdateProductDto(long Id, string ProductName, string Description, decimal Cost);
+    public class UpdateProductDto
+    {
+        public long Id { get; set; }
+
+        public string ProductName { get; set; }
+
+        public string Description { get; set; }
+
+        public decimal Cost { get; set; }
+    }
 }

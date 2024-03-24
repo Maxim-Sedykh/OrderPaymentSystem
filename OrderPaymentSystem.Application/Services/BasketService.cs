@@ -69,7 +69,7 @@ namespace OrderPaymentSystem.Application.Services
 
             return new CollectionResult<OrderDto>()
             {
-                Data = basketOrders.Select(x => new OrderDto(x.Id, x.UserId, x.Basket.Id, x.ProductId, x.ProductCount, x.CreatedAt.ToLongDateString())),
+                Data = basketOrders.Select(x => _mapper.Map<OrderDto>(x)),
                 Count = basketOrders.Count
             };
         }
@@ -92,7 +92,7 @@ namespace OrderPaymentSystem.Application.Services
 
             return new BaseResult<BasketDto>()
             {
-                Data = new BasketDto(basket.Id, basket.UserId, basket.CreatedAt.ToLongDateString(), basket.Orders.Sum(x => x.OrderCost))
+                Data = _mapper.Map<BasketDto>(basket)
             };
         }
 
@@ -102,7 +102,7 @@ namespace OrderPaymentSystem.Application.Services
 
             userBasketOrders = await _orderRepository.GetAll()
                 .Where(x => x.BasketId == basketId)
-                .Select(x => new OrderDto(x.Id, x.UserId, x.Basket.Id, x.ProductId, x.ProductCount, x.CreatedAt.ToLongDateString()))
+                .Select(x =>  _mapper.Map<OrderDto>(x))
                 .ToArrayAsync();
 
             if (userBasketOrders.Length == 0)

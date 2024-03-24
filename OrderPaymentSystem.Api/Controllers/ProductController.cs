@@ -22,9 +22,12 @@ namespace OrderPaymentSystem.Api.Controllers
         private readonly UpdateProductValidator _updateProductValidator;
         private readonly CreateProductValidator _createProductValidator;
 
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService, UpdateProductValidator updateProductValidator,
+            CreateProductValidator createProductValidator)
         {
             _productService = productService;
+            _updateProductValidator = updateProductValidator;
+            _createProductValidator = createProductValidator;
         }
 
         /// <summary>

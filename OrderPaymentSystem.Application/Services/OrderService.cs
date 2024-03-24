@@ -148,7 +148,7 @@ namespace OrderPaymentSystem.Application.Services
 
             orders = await _orderRepository.GetAll()
                 .Include(x => x.Basket)
-                .Select(x => new OrderDto(x.Id, x.UserId, x.Basket.Id, x.ProductId, x.ProductCount, x.CreatedAt.ToLongDateString()))
+                .Select(x => _mapper.Map<OrderDto>(x))
                 .ToArrayAsync();
 
             if (orders.Length == 0)

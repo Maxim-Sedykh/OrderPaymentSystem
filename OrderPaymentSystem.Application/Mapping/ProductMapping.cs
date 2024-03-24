@@ -14,6 +14,7 @@ namespace OrderPaymentSystem.Application.Mapping
         public ProductMapping()
         {
             CreateMap<Product, ProductDto>().ReverseMap();
+
             CreateMap<Product, CreateProductDto>().ReverseMap();
         }
     }

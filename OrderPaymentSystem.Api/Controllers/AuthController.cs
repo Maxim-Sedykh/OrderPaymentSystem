@@ -6,7 +6,6 @@ using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
-using FluentValidation.AspNetCore;
 
 namespace OrderPaymentSystem.Api.Controllers
 {

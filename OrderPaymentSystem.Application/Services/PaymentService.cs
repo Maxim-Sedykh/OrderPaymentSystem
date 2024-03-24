@@ -159,7 +159,7 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            var result = payment.Basket.Orders.Select(x => new OrderDto(x.Id, x.UserId, x.Basket.Id, x.ProductId, x.ProductCount, x.CreatedAt.ToLongDateString())).ToList();
+            var result = payment.Basket.Orders.Select(x => _mapper.Map<OrderDto>(x)).ToList();
 
             return new CollectionResult<OrderDto>()
             {
@@ -173,7 +173,7 @@ namespace OrderPaymentSystem.Application.Services
             PaymentDto[] payments;
 
             payments = await _paymentRepository.GetAll()
-                .Select(x => new PaymentDto(x.Id, x.BasketId, x.AmountOfPayment, x.CashChange, x.PaymentMethod, x.CreatedAt.ToLongDateString()))
+                .Select(x => _mapper.Map<PaymentDto>(x))
                 .ToArrayAsync();
 
             if (payments.Length == 0)

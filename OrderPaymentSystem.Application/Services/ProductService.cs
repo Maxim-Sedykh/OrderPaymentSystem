@@ -94,7 +94,7 @@ namespace OrderPaymentSystem.Application.Services
         {
             ProductDto? product;
             product = _productRepository.GetAll()
-                .Select(x => new ProductDto(x.Id, x.ProductName, x.Description, x.Cost, x.CreatedAt.ToLongDateString()))
+                .Select(x => _mapper.Map<ProductDto>(x))
                 .AsEnumerable()
                 .FirstOrDefault(x => x.Id == id);
 
@@ -121,7 +121,7 @@ namespace OrderPaymentSystem.Application.Services
             ProductDto[] products;
 
             products = await _productRepository.GetAll()
-                .Select(x => new ProductDto(x.Id, x.ProductName, x.Description, x.Cost, x.CreatedAt.ToLongDateString()))
+                .Select(x => _mapper.Map<ProductDto>(x))
                 .ToArrayAsync();
 
             if (!products.Any())
@@ -157,12 +157,12 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            if (product.ProductName != dto.ProductName && product.Description != dto.Description
-                && product.Cost != dto.Cost)
+            if (product.ProductName != dto.ProductName || product.Description != dto.Description
+                || product.Cost != dto.Cost)
             {
                 product.ProductName = dto.ProductName;
                 product.Description = dto.Description;
-                product.Cost = dto.Cost;
+                product.Cost = dto.Cost;    
 
                 var updatedProduct = _productRepository.Update(product);
                 await _productRepository.SaveChangesAsync();

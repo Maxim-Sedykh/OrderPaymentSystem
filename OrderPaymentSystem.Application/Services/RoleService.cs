@@ -112,7 +112,7 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            role = new Role()
+            role = new Role() 
             {
                 Name = dto.Name,
             };
