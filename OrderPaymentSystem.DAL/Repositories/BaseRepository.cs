@@ -34,7 +34,6 @@ namespace OrderPaymentSystem.DAL.Repositories
             }
 
             await _dbContext.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
 
             return entity;
         }
