@@ -16,7 +16,7 @@ namespace OrderPaymentSystem.Consumer
 
         public RabbitMqListener(IOptions<RabbitMqSettings> options)
         {
-            _options = options;
+            _options = options; 
             var factory = new ConnectionFactory() { HostName = "localhost" };
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
@@ -40,6 +40,13 @@ namespace OrderPaymentSystem.Consumer
             _channel.BasicConsume(_options.Value.QueueName, false, consumer);
 
             return Task.CompletedTask;
+        }
+
+        public override void Dispose()
+        {
+            _channel.Close();
+            _connection.Close();
+            base.Dispose();
         }
     }
 }

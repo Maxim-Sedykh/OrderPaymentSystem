@@ -7,11 +7,22 @@ namespace OrderPaymentSystem.Producer
 {
     public class Producer : IMessageProducer
     {
-        public void SendMessage<T>(T message, string routingKey, string? exchange = null)
+        private readonly IConnection _connection;
+        private readonly IModel _channel;
+
+        public Producer()
         {
             var factory = new ConnectionFactory() { HostName = "localhost" };
-            var connection = factory.CreateConnection();
-            using var channel = connection.CreateModel();
+            _connection = factory.CreateConnection();
+            _channel = _connection.CreateModel();
+        }
+
+        public void SendMessage<T>(T message, string routingKey, string? exchange = null)
+        {
+            if (_connection == null || !_connection.IsOpen)
+            {
+                return;
+            }
 
             var json = JsonConvert.SerializeObject(message, Formatting.Indented,
                 new JsonSerializerSettings()
@@ -20,7 +31,13 @@ namespace OrderPaymentSystem.Producer
                 });
 
             var body = Encoding.UTF8.GetBytes(json);
-            channel.BasicPublish(exchange, routingKey, body: body);
+            _channel.BasicPublish(exchange, routingKey, basicProperties: null, body: body);
+        }
+
+        public void Dispose()
+        {
+            _channel?.Dispose();
+            _connection?.Dispose();
         }
     }
 }
