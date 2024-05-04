@@ -5,13 +5,14 @@ using OrderPaymentSystem.Application.Validations.FluentValidations.Product;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
+using System.Diagnostics;
 
 namespace OrderPaymentSystem.Api.Controllers
 {
     /// <summary>
     /// Контроллер для работы с товарами
     /// </summary>
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]

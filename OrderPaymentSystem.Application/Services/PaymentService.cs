@@ -5,8 +5,10 @@ using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.ComplexTypes;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Payment;
+using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
@@ -26,10 +28,11 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IMapper _mapper;
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
+        private readonly IRedisCacheService _cacheService;
 
         public PaymentService(IMapper mapper, IMessageProducer messageProducer,
             IOptions<RabbitMqSettings> rabbitMqOptions, IBaseValidator<Basket> basketValidator,
-            IPaymentValidator paymentValidator, IUnitOfWork unitOfWord)
+            IPaymentValidator paymentValidator, IUnitOfWork unitOfWord, IRedisCacheService cacheService)
         {
             _mapper = mapper;
             _messageProducer = messageProducer;
@@ -37,6 +40,7 @@ namespace OrderPaymentSystem.Application.Services
             _basketValidator = basketValidator;
             _paymentValidator = paymentValidator;
             _unitOfWork = unitOfWord;
+            _cacheService = cacheService;
         }
 
         /// <inheritdoc/>
@@ -162,16 +166,22 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<BaseResult<PaymentDto>> GetPaymentByIdAsync(long id)
         {
-            var payment = await _unitOfWork.Payments.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            var payment = await _cacheService.GetAsync(
+                $"payment:{id}",
+                async () =>
+                {
+                    return await _unitOfWork.Payments.GetAll()
+                        .Where(x => x.Id == id)
+                        .Select(x => _mapper.Map<PaymentDto>(x))
+                        .SingleOrDefaultAsync();
+                });
 
-            var paymentNullValidationResult = _paymentValidator.ValidateOnNull(payment);
-
-            if (!paymentNullValidationResult.IsSuccess)
+            if (payment == null)
             {
                 return new BaseResult<PaymentDto>()
                 {
-                    ErrorMessage = paymentNullValidationResult.ErrorMessage,
-                    ErrorCode = paymentNullValidationResult.ErrorCode
+                    ErrorMessage = ErrorMessage.PaymentNotFound,
+                    ErrorCode = (int)ErrorCodes.PaymentNotFound
                 };
             }
 
@@ -211,13 +221,19 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(long userId)
         {
-            PaymentDto[] payments;
+            var userPayments = await _cacheService.GetAsync(
+                $"payments:{userId}",
+                async () =>
+                {
+                    return await _unitOfWork.Payments.GetAll()
+                        .Include(x => x.Basket)
+                        .Where(x => x.Basket.UserId == userId)
+                        .Select(x => _mapper.Map<PaymentDto>(x))
+                        .ToArrayAsync();
+                });
 
-            payments = await _unitOfWork.Payments.GetAll()
-                .Select(x => _mapper.Map<PaymentDto>(x))
-                .ToArrayAsync();
 
-            if (payments.Length == 0)
+            if (userPayments.Length == 0)
             {
                 return new CollectionResult<PaymentDto>()
                 {
@@ -226,12 +242,12 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            _messageProducer.SendMessage(payments, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+            _messageProducer.SendMessage(userPayments, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new CollectionResult<PaymentDto>()
             {
-                Data = payments,
-                Count = payments.Length
+                Data = userPayments,
+                Count = userPayments.Length
             };
         }
 

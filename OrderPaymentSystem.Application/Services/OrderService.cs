@@ -3,8 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Order;
+using OrderPaymentSystem.Domain.Dto.Payment;
+using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validations;
@@ -25,10 +28,12 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IMapper _mapper;
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
+        private readonly IRedisCacheService _cacheService;
 
         public OrderService(IBaseRepository<Order> orderRepository, IBaseRepository<User> userRepository,
             IMapper mapper, IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions, IUserValidator userValidator,
-            IBaseValidator<Order> orderValidator, IProductValidator productValidator, IBaseRepository<Product> productRepository)
+            IBaseValidator<Order> orderValidator, IProductValidator productValidator, IBaseRepository<Product> productRepository,
+            IRedisCacheService cacheService)
         {
             _orderRepository = orderRepository;
             _mapper = mapper;
@@ -39,6 +44,7 @@ namespace OrderPaymentSystem.Application.Services
             _orderValidator = orderValidator;
             _productValidator = productValidator;
             _productRepository = productRepository;
+            _cacheService = cacheService;
         }
 
 
@@ -121,16 +127,22 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<BaseResult<OrderDto>> GetOrderByIdAsync(long id)
         {
-            var order = await _orderRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            var order = await _cacheService.GetAsync(
+                $"order:{id}",
+                async () =>
+                {
+                    return await _orderRepository.GetAll()
+                        .Where(x => x.Id == id)
+                        .Select(x => _mapper.Map<OrderDto>(x))
+                        .SingleOrDefaultAsync();
+                });
 
-            var orderNullValidationResult = _orderValidator.ValidateOnNull(order);
-
-            if (!orderNullValidationResult.IsSuccess)
+            if (order == null)
             {
                 return new BaseResult<OrderDto>()
                 {
-                    ErrorMessage = orderNullValidationResult.ErrorMessage,
-                    ErrorCode = orderNullValidationResult.ErrorCode
+                    ErrorCode = (int)ErrorCodes.OrderNotFound,
+                    ErrorMessage = ErrorMessage.OrderNotFound
                 };
             }
 
@@ -138,7 +150,7 @@ namespace OrderPaymentSystem.Application.Services
 
             return new BaseResult<OrderDto>()
             {
-                Data = _mapper.Map<OrderDto>(order),
+                Data = order,
             };
         }
 

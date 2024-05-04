@@ -5,6 +5,7 @@ using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validations;
@@ -22,16 +23,20 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IProductValidator _productValidator;
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
+        private readonly IRedisCacheService _cacheService;
 
         public ProductService(IBaseRepository<Product> productRepository,
-            IMapper mapper, IProductValidator productValidator, IMessageProducer messageProducer,
-            IOptions<RabbitMqSettings> rabbitMqOptions)
+            IMapper mapper, IProductValidator productValidator,
+            IMessageProducer messageProducer,
+            IOptions<RabbitMqSettings> rabbitMqOptions,
+            IRedisCacheService cacheService)
         {
             _productRepository = productRepository;
             _mapper = mapper;
             _productValidator = productValidator;
             _messageProducer = messageProducer;
             _rabbitMqOptions = rabbitMqOptions;
+            _cacheService = cacheService;
         }
 
 
@@ -90,39 +95,46 @@ namespace OrderPaymentSystem.Application.Services
         }
 
         /// <inheritdoc/>
-        public Task<BaseResult<ProductDto>> GetProductByIdAsync(int id)
+        public async Task<BaseResult<ProductDto>> GetProductByIdAsync(int id)
         {
-            ProductDto? product;
-            product = _productRepository.GetAll()
-                .Select(x => _mapper.Map<ProductDto>(x))
-                .AsEnumerable()
-                .FirstOrDefault(x => x.Id == id);
+            var product = await _cacheService.GetAsync(
+                $"product:{id}",
+                async () =>
+                {
+                    return await _productRepository.GetAll()
+                        .Where(x => x.Id == id)
+                        .Select(x => _mapper.Map<ProductDto>(x))
+                        .SingleOrDefaultAsync();
+                });
 
             if (product == null)
             {
-                return Task.FromResult(new BaseResult<ProductDto>()
+                return new BaseResult<ProductDto>()
                 {
                     ErrorMessage = ErrorMessage.ProductNotFound,
                     ErrorCode = (int)ErrorCodes.ProductNotFound
-                });
+                };
             }
 
             _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
-            return Task.FromResult(new BaseResult<ProductDto>()
+            return new BaseResult<ProductDto>()
             {
                 Data = product,
-            });
+            };
         }
 
         /// <inheritdoc/>
         public async Task<CollectionResult<ProductDto>> GetProductsAsync()
         {
-            ProductDto[] products;
-
-            products = await _productRepository.GetAll()
-                .Select(x => _mapper.Map<ProductDto>(x))
-                .ToArrayAsync();
+            var products = await _cacheService.GetAsync(
+                "products",
+                async () =>
+                {
+                    return await _productRepository.GetAll()
+                        .Select(x => _mapper.Map<ProductDto>(x))
+                        .ToListAsync();
+                });
 
             if (!products.Any())
             {
@@ -138,7 +150,7 @@ namespace OrderPaymentSystem.Application.Services
             return new CollectionResult<ProductDto>()
             {
                 Data = products,
-                Count = products.Length
+                Count = products.Count
             };
         }
 
@@ -157,7 +169,8 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            if (product.ProductName != dto.ProductName || product.Description != dto.Description
+            if (product.ProductName != dto.ProductName 
+                || product.Description != dto.Description
                 || product.Cost != dto.Cost)
             {
                 product.ProductName = dto.ProductName;

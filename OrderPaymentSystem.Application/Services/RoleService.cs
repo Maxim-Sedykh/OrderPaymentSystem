@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Order;
+using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
@@ -28,10 +30,12 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly IMapper _mapper;
+        private readonly IRedisCacheService _cacheService;
 
         public RoleService(IBaseRepository<Role> roleRepository, IBaseRepository<User> userRepository,
             IRoleValidator roleValidator, IBaseRepository<UserRole> userRoleRepository, IMapper mapper, IUnitOfWork unitOfWork,
-            IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions, IUserValidator userValidator)
+            IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions, IUserValidator userValidator,
+            IRedisCacheService cacheService)
         {
             _roleRepository = roleRepository;
             _userRepository = userRepository;
@@ -42,6 +46,7 @@ namespace OrderPaymentSystem.Application.Services
             _messageProducer = messageProducer;
             _rabbitMqOptions = rabbitMqOptions;
             _userValidator = userValidator;
+            _cacheService = cacheService;
         }
 
         /// <inheritdoc/>
@@ -295,7 +300,13 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<CollectionResult<RoleDto>> GetAllRoles()
         {
-            var roles = await _roleRepository.GetAll().Select(x => new RoleDto(x.Id, x.Name)).ToArrayAsync();
+            var roles = await _cacheService.GetAsync(
+                $"roles",
+                async () =>
+                {
+                    return await _roleRepository.GetAll().Select(x => new RoleDto(x.Id, x.Name)).ToArrayAsync();
+                });
+
 
             if (roles.Length == 0)
             {

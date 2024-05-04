@@ -7,6 +7,9 @@ using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using Microsoft.AspNetCore.Builder;
+using OrderPaymentSystem.Domain.Interfaces.Cache;
+using OrderPaymentSystem.DAL.Cache;
+using StackExchange.Redis;
 
 namespace OrderPaymentSystem.DAL.DependencyInjection
 {
@@ -29,6 +32,8 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
 
             services.InitRepositories();
             services.InitUnitOfWork();
+
+            services.InitCaching(configuration);
         }
 
         private static void InitRepositories(this IServiceCollection services)
@@ -36,12 +41,12 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
             var types = new List<Type>()
             {
                 typeof(User),
-                typeof(Order),
+                typeof(Domain.Entity.Order),
                 typeof(Payment),
                 typeof(Product),
                 typeof(UserToken),
                 typeof(UserRole),
-                typeof(Role),
+                typeof(Domain.Entity.Role),
                 typeof(Basket)
             };
 
@@ -56,6 +61,18 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
         private static void InitUnitOfWork(this IServiceCollection services)
         {
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+        }
+
+        private static void InitCaching(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddScoped<IRedisCacheService, RedisCacheService>();
+
+            var redisConfig = configuration.GetSection("RedisCache");
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConfig["Configuration"];
+                options.InstanceName = redisConfig["InstanceName"];
+            });
         }
     }
 }
