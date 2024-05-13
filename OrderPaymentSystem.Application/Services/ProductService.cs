@@ -8,7 +8,6 @@ using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
-using OrderPaymentSystem.Domain.Interfaces.Validations;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
 using OrderPaymentSystem.Producer.Interfaces;
@@ -20,20 +19,18 @@ namespace OrderPaymentSystem.Application.Services
     {
         private readonly IBaseRepository<Product> _productRepository;
         private readonly IMapper _mapper;
-        private readonly IProductValidator _productValidator;
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly IRedisCacheService _cacheService;
 
         public ProductService(IBaseRepository<Product> productRepository,
-            IMapper mapper, IProductValidator productValidator,
+            IMapper mapper,
             IMessageProducer messageProducer,
             IOptions<RabbitMqSettings> rabbitMqOptions,
             IRedisCacheService cacheService)
         {
             _productRepository = productRepository;
             _mapper = mapper;
-            _productValidator = productValidator;
             _messageProducer = messageProducer;
             _rabbitMqOptions = rabbitMqOptions;
             _cacheService = cacheService;
@@ -45,13 +42,12 @@ namespace OrderPaymentSystem.Application.Services
         {
             var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.ProductName == dto.ProductName);
 
-            var result = _productValidator.CreateProductValidator(product);
-            if (!result.IsSuccess)
+            if (product != null)
             {
                 return new BaseResult<ProductDto>()
                 {
-                    ErrorMessage = result.ErrorMessage,
-                    ErrorCode = result.ErrorCode
+                    ErrorCode = (int)ErrorCodes.ProductAlreadyExist,
+                    ErrorMessage = ErrorMessage.ProductAlreadyExist
                 };
             }
 
@@ -72,14 +68,13 @@ namespace OrderPaymentSystem.Application.Services
         public async Task<BaseResult<ProductDto>> DeleteProductAsync(int id)
         {
             var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
-            var result = _productValidator.ValidateOnNull(product);
 
-            if (!result.IsSuccess)
+            if (product == null)
             {
                 return new BaseResult<ProductDto>()
                 {
-                    ErrorMessage = result.ErrorMessage,
-                    ErrorCode = result.ErrorCode
+                    ErrorCode = (int)ErrorCodes.ProductNotFound,
+                    ErrorMessage = ErrorMessage.ProductNotFound
                 };
             }
 
@@ -88,9 +83,18 @@ namespace OrderPaymentSystem.Application.Services
 
             _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
+            var result = new ProductDto()
+            {
+                Id = product.Id,
+                ProductName = product.ProductName,
+                Description = product.Description,
+                Cost = product.Cost,
+                CreatedAt = product.CreatedAt.ToLongDateString(),
+            };
+
             return new BaseResult<ProductDto>()
             {
-                Data = _mapper.Map<ProductDto>(product),
+                Data = _mapper.Map<ProductDto>(product)
             };
         }
 
@@ -158,24 +162,23 @@ namespace OrderPaymentSystem.Application.Services
         public async Task<BaseResult<ProductDto>> UpdateProductAsync(UpdateProductDto dto)
         {
             var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.Id);
-            var result = _productValidator.ValidateOnNull(product);
 
-            if (!result.IsSuccess)
+            if (product == null)
             {
                 return new BaseResult<ProductDto>()
                 {
-                    ErrorMessage = result.ErrorMessage,
-                    ErrorCode = result.ErrorCode
+                    ErrorCode = (int)ErrorCodes.ProductNotFound,
+                    ErrorMessage = ErrorMessage.ProductNotFound
                 };
             }
 
-            if (product.ProductName != dto.ProductName 
+            if (product.ProductName != dto.ProductName
                 || product.Description != dto.Description
                 || product.Cost != dto.Cost)
             {
                 product.ProductName = dto.ProductName;
                 product.Description = dto.Description;
-                product.Cost = dto.Cost;    
+                product.Cost = dto.Cost;
 
                 var updatedProduct = _productRepository.Update(product);
                 await _productRepository.SaveChangesAsync();

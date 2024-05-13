@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.Application.Mapping;
 using OrderPaymentSystem.Application.Services;
-using OrderPaymentSystem.Application.Validations.EntityValidators;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Order;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
@@ -11,7 +10,6 @@ using OrderPaymentSystem.Application.Validations.FluentValidations.Role;
 using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Services;
-using OrderPaymentSystem.Domain.Interfaces.Validations;
 
 namespace OrderPaymentSystem.Application.DependencyInjection
 {
@@ -27,7 +25,6 @@ namespace OrderPaymentSystem.Application.DependencyInjection
             InitServices(services);
 
             InitFluentValidators(services);
-            InitEntityValidators(services);
         }
 
         private static void InitServices(this IServiceCollection services)
@@ -82,16 +79,6 @@ namespace OrderPaymentSystem.Application.DependencyInjection
             {
                 services.AddValidatorsFromAssembly(validatorType.Assembly);
             }
-        }
-
-        private static void InitEntityValidators(this IServiceCollection services)
-        {
-            services.AddScoped<IUserValidator, UserValidator>();
-            services.AddScoped<IRoleValidator, RoleValidator>();
-            services.AddScoped<IBaseValidator<Order>, OrderValidator>();
-            services.AddScoped<IBaseValidator<Basket>, BasketValidator>();
-            services.AddScoped<IPaymentValidator, PaymentValidator>();
-            services.AddScoped<IProductValidator, ProductValidator>();
         }
     }
 }

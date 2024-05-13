@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Auth;
-using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
@@ -11,10 +9,7 @@ using OrderPaymentSystem.Domain.Helpers;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
-using OrderPaymentSystem.Domain.Interfaces.Validations;
 using OrderPaymentSystem.Domain.Result;
-using OrderPaymentSystem.Domain.Settings;
-using OrderPaymentSystem.Producer.Interfaces;
 using System.Security.Claims;
 
 namespace OrderPaymentSystem.Application.Services
@@ -24,15 +19,12 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBaseRepository<User> _userRepository;
         private readonly IBaseRepository<UserToken> _userTokenRepository;
-        private readonly IUserValidator _userValidator;
-        private readonly IRoleValidator _roleValidator;
         private readonly IBaseRepository<Role> _roleRepository;
         private readonly IUserTokenService _userTokenService;
         private readonly IMapper _mapper;
 
         public AuthService(IBaseRepository<User> userRepository, IMapper mapper, IUserTokenService userTokenService,
-            IBaseRepository<UserToken> userTokenRepository, IBaseRepository<Role> roleRepository, IUnitOfWork unitOfWork,
-            IUserValidator userValidator, IRoleValidator roleValidator)
+            IBaseRepository<UserToken> userTokenRepository, IBaseRepository<Role> roleRepository, IUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
             _mapper = mapper;
@@ -40,8 +32,6 @@ namespace OrderPaymentSystem.Application.Services
             _userTokenRepository = userTokenRepository;
             _roleRepository = roleRepository;
             _unitOfWork = unitOfWork;
-            _userValidator = userValidator;
-            _roleValidator = roleValidator;
         }
 
         /// <inheritdoc/>
@@ -51,13 +41,12 @@ namespace OrderPaymentSystem.Application.Services
                 .Include(x => x.Roles)
                 .FirstOrDefaultAsync(x => x.Login == dto.Login);
 
-            var userNullValidationResult = _userValidator.ValidateOnNull(user);
-            if (!userNullValidationResult.IsSuccess)
+            if (user == null)
             {
                 return new BaseResult<TokenDto>()
                 {
-                    ErrorMessage = userNullValidationResult.ErrorMessage,
-                    ErrorCode = userNullValidationResult.ErrorCode
+                    ErrorCode = (int)ErrorCodes.UserNotFound,
+                    ErrorMessage = ErrorMessage.UserNotFound
                 };
             }
 
@@ -124,13 +113,12 @@ namespace OrderPaymentSystem.Application.Services
 
             var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == dto.Login);
 
-            var userCreateValidationResult = _userValidator.CreateUserValidate(user);
-            if (!userCreateValidationResult.IsSuccess)
+            if (user == null)
             {
                 return new BaseResult<UserDto>()
                 {
-                    ErrorMessage = userCreateValidationResult.ErrorMessage,
-                    ErrorCode = userCreateValidationResult.ErrorCode
+                    ErrorCode = (int)ErrorCodes.UserNotFound,
+                    ErrorMessage = ErrorMessage.UserNotFound
                 };
             }
 
@@ -157,13 +145,13 @@ namespace OrderPaymentSystem.Application.Services
                     await _unitOfWork.Baskets.CreateAsync(userBasket);
 
                     var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == nameof(Roles.User));
-                    var roleNullValidationResult = _roleValidator.ValidateOnNull(role);
-                    if (!roleNullValidationResult.IsSuccess)
+
+                    if (role == null)
                     {
                         return new BaseResult<UserDto>()
                         {
-                            ErrorMessage = roleNullValidationResult.ErrorMessage,
-                            ErrorCode = roleNullValidationResult.ErrorCode
+                            ErrorCode = (int)ErrorCodes.RoleNotFound,
+                            ErrorMessage = ErrorMessage.RoleNotFound
                         };
                     }
 

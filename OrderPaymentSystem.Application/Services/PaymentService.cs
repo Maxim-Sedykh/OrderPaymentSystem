@@ -5,14 +5,11 @@ using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.ComplexTypes;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Payment;
-using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
-using OrderPaymentSystem.Domain.Interfaces.Validations;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
 using OrderPaymentSystem.Producer.Interfaces;
@@ -23,22 +20,17 @@ namespace OrderPaymentSystem.Application.Services
     public class PaymentService : IPaymentService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IBaseValidator<Basket> _basketValidator;
-        private readonly IPaymentValidator _paymentValidator;
         private readonly IMapper _mapper;
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly IRedisCacheService _cacheService;
 
         public PaymentService(IMapper mapper, IMessageProducer messageProducer,
-            IOptions<RabbitMqSettings> rabbitMqOptions, IBaseValidator<Basket> basketValidator,
-            IPaymentValidator paymentValidator, IUnitOfWork unitOfWord, IRedisCacheService cacheService)
+            IOptions<RabbitMqSettings> rabbitMqOptions, IUnitOfWork unitOfWord, IRedisCacheService cacheService)
         {
             _mapper = mapper;
             _messageProducer = messageProducer;
             _rabbitMqOptions = rabbitMqOptions;
-            _basketValidator = basketValidator;
-            _paymentValidator = paymentValidator;
             _unitOfWork = unitOfWord;
             _cacheService = cacheService;
         }
@@ -48,13 +40,12 @@ namespace OrderPaymentSystem.Application.Services
         {
             var basket = await _unitOfWork.Baskets.GetAll().FirstOrDefaultAsync(x => x.Id == dto.BasketId);
 
-            var basketNullValidationResult = _basketValidator.ValidateOnNull(basket);
-            if (!basketNullValidationResult.IsSuccess)
+            if (basket == null)
             {
                 return new BaseResult<PaymentDto>()
                 {
-                    ErrorMessage = basketNullValidationResult.ErrorMessage,
-                    ErrorCode = basketNullValidationResult.ErrorCode
+                    ErrorCode = (int)ErrorCodes.BasketNotFound,
+                    ErrorMessage = ErrorMessage.BasketNotFound
                 };
             }
 
@@ -73,19 +64,18 @@ namespace OrderPaymentSystem.Application.Services
 
             var costOfBasketOrders = basketOrders.Sum(o => o.OrderCost);
 
-            var paymentValidationResult = _paymentValidator.PaymentAmountVlidator(costOfBasketOrders, dto.AmountOfPayment);
-            if (!paymentValidationResult.IsSuccess)
+            if (costOfBasketOrders > dto.AmountOfPayment)
             {
                 return new BaseResult<PaymentDto>()
                 {
-                    ErrorMessage = paymentValidationResult.ErrorMessage,
-                    ErrorCode = paymentValidationResult.ErrorCode
+                    ErrorMessage = ErrorMessage.NotEnoughPayFunds,
+                    ErrorCode = (int)ErrorCodes.NotEnoughPayFunds
                 };
             }
 
             using (var transaction = await _unitOfWork.BeginTransactionAsync())
             {
-                try 
+                try
                 {
                     Payment payment = new Payment()
                     {
@@ -142,14 +132,12 @@ namespace OrderPaymentSystem.Application.Services
         {
             var payment = await _unitOfWork.Payments.GetAll().FirstOrDefaultAsync(x => x.Id == id);
 
-            var paymentNullValidationResult = _paymentValidator.ValidateOnNull(payment);
-
-            if (!paymentNullValidationResult.IsSuccess)
+            if (payment == null)
             {
                 return new BaseResult<PaymentDto>()
                 {
-                    ErrorMessage = paymentNullValidationResult.ErrorMessage,
-                    ErrorCode = paymentNullValidationResult.ErrorCode
+                    ErrorCode = (int)ErrorCodes.PaymentNotFound,
+                    ErrorMessage = ErrorMessage.PaymentNotFound
                 };
             }
 
@@ -198,14 +186,12 @@ namespace OrderPaymentSystem.Application.Services
                 .Include(x => x.Orders)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
-            var paymentNullValidationResult = _paymentValidator.ValidateOnNull(payment);
-
-            if (!paymentNullValidationResult.IsSuccess)
+            if (payment == null)
             {
                 return new CollectionResult<OrderDto>()
                 {
-                    ErrorMessage = paymentNullValidationResult.ErrorMessage,
-                    ErrorCode = paymentNullValidationResult.ErrorCode
+                    ErrorCode = (int)ErrorCodes.PaymentNotFound,
+                    ErrorMessage = ErrorMessage.PaymentNotFound
                 };
             }
 
@@ -257,14 +243,13 @@ namespace OrderPaymentSystem.Application.Services
             var payment = await _unitOfWork.Payments.GetAll()
                 .Include(x => x.Basket.Orders)
                 .FirstOrDefaultAsync(x => x.Id == dto.Id);
-            var paymentNullValidationResult = _paymentValidator.ValidateOnNull(payment);
 
-            if (!paymentNullValidationResult.IsSuccess)
+            if (payment == null)
             {
                 return new BaseResult<PaymentDto>()
                 {
-                    ErrorMessage = paymentNullValidationResult.ErrorMessage,
-                    ErrorCode = paymentNullValidationResult.ErrorCode
+                    ErrorCode = (int)ErrorCodes.PaymentNotFound,
+                    ErrorMessage = ErrorMessage.PaymentNotFound
                 };
             }
 
@@ -272,13 +257,12 @@ namespace OrderPaymentSystem.Application.Services
             {
                 var costOfBasketOrders = payment.Basket.Orders.Sum(o => o.OrderCost);
 
-                var paymentCreateValidationResult = _paymentValidator.PaymentAmountVlidator(costOfBasketOrders, dto.AmountOfPayment);
-                if (!paymentCreateValidationResult.IsSuccess)
+                if (costOfBasketOrders > dto.AmountOfPayment)
                 {
                     return new BaseResult<PaymentDto>()
                     {
-                        ErrorMessage = paymentCreateValidationResult.ErrorMessage,
-                        ErrorCode = paymentCreateValidationResult.ErrorCode
+                        ErrorMessage = ErrorMessage.NotEnoughPayFunds,
+                        ErrorCode = (int)ErrorCodes.NotEnoughPayFunds
                     };
                 }
 

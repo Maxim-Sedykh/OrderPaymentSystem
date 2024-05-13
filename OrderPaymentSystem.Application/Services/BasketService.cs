@@ -8,7 +8,6 @@ using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
-using OrderPaymentSystem.Domain.Interfaces.Validations;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
 using OrderPaymentSystem.Producer.Interfaces;
@@ -19,20 +18,18 @@ namespace OrderPaymentSystem.Application.Services
     {
         private readonly IBaseRepository<Order> _orderRepository;
         private readonly IBaseRepository<Basket> _basketRepository;
-        private readonly IBaseValidator<Basket> _basketValidator;
         private readonly IMapper _mapper;
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
 
         public BasketService(IBaseRepository<Order> orderRepository, IMapper mapper, IMessageProducer messageProducer,
-            IOptions<RabbitMqSettings> rabbitMqOptions, IBaseRepository<Basket> basketRepository, IBaseValidator<Basket> basketValidator)
+            IOptions<RabbitMqSettings> rabbitMqOptions, IBaseRepository<Basket> basketRepository)
         {
             _orderRepository = orderRepository;
             _mapper = mapper;
             _messageProducer = messageProducer;
             _rabbitMqOptions = rabbitMqOptions;
             _basketRepository = basketRepository;
-            _basketValidator = basketValidator;
         }
 
         /// <inheritdoc/>
@@ -42,13 +39,12 @@ namespace OrderPaymentSystem.Application.Services
                 .Include(x => x.Orders)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
-            var basketNullValidationResult = _basketValidator.ValidateOnNull(basket);
-            if (!basketNullValidationResult.IsSuccess)
+            if (basket == null)
             {
                 return new CollectionResult<OrderDto>()
                 {
-                    ErrorMessage = basketNullValidationResult.ErrorMessage,
-                    ErrorCode = basketNullValidationResult.ErrorCode
+                    ErrorCode = (int)ErrorCodes.BasketNotFound,
+                    ErrorMessage = ErrorMessage.BasketNotFound
                 };
             }
 
@@ -82,13 +78,12 @@ namespace OrderPaymentSystem.Application.Services
                 .Include(x => x.Orders)
                 .FirstOrDefaultAsync(x => x.Id == basketId);
 
-            var basketNullValidationResult = _basketValidator.ValidateOnNull(basket);
-            if (!basketNullValidationResult.IsSuccess)
+            if (basket == null)
             {
                 return new BaseResult<BasketDto>()
                 {
-                    ErrorMessage = basketNullValidationResult.ErrorMessage,
-                    ErrorCode = basketNullValidationResult.ErrorCode
+                    ErrorCode = (int)ErrorCodes.BasketNotFound,
+                    ErrorMessage = ErrorMessage.BasketNotFound
                 };
             }
 
@@ -105,7 +100,7 @@ namespace OrderPaymentSystem.Application.Services
 
             userBasketOrders = await _orderRepository.GetAll()
                 .Where(x => x.BasketId == basketId)
-                .Select(x =>  _mapper.Map<OrderDto>(x))
+                .Select(x => _mapper.Map<OrderDto>(x))
                 .ToArrayAsync();
 
             if (userBasketOrders.Length == 0)

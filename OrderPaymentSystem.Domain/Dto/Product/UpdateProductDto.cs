@@ -8,7 +8,7 @@ namespace OrderPaymentSystem.Domain.Dto.Product
 {
     public class UpdateProductDto
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
 
         public string ProductName { get; set; }
 

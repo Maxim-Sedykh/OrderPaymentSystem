@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Repositories;
+﻿using Azure.Core;
+using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace OrderPaymentSystem.DAL.Repositories
 
         public IQueryable<TEntity> GetAll()
         {
-            return _dbContext.Set<TEntity>();
+            return _dbContext.Set<TEntity>().AsQueryable();
         }
 
         public async Task<int> SaveChangesAsync()
@@ -29,6 +30,8 @@ namespace OrderPaymentSystem.DAL.Repositories
         public async Task<TEntity> CreateAsync(TEntity entity)
         {
             ValidateEntityOnNull(entity);
+
+            await _dbContext.AddAsync(entity);
 
             return entity;
         }
@@ -77,6 +80,11 @@ namespace OrderPaymentSystem.DAL.Repositories
             {
                 throw new ArgumentNullException(nameof(entities), "Entities is null");
             }
+        }
+
+        public async Task<TEntity> GetOne<T>(T id)
+        {
+            return await _dbContext.Set<TEntity>().FindAsync(id);
         }
     }
 }

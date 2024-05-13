@@ -17,9 +17,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderPaymentSystem.DAL", "O
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderPaymentSystem.Application", "OrderPaymentSystem.Application\OrderPaymentSystem.Application.csproj", "{49B57D31-6C6E-44BE-B172-CF92C1D6200B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderPaymentSystem.Producer", "OrderPaymentSystem.Producer\OrderPaymentSystem.Producer.csproj", "{B6427404-C9B4-402B-B305-0318099729B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderPaymentSystem.Producer", "OrderPaymentSystem.Producer\OrderPaymentSystem.Producer.csproj", "{B6427404-C9B4-402B-B305-0318099729B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderPaymentSystem.Consumer", "OrderPaymentSystem.Consumer\OrderPaymentSystem.Consumer.csproj", "{DF0A60C0-0947-4D78-A323-DE476D8C5583}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderPaymentSystem.Consumer", "OrderPaymentSystem.Consumer\OrderPaymentSystem.Consumer.csproj", "{DF0A60C0-0947-4D78-A323-DE476D8C5583}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A5A2BEF5-9D6E-4FB7-B4B7-454C3E6711CE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderPaymentSystem.UnitTests", "OrderPaymentSystem.UnitTests\OrderPaymentSystem.UnitTests.csproj", "{170A5211-56F8-477B-B96E-8846D2905A1B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +55,10 @@ Global
 		{DF0A60C0-0947-4D78-A323-DE476D8C5583}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF0A60C0-0947-4D78-A323-DE476D8C5583}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF0A60C0-0947-4D78-A323-DE476D8C5583}.Release|Any CPU.Build.0 = Release|Any CPU
+		{170A5211-56F8-477B-B96E-8846D2905A1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{170A5211-56F8-477B-B96E-8846D2905A1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{170A5211-56F8-477B-B96E-8846D2905A1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{170A5211-56F8-477B-B96E-8846D2905A1B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -62,6 +70,7 @@ Global
 		{49B57D31-6C6E-44BE-B172-CF92C1D6200B} = {029ABAF9-C5D5-488E-88EA-28181DF1FE67}
 		{B6427404-C9B4-402B-B305-0318099729B9} = {72494A2B-14A4-4964-BD1D-A4B46F3C21A6}
 		{DF0A60C0-0947-4D78-A323-DE476D8C5583} = {72494A2B-14A4-4964-BD1D-A4B46F3C21A6}
+		{170A5211-56F8-477B-B96E-8846D2905A1B} = {A5A2BEF5-9D6E-4FB7-B4B7-454C3E6711CE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {651B92B9-C01E-46BF-8BC9-913460277ED7}

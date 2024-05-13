@@ -37,7 +37,7 @@ namespace OrderPaymentSystem.DAL.Configurations
             builder.Property(x => x.ProductName).IsRequired().HasMaxLength(50);
             builder.Property(x => x.Description).IsRequired().HasMaxLength(2000);
 
-            builder.HasMany<Order>(x => x.Orders)
+            builder.HasMany(x => x.Orders)
                 .WithOne(x => x.Product)
                 .HasForeignKey(x => x.ProductId)
                 .HasPrincipalKey(x => x.Id);
