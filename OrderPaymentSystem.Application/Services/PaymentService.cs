@@ -183,6 +183,7 @@ namespace OrderPaymentSystem.Application.Services
         public async Task<CollectionResult<OrderDto>> GetPaymentOrdersAsync(long id)
         {
             var payment = await _unitOfWork.Payments.GetAll()
+                .AsNoTracking()
                 .Include(x => x.Orders)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -212,6 +213,7 @@ namespace OrderPaymentSystem.Application.Services
                 async () =>
                 {
                     return await _unitOfWork.Payments.GetAll()
+                        .AsNoTracking()
                         .Include(x => x.Basket)
                         .Where(x => x.Basket.UserId == userId)
                         .Select(x => _mapper.Map<PaymentDto>(x))

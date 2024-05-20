@@ -14,7 +14,7 @@ namespace OrderPaymentSystem.Api.Controllers
     /// <summary>
     /// Контроллер для работы с ролями пользователя
     /// </summary>
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [Consumes(MediaTypeNames.Application.Json)]
     [Route("api/[controller]")]
     [ApiController]

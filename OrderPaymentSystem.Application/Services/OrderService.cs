@@ -117,6 +117,7 @@ namespace OrderPaymentSystem.Application.Services
                 async () =>
                 {
                     return await _orderRepository.GetAll()
+                        .AsNoTracking()
                         .Where(x => x.Id == id)
                         .Select(x => _mapper.Map<OrderDto>(x))
                         .SingleOrDefaultAsync();
@@ -145,6 +146,7 @@ namespace OrderPaymentSystem.Application.Services
             OrderDto[] orders;
 
             orders = await _orderRepository.GetAll()
+                .AsNoTracking()
                 .Include(x => x.Basket)
                 .Select(x => _mapper.Map<OrderDto>(x))
                 .ToArrayAsync();

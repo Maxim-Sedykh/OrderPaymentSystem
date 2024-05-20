@@ -295,7 +295,7 @@ namespace OrderPaymentSystem.Application.Services
                 $"roles",
                 async () =>
                 {
-                    return await _roleRepository.GetAll().Select(x => new RoleDto(x.Id, x.Name)).ToArrayAsync();
+                    return await _roleRepository.GetAll().AsNoTracking().Select(x => new RoleDto(x.Id, x.Name)).ToArrayAsync();
                 });
 
 

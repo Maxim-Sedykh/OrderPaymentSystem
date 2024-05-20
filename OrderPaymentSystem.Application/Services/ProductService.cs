@@ -106,6 +106,7 @@ namespace OrderPaymentSystem.Application.Services
                 async () =>
                 {
                     return await _productRepository.GetAll()
+                        .AsNoTracking()
                         .Where(x => x.Id == id)
                         .Select(x => _mapper.Map<ProductDto>(x))
                         .SingleOrDefaultAsync();
@@ -135,7 +136,7 @@ namespace OrderPaymentSystem.Application.Services
                 "products",
                 async () =>
                 {
-                    return await _productRepository.GetAll()
+                    return await _productRepository.GetAll().AsNoTracking()
                         .Select(x => _mapper.Map<ProductDto>(x))
                         .ToListAsync();
                 });

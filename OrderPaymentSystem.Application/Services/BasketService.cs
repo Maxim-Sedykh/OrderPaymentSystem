@@ -75,6 +75,7 @@ namespace OrderPaymentSystem.Application.Services
         public async Task<BaseResult<BasketDto>> GetBasketByIdAsync(long basketId)
         {
             var basket = await _basketRepository.GetAll()
+                .AsNoTracking()
                 .Include(x => x.Orders)
                 .FirstOrDefaultAsync(x => x.Id == basketId);
 
@@ -99,6 +100,7 @@ namespace OrderPaymentSystem.Application.Services
             OrderDto[] userBasketOrders;
 
             userBasketOrders = await _orderRepository.GetAll()
+                .AsNoTracking()
                 .Where(x => x.BasketId == basketId)
                 .Select(x => _mapper.Map<OrderDto>(x))
                 .ToArrayAsync();
