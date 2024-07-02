@@ -24,13 +24,9 @@ namespace OrderPaymentSystem.DAL.Cache
         {
             string cachedValue = await _distributedCache.GetStringAsync(key);
 
-            if (cachedValue is null)
-            {
-                return null;
-            }
-
-            return JsonConvert.DeserializeObject<T>(cachedValue);
+            return cachedValue != null ? JsonConvert.DeserializeObject<T>(cachedValue) : null;
         }
+
 
         public async Task<T> GetAsync<T>(string key, Func<Task<T>> factory) where T : class
         {

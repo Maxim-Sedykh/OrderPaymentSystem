@@ -27,8 +27,6 @@ namespace OrderPaymentSystem.UnitTests.ProductTests
         public GetProductTests(ProductServiceFixture fixture)
         {
             _productService = fixture.ProductService;
-            _productRepositoryMock = fixture.ProductRepositoryMock;
-            _mapperMock = fixture.MapperMock;
             _redisCacheService = fixture.CacheServiceMock;
         }
 

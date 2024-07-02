@@ -37,7 +37,7 @@ namespace OrderPaymentSystem.DAL.Configurations
             builder.Property(x => x.Login).IsRequired().HasMaxLength(50);
             builder.Property(x => x.Password).IsRequired();
 
-            builder.HasMany<Order>(x => x.Orders)
+            builder.HasMany(x => x.Orders)
                 .WithOne(x => x.User)
                 .HasForeignKey(x => x.UserId)
                 .HasPrincipalKey(x => x.Id);
