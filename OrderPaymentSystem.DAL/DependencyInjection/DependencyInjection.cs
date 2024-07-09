@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.DAL.Cache;
 using StackExchange.Redis;
+using OrderPaymentSystem.Domain.Settings;
 
 namespace OrderPaymentSystem.DAL.DependencyInjection
 {
@@ -65,12 +66,12 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
 
         private static void InitCaching(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<IRedisCacheService, RedisCacheService>();
+            services.AddScoped<ICacheService, CacheService>();
 
-            var redisConfig = configuration.GetSection("RedisCache");
+            var redisConfig = configuration.GetSection(nameof(RedisSettings));
             services.AddStackExchangeRedisCache(options =>
             {
-                options.Configuration = redisConfig["Configuration"];
+                options.Configuration = redisConfig["Url"];
                 options.InstanceName = redisConfig["InstanceName"];
             });
         }
