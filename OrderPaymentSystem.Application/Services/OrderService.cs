@@ -22,10 +22,10 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IMapper _mapper;
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
-        private readonly IRedisCacheService _cacheService;
+        private readonly ICacheService _cacheService;
 
         public OrderService(IBaseRepository<Order> orderRepository, IBaseRepository<User> userRepository, IBaseRepository<Product> productRepository,
-            IMapper mapper, IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions, IRedisCacheService cacheService)
+            IMapper mapper, IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions, ICacheService cacheService)
         {
             _orderRepository = orderRepository;
             _mapper = mapper;
@@ -33,6 +33,7 @@ namespace OrderPaymentSystem.Application.Services
             _rabbitMqOptions = rabbitMqOptions;
             _cacheService = cacheService;
             _productRepository = productRepository;
+            _userRepository = userRepository;
         }
 
 
@@ -112,7 +113,7 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<BaseResult<OrderDto>> GetOrderByIdAsync(long id)
         {
-            var order = await _cacheService.GetAsync(
+            var order = await _cacheService.GetObjectAsync(
                 $"order:{id}",
                 async () =>
                 {
@@ -120,6 +121,7 @@ namespace OrderPaymentSystem.Application.Services
                         .AsNoTracking()
                         .Where(x => x.Id == id)
                         .Select(x => _mapper.Map<OrderDto>(x))
+                        .AsNoTracking()
                         .SingleOrDefaultAsync();
                 });
 
