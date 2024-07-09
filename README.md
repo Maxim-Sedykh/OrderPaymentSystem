@@ -24,6 +24,7 @@
 - RabbitMQ для брокерства сообщений
 - Redis для кэширования
 - xunit и Moq для юнит-тестов
+- Prometheus и Graphana для метрик
 
 <img src="https://github.com/Maxim-Sedykh/OrderPaymentSystem/assets/125740808/0b3b1f34-43cf-4fa0-8179-23736b5da701" width=100%>
 
