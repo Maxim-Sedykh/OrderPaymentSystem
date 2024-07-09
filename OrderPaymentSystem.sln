@@ -23,13 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderPaymentSystem.Consumer
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A5A2BEF5-9D6E-4FB7-B4B7-454C3E6711CE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderPaymentSystem.UnitTests", "OrderPaymentSystem.UnitTests\OrderPaymentSystem.UnitTests.csproj", "{170A5211-56F8-477B-B96E-8846D2905A1B}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EE35FB4D-0CB1-4470-9159-F1094A595DD9}"
-	ProjectSection(SolutionItems) = preProject
-		docker-compose.yml = docker-compose.yml
-		prometheus.yml = prometheus.yml
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderPaymentSystem.UnitTests", "OrderPaymentSystem.UnitTests\OrderPaymentSystem.UnitTests.csproj", "{170A5211-56F8-477B-B96E-8846D2905A1B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

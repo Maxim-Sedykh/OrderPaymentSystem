@@ -6,16 +6,11 @@ using OrderPaymentSystem.Domain.Settings;
 using OrderPaymentSystem.Api.Middlewares;
 using OrderPaymentSystem.Consumer.DependencyInjection;
 using OrderPaymentSystem.Producer.DependencyInjection;
-using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);   
 
 builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection(nameof(RabbitMqSettings)));
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.DefaultSection));
-builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection(nameof(RedisSettings)));
-
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.UseHttpClientMetrics();
 
 builder.Services.AddControllers();
 
@@ -50,19 +45,8 @@ app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 
 app.UseHttpsRedirection();
 
-app.UseMetricServer();
-app.UseHttpMetrics();
-
-app.MapGet("/test-random-number", () =>
-{
-    var number = Random.Shared.Next(0, 100);
-    return Results.Ok(number);
-}
-);
-
 app.UseAuthorization();
 
-app.MapMetrics();
 app.MapControllers();
 
 app.Run();

@@ -23,10 +23,10 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IMapper _mapper;
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
-        private readonly ICacheService _cacheService;
+        private readonly IRedisCacheService _cacheService;
 
         public PaymentService(IMapper mapper, IMessageProducer messageProducer,
-            IOptions<RabbitMqSettings> rabbitMqOptions, IUnitOfWork unitOfWord, ICacheService cacheService)
+            IOptions<RabbitMqSettings> rabbitMqOptions, IUnitOfWork unitOfWord, IRedisCacheService cacheService)
         {
             _mapper = mapper;
             _messageProducer = messageProducer;
@@ -154,7 +154,7 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<BaseResult<PaymentDto>> GetPaymentByIdAsync(long id)
         {
-            var payment = await _cacheService.GetObjectAsync(
+            var payment = await _cacheService.GetAsync(
                 $"payment:{id}",
                 async () =>
                 {
@@ -208,7 +208,7 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(long userId)
         {
-            var userPayments = await _cacheService.GetObjectAsync(
+            var userPayments = await _cacheService.GetAsync(
                 $"payments:{userId}",
                 async () =>
                 {

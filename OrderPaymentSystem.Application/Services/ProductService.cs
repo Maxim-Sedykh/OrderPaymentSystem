@@ -21,13 +21,13 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IMapper _mapper;
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
-        private readonly ICacheService _cacheService;
+        private readonly IRedisCacheService _cacheService;
 
         public ProductService(IBaseRepository<Product> productRepository,
             IMapper mapper,
             IMessageProducer messageProducer,
             IOptions<RabbitMqSettings> rabbitMqOptions,
-            ICacheService cacheService)
+            IRedisCacheService cacheService)
         {
             _productRepository = productRepository;
             _mapper = mapper;
@@ -101,7 +101,7 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<BaseResult<ProductDto>> GetProductByIdAsync(int id)
         {
-            var product = await _cacheService.GetObjectAsync(
+            var product = await _cacheService.GetAsync(
                 $"product:{id}",
                 async () =>
                 {
@@ -132,7 +132,7 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<CollectionResult<ProductDto>> GetProductsAsync()
         {
-            var products = await _cacheService.GetObjectAsync(
+            var products = await _cacheService.GetAsync(
                 "products",
                 async () =>
                 {

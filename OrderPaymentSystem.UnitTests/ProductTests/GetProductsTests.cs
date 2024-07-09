@@ -19,7 +19,7 @@ namespace OrderPaymentSystem.UnitTests.ProductTests
     public class GetProductsTests : IClassFixture<ProductServiceFixture>
     {
         private readonly ProductService _productService;
-        private readonly Mock<ICacheService> _redisCacheService;
+        private readonly Mock<IRedisCacheService> _redisCacheService;
 
         public GetProductsTests(ProductServiceFixture fixture)
         {
@@ -33,7 +33,7 @@ namespace OrderPaymentSystem.UnitTests.ProductTests
             // Arrange
             var cachedProductDto = new ProductDto { Id = 1, ProductName = "TestProduct", Description = "Test description", Cost = 500 };
 
-            _redisCacheService.Setup(mock => mock.GetObjectAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<ProductDto>>>>()))
+            _redisCacheService.Setup(mock => mock.GetAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<ProductDto>>>>()))
                 .ReturnsAsync(new List<ProductDto> { cachedProductDto });
 
             // Act
@@ -51,7 +51,7 @@ namespace OrderPaymentSystem.UnitTests.ProductTests
         public async Task GetProductByIdAsync_ProductNotFound_ReturnsErrorResult()
         {
             //Arrange
-            _redisCacheService.Setup(mock => mock.GetObjectAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<ProductDto>>>>()))
+            _redisCacheService.Setup(mock => mock.GetAsync(It.IsAny<string>(), It.IsAny<Func<Task<List<ProductDto>>>>()))
                 .ReturnsAsync(new List<ProductDto>());
 
             // Act

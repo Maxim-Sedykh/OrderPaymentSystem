@@ -17,7 +17,6 @@ namespace OrderPaymentSystem.Api
         /// Подключение аутентификации и авторизации
         /// </summary>
         /// <param name="services"></param>
-        /// <param name="builder"></param>
         public static void AddAuthenticationAndAuthorization(this IServiceCollection services, WebApplicationBuilder builder)
         { 
             services.AddAuthorization();

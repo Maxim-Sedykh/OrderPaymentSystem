@@ -28,12 +28,12 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly IMapper _mapper;
-        private readonly ICacheService _cacheService;
+        private readonly IRedisCacheService _cacheService;
 
         public RoleService(IBaseRepository<Role> roleRepository, IBaseRepository<User> userRepository,
             IBaseRepository<UserRole> userRoleRepository, IMapper mapper, IUnitOfWork unitOfWork,
             IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions,
-            ICacheService cacheService)
+            IRedisCacheService cacheService)
         {
             _roleRepository = roleRepository;
             _userRepository = userRepository;
@@ -261,8 +261,7 @@ namespace OrderPaymentSystem.Application.Services
             {
                 try
                 {
-                    var userRole = await _unitOfWork.UserRoles
-                                            .GetAll()
+                    var userRole = await _unitOfWork.UserRoles.GetAll()
                                             .Where(x => x.RoleId == role.Id)
                                             .FirstAsync(x => x.UserId == user.Id);
 
@@ -292,15 +291,11 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<CollectionResult<RoleDto>> GetAllRoles()
         {
-            var roles = await _cacheService.GetObjectAsync(
+            var roles = await _cacheService.GetAsync(
                 $"roles",
                 async () =>
                 {
-                    return await _roleRepository
-                        .GetAll()
-                        .AsNoTracking()
-                        .Select(x => new RoleDto(x.Id, x.Name))
-                        .ToArrayAsync();
+                    return await _roleRepository.GetAll().AsNoTracking().Select(x => new RoleDto(x.Id, x.Name)).ToArrayAsync();
                 });
 
 

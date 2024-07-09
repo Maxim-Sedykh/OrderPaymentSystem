@@ -18,7 +18,7 @@ namespace OrderPaymentSystem.UnitTests.Fixtures
             MapperMock = new Mock<IMapper>();
             MessageProducerMock = new Mock<IMessageProducer>();
             RabbitMqOptionsMock = new Mock<IOptions<RabbitMqSettings>>();
-            CacheServiceMock = new Mock<ICacheService>();
+            CacheServiceMock = new Mock<IRedisCacheService>();
 
             var rabbitMqSettings = new RabbitMqSettings { RoutingKey = "test", ExchangeName = "test" };
             RabbitMqOptionsMock.Setup(options => options.Value).Returns(rabbitMqSettings);
@@ -36,7 +36,7 @@ namespace OrderPaymentSystem.UnitTests.Fixtures
         public Mock<IMapper> MapperMock { get; }
         public Mock<IMessageProducer> MessageProducerMock { get; }
         public Mock<IOptions<RabbitMqSettings>> RabbitMqOptionsMock { get; }
-        public Mock<ICacheService> CacheServiceMock { get; }
+        public Mock<IRedisCacheService> CacheServiceMock { get; }
 
         public void Dispose() { }
     }

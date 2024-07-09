@@ -4,9 +4,6 @@ using ILogger = Serilog.ILogger;
 
 namespace OrderPaymentSystem.Api.Middlewares
 {
-    /// <summary>
-    /// Обработчик исключений
-    /// </summary>
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
