@@ -1,11 +1,6 @@
 ﻿using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Result;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Domain.Interfaces.Services
 {

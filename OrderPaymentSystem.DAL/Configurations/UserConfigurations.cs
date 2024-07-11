@@ -2,13 +2,6 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Helpers;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.DAL.Configurations
 {
@@ -36,6 +29,8 @@ namespace OrderPaymentSystem.DAL.Configurations
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
             builder.Property(x => x.Login).IsRequired().HasMaxLength(50);
             builder.Property(x => x.Password).IsRequired();
+
+            builder.HasIndex(x => x.Login).IsUnique();
 
             builder.HasMany(x => x.Orders)
                 .WithOne(x => x.User)

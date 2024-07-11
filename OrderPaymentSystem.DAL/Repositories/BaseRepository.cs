@@ -1,10 +1,4 @@
-﻿using Azure.Core;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using OrderPaymentSystem.Domain.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.DAL.Repositories
 {
@@ -82,7 +76,7 @@ namespace OrderPaymentSystem.DAL.Repositories
             }
         }
 
-        public async Task<TEntity> GetOne<T>(T id)
+        public async Task<TEntity> GetById<T>(T id)
         {
             return await _dbContext.Set<TEntity>().FindAsync(id);
         }

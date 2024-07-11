@@ -8,7 +8,6 @@ using OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Product;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Role;
 using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
-using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 
 namespace OrderPaymentSystem.Application.DependencyInjection
@@ -21,6 +20,8 @@ namespace OrderPaymentSystem.Application.DependencyInjection
         public static void AddApplication(this IServiceCollection services)
         {
             InitAutoMapper(services);
+
+            services.AddMediatR(cf => cf.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
             InitServices(services);
 

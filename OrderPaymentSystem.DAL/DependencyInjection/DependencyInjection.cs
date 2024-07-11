@@ -6,10 +6,8 @@ using OrderPaymentSystem.DAL.Repositories;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
-using Microsoft.AspNetCore.Builder;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.DAL.Cache;
-using StackExchange.Redis;
 using OrderPaymentSystem.Domain.Settings;
 
 namespace OrderPaymentSystem.DAL.DependencyInjection

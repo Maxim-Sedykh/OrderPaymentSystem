@@ -1,14 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.DAL.Interceptors;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.DAL
 {
@@ -16,7 +9,7 @@ namespace OrderPaymentSystem.DAL
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options): base(options)
         {
-            Database.EnsureDeleted();
+            //Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 
