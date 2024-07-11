@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.ComplexTypes;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Payment;
 using OrderPaymentSystem.Domain.Entity;
@@ -155,7 +156,7 @@ namespace OrderPaymentSystem.Application.Services
         public async Task<BaseResult<PaymentDto>> GetPaymentByIdAsync(long id)
         {
             var payment = await _cacheService.GetObjectAsync(
-                $"payment:{id}",
+                string.Format(CacheKeys.Payment, id),
                 async () =>
                 {
                     return await _unitOfWork.Payments.GetAll()
@@ -209,7 +210,7 @@ namespace OrderPaymentSystem.Application.Services
         public async Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(long userId)
         {
             var userPayments = await _cacheService.GetObjectAsync(
-                $"payments:{userId}",
+                string.Format(CacheKeys.UserPayments, userId),
                 async () =>
                 {
                     return await _unitOfWork.Payments.GetAll()

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
@@ -114,7 +115,7 @@ namespace OrderPaymentSystem.Application.Services
         public async Task<BaseResult<OrderDto>> GetOrderByIdAsync(long id)
         {
             var order = await _cacheService.GetObjectAsync(
-                $"order:{id}",
+                string.Format(CacheKeys.Order, id),
                 async () =>
                 {
                     return await _orderRepository.GetAll()
