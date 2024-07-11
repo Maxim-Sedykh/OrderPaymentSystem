@@ -51,7 +51,8 @@ namespace OrderPaymentSystem.DAL.Cache
             var data = JsonSerializer.SerializeToUtf8Bytes(obj);
             if (data != null && data.Length > 0)
             {
-                await _cache.SetAsync(key, data, options ?? new DistributedCacheEntryOptions());
+                await _cache.SetAsync(key, data, options ?? new DistributedCacheEntryOptions() 
+                { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2)});
             }
         }
     }

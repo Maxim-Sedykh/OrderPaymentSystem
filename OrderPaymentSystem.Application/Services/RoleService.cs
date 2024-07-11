@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Dto.Role;
@@ -293,7 +294,7 @@ namespace OrderPaymentSystem.Application.Services
         public async Task<CollectionResult<RoleDto>> GetAllRoles()
         {
             var roles = await _cacheService.GetObjectAsync(
-                $"roles",
+                CacheKeys.Roles,
                 async () =>
                 {
                     return await _roleRepository

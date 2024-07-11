@@ -22,6 +22,8 @@ namespace OrderPaymentSystem.Application.DependencyInjection
         {
             InitAutoMapper(services);
 
+            services.AddMediatR(cf => cf.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
+
             InitServices(services);
 
             InitFluentValidators(services);
