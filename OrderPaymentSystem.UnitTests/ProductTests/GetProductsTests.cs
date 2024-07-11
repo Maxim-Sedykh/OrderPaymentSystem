@@ -1,17 +1,9 @@
-﻿using AutoMapper;
-using Moq;
+﻿using Moq;
 using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Domain.Dto.Product;
-using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.UnitTests.Fixtures;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ProductTests

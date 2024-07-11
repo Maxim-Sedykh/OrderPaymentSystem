@@ -1,10 +1,4 @@
-﻿using Azure.Core;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using OrderPaymentSystem.Domain.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.DAL.Repositories
 {

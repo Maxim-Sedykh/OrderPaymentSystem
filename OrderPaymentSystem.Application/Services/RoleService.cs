@@ -3,10 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Constants;
-using OrderPaymentSystem.Domain.Dto.Order;
-using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Dto.Role;
-using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
@@ -113,7 +110,7 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            role = new Role() 
+            role = new Role()
             {
                 Name = dto.Name,
             };
@@ -272,7 +269,7 @@ namespace OrderPaymentSystem.Application.Services
                     var newUserRole = new UserRole()
                     {
                         UserId = user.Id,
-                        RoleId = newRoleForUser.Id, 
+                        RoleId = newRoleForUser.Id,
                     };
                     await _unitOfWork.UserRoles.CreateAsync(newUserRole);
                     await _unitOfWork.SaveChangesAsync();
