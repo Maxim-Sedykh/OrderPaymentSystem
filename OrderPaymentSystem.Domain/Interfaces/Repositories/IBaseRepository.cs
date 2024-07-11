@@ -1,4 +1,9 @@
 ﻿using OrderPaymentSystem.Domain.Interfaces.Databases;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Domain.Interfaces.Repositories
 {
@@ -16,6 +21,6 @@ namespace OrderPaymentSystem.Domain.Interfaces.Repositories
 
         void UpdateRange(IEnumerable<TEntity> entities);
 
-        Task<TEntity> GetById<T>(T id);
+        Task<TEntity> GetOne<T>(T id);
     }
 }

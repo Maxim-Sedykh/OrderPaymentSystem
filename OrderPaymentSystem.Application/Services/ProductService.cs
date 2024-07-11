@@ -1,12 +1,7 @@
 ﻿using AutoMapper;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using OrderPaymentSystem.Application.Commands;
-using OrderPaymentSystem.Application.Handlers;
-using OrderPaymentSystem.Application.Queries;
 using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
@@ -15,9 +10,7 @@ using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
-using OrderPaymentSystem.Producer;
 using OrderPaymentSystem.Producer.Interfaces;
-using Serilog;
 
 
 namespace OrderPaymentSystem.Application.Services
@@ -29,27 +22,21 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly ICacheService _cacheService;
-        private readonly IMediator _mediator;
-        private readonly ILogger _logger;
 
         public ProductService(IBaseRepository<Product> productRepository,
             IMapper mapper,
             IMessageProducer messageProducer,
             IOptions<RabbitMqSettings> rabbitMqOptions,
-            ICacheService cacheService,
-            IMediator mediator,
-            ILogger logger)
+            ICacheService cacheService)
         {
             _productRepository = productRepository;
             _mapper = mapper;
             _messageProducer = messageProducer;
             _rabbitMqOptions = rabbitMqOptions;
             _cacheService = cacheService;
-            _mediator = mediator;
-            _logger = logger;
         }
 
-
+        
         /// <inheritdoc/>
         public async Task<BaseResult<ProductDto>> CreateProductAsync(CreateProductDto dto)
         {
@@ -64,13 +51,16 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            ProductDto createdProduct = await _mediator.Send(new CreateProductCommand(dto.ProductName, dto.Description, dto.Cost));
+            product = _mapper.Map<Product>(dto);
 
-            _messageProducer.SendMessage(createdProduct, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+            await _productRepository.CreateAsync(product);
+            await _productRepository.SaveChangesAsync();
+
+            _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<ProductDto>()
             {
-                Data = createdProduct,
+                Data = _mapper.Map<ProductDto>(product),
             };
         }
 
@@ -88,9 +78,19 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            await _mediator.Send(new DeleteProductCommand(product));
+            _productRepository.Remove(product);
+            await _productRepository.SaveChangesAsync();
 
             _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
+
+            var result = new ProductDto()
+            {
+                Id = product.Id,
+                ProductName = product.ProductName,
+                Description = product.Description,
+                Cost = product.Cost,
+                CreatedAt = product.CreatedAt.ToLongDateString(),
+            };
 
             return new BaseResult<ProductDto>()
             {
@@ -101,25 +101,16 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<BaseResult<ProductDto>> GetProductByIdAsync(int id)
         {
-            var product = await _cacheService.GetObjectAsync<ProductDto>(string.Format(CacheKeys.Product, id));
-
-            if (product == null)
-            {
-                try
+            var product = await _cacheService.GetObjectAsync(
+                $"product:{id}",
+                async () =>
                 {
-                    product = await _mediator.Send(new GetProductByIdQuery(id), new CancellationToken());
-                    await _cacheService.SetObjectAsync(string.Format(CacheKeys.Product, id), product);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex.Message, ex);
-                    return new BaseResult<ProductDto>()
-                    {
-                        ErrorMessage = ErrorMessage.InternalServerError,
-                        ErrorCode = (int)ErrorCodes.InternalServerError
-                    };
-                }
-            }
+                    return await _productRepository.GetAll()
+                        .AsNoTracking()
+                        .Where(x => x.Id == id)
+                        .Select(x => _mapper.Map<ProductDto>(x))
+                        .SingleOrDefaultAsync();
+                });
 
             if (product == null)
             {
@@ -141,30 +132,17 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<CollectionResult<ProductDto>> GetProductsAsync()
         {
-            var products = await _cacheService.GetObjectAsync<ProductDto[]>(CacheKeys.Products);
-
-            if (products == null)
-            {
-                try
+            var products = await _cacheService.GetObjectAsync(
+                "products",
+                async () =>
                 {
-                    products = await _mediator.Send(new GetProductsQuery(), new CancellationToken());
-
-                    await _cacheService.SetObjectAsync(CacheKeys.Products, products);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex.Message, ex);
-                    return new CollectionResult<ProductDto>()
-                    {
-                        ErrorMessage = ErrorMessage.InternalServerError,
-                        ErrorCode = (int)ErrorCodes.InternalServerError
-                    };
-                }
-            }
+                    return await _productRepository.GetAll().AsNoTracking()
+                        .Select(x => _mapper.Map<ProductDto>(x))
+                        .ToListAsync();
+                });
 
             if (!products.Any())
             {
-                _logger.Error(ErrorMessage.ProductsNotFound, products.Length);
                 return new CollectionResult<ProductDto>()
                 {
                     ErrorMessage = ErrorMessage.ProductsNotFound,
@@ -177,7 +155,7 @@ namespace OrderPaymentSystem.Application.Services
             return new CollectionResult<ProductDto>()
             {
                 Data = products,
-                Count = products.Length
+                Count = products.Count
             };
         }
 
@@ -199,13 +177,18 @@ namespace OrderPaymentSystem.Application.Services
                 || product.Description != dto.Description
                 || product.Cost != dto.Cost)
             {
-                await _mediator.Send(new UpdateProductCommand(dto.ProductName, dto.Description, dto.Cost, product));
+                product.ProductName = dto.ProductName;
+                product.Description = dto.Description;
+                product.Cost = dto.Cost;
+
+                var updatedProduct = _productRepository.Update(product);
+                await _productRepository.SaveChangesAsync();
 
                 _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
                 return new BaseResult<ProductDto>()
                 {
-                    Data = _mapper.Map<ProductDto>(product),
+                    Data = _mapper.Map<ProductDto>(updatedProduct),
                 };
             }
 

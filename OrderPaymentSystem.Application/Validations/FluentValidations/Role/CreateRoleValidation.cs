@@ -1,5 +1,11 @@
 ﻿using FluentValidation;
+using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Dto.Role;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Role
 {

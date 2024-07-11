@@ -1,6 +1,13 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using System.Text.Json;
+using StackExchange.Redis;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.DAL.Cache
 {
