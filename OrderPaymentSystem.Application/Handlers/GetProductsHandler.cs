@@ -12,6 +12,7 @@ namespace OrderPaymentSystem.Application.Handlers
         public async Task<ProductDto[]> Handle(GetProductsQuery request, CancellationToken cancellationToken)
         {
             return await productRepository.GetAll()
+                .AsNoTracking()
                 .Select(x => new ProductDto()
                 {
                     Id = x.Id,

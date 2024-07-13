@@ -19,12 +19,7 @@ namespace OrderPaymentSystem.UnitTests.ProductTests
 {
     public class GetProductsTests : IClassFixture<ProductServiceFixture>
     {
-        private readonly ProductServiceFixture _fixture;
-
-        public GetProductsTests()
-        {
-            _fixture = new ProductServiceFixture();
-        }
+        private readonly ProductServiceFixture _fixture = new ProductServiceFixture();
 
         [Fact]
         public async Task GetProductsAsync_ProductsFound_ShouldReturnProductDtosFromCache()

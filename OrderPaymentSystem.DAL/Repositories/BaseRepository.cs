@@ -75,10 +75,5 @@ namespace OrderPaymentSystem.DAL.Repositories
                 throw new ArgumentNullException(nameof(entities), "Entities is null");
             }
         }
-
-        public async Task<TEntity> GetOne<T>(T id)
-        {
-            return await _dbContext.Set<TEntity>().FindAsync(id);
-        }
     }
 }

@@ -21,12 +21,7 @@ namespace OrderPaymentSystem.UnitTests.ProductTests
 {
     public class CreateProductTests : IClassFixture<ProductServiceFixture>
     {
-        private readonly ProductServiceFixture _fixture;
-
-        public CreateProductTests()
-        {
-            _fixture = new ProductServiceFixture();
-        }
+        private readonly ProductServiceFixture _fixture = new ProductServiceFixture();
 
         [Fact]
         public async Task CreateProductAsync_ValidInput_ReturnsSuccessResultWithData()

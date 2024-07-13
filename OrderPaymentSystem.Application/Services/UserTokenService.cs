@@ -85,6 +85,7 @@ namespace OrderPaymentSystem.Application.Services
             var user = await _userRepository.GetAll()
                 .Include(x => x.UserToken)
                 .FirstOrDefaultAsync(x => x.Login == userName);
+
             if (user == null || user.UserToken.RefreshToken != refreshToken ||
                 user.UserToken.RefreshTokenExpireTime <= DateTime.UtcNow)
             {

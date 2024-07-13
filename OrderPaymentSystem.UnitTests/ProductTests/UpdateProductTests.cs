@@ -13,12 +13,7 @@ namespace OrderPaymentSystem.UnitTests.ProductTests
 {
     public class UpdateProductTests : IClassFixture<ProductServiceFixture>
     {
-        private readonly ProductServiceFixture _fixture;
-
-        public UpdateProductTests()
-        {
-            _fixture = new ProductServiceFixture();
-        }
+        private readonly ProductServiceFixture _fixture = new ProductServiceFixture();
 
         [Fact]
         public async Task UpdateProductAsync_ValidInput_ReturnsSuccessResultWithData()

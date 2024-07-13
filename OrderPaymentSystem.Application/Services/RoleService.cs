@@ -208,6 +208,7 @@ namespace OrderPaymentSystem.Application.Services
             var userRole = await _userRoleRepository.GetAll()
                 .Where(x => x.RoleId == role.Id)
                 .FirstOrDefaultAsync(x => x.UserId == user.Id);
+
             _userRoleRepository.Remove(userRole);
             await _userRoleRepository.SaveChangesAsync();
 
@@ -260,9 +261,8 @@ namespace OrderPaymentSystem.Application.Services
                 try
                 {
                     var userRole = await _unitOfWork.UserRoles
-                                            .GetAll()
-                                            .Where(x => x.RoleId == role.Id)
-                                            .FirstAsync(x => x.UserId == user.Id);
+                        .GetAll()
+                        .FirstAsync(x => x.UserId == user.Id && x.RoleId == role.Id);
 
                     _unitOfWork.UserRoles.Remove(userRole);
 
@@ -296,7 +296,6 @@ namespace OrderPaymentSystem.Application.Services
                 {
                     return await _roleRepository
                         .GetAll()
-                        .AsNoTracking()
                         .Select(x => new RoleDto(x.Id, x.Name))
                         .ToArrayAsync();
                 });

@@ -15,7 +15,5 @@ namespace OrderPaymentSystem.Domain.Interfaces.Repositories
         void RemoveRange(IEnumerable<TEntity> entities);
 
         void UpdateRange(IEnumerable<TEntity> entities);
-
-        Task<TEntity> GetOne<T>(T id);
     }
 }

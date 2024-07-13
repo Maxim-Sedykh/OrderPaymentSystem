@@ -54,7 +54,9 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.ProductId);
+            var product = await _productRepository
+                .GetAll()
+                .FirstOrDefaultAsync(x => x.Id == dto.ProductId);
 
             if (product == null)
             {
@@ -89,7 +91,9 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<BaseResult<OrderDto>> DeleteOrderByIdAsync(long id)
         {
-            var order = await _orderRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            var order = await _orderRepository
+                .GetAll()
+                .FirstOrDefaultAsync(x => x.Id == id);
 
             if (order == null)
             {
@@ -119,11 +123,9 @@ namespace OrderPaymentSystem.Application.Services
                 async () =>
                 {
                     return await _orderRepository.GetAll()
-                        .AsNoTracking()
                         .Where(x => x.Id == id)
                         .Select(x => _mapper.Map<OrderDto>(x))
-                        .AsNoTracking()
-                        .SingleOrDefaultAsync();
+                        .FirstOrDefaultAsync();
                 });
 
             if (order == null)
@@ -149,7 +151,6 @@ namespace OrderPaymentSystem.Application.Services
             OrderDto[] orders;
 
             orders = await _orderRepository.GetAll()
-                .AsNoTracking()
                 .Include(x => x.Basket)
                 .Select(x => _mapper.Map<OrderDto>(x))
                 .ToArrayAsync();
@@ -175,7 +176,9 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<BaseResult<OrderDto>> UpdateOrderAsync(UpdateOrderDto dto)
         {
-            var order = await _orderRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.Id);
+            var order = await _orderRepository
+                .GetAll()
+                .FirstOrDefaultAsync(x => x.Id == dto.Id);
 
             if (order == null)
             {
@@ -186,7 +189,9 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.ProductId);
+            var product = await _productRepository
+                .GetAll()
+                .FirstOrDefaultAsync(x => x.Id == dto.ProductId);
 
             if (product == null)
             {

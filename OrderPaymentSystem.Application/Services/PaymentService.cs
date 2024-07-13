@@ -162,7 +162,7 @@ namespace OrderPaymentSystem.Application.Services
                     return await _unitOfWork.Payments.GetAll()
                         .Where(x => x.Id == id)
                         .Select(x => _mapper.Map<PaymentDto>(x))
-                        .SingleOrDefaultAsync();
+                        .FirstOrDefaultAsync();
                 });
 
             if (payment == null)
@@ -184,7 +184,6 @@ namespace OrderPaymentSystem.Application.Services
         public async Task<CollectionResult<OrderDto>> GetPaymentOrdersAsync(long id)
         {
             var payment = await _unitOfWork.Payments.GetAll()
-                .AsNoTracking()
                 .Include(x => x.Orders)
                 .FirstOrDefaultAsync(x => x.Id == id);
 
@@ -197,7 +196,9 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            var result = payment.Orders.Select(x => _mapper.Map<OrderDto>(x)).ToList();
+            var result = payment.Orders
+                .Where(x => x.PaymentId == payment.Id)
+                .Select(x => _mapper.Map<OrderDto>(x)).ToList();
 
             return new CollectionResult<OrderDto>()
             {
@@ -214,7 +215,6 @@ namespace OrderPaymentSystem.Application.Services
                 async () =>
                 {
                     return await _unitOfWork.Payments.GetAll()
-                        .AsNoTracking()
                         .Include(x => x.Basket)
                         .Where(x => x.Basket.UserId == userId)
                         .Select(x => _mapper.Map<PaymentDto>(x))

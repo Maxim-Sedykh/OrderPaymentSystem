@@ -15,7 +15,6 @@ namespace OrderPaymentSystem.Application.Handlers
             return await productRepository.GetAll()
                         .Where(x => x.Id == request.ProductId)
                         .Select(x => mapper.Map<ProductDto>(x))
-                        .AsNoTracking()
                         .FirstOrDefaultAsync();
         }
     }

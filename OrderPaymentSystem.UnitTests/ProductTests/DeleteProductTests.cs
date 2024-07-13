@@ -21,12 +21,7 @@ namespace OrderPaymentSystem.UnitTests.ProductTests
 {
     public class DeleteProductTests : IClassFixture<ProductServiceFixture>
     {
-        private readonly ProductServiceFixture _fixture;
-
-        public DeleteProductTests()
-        {
-            _fixture = new ProductServiceFixture();
-        }
+        private readonly ProductServiceFixture _fixture = new ProductServiceFixture();
 
         [Fact]
         public async Task DeleteProductAsync_ShouldDeleteProductAndSendMessage()
