@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Role;
 using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
@@ -16,7 +18,8 @@ namespace OrderPaymentSystem.Api.Controllers
     /// </summary>
     [Authorize(Roles = "Admin")]
     [Consumes(MediaTypeNames.Application.Json)]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class RoleController : ControllerBase
     {
@@ -54,7 +57,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если роль создалась</response>
         /// <response code="400">Если роль не была создана</response>
-        [HttpPost]
+        [HttpPost(RouteConstants.CreateRole)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> CreateRole([FromBody] CreateRoleDto dto)
@@ -90,7 +93,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если роль обновлена</response>
         /// <response code="400">Если роль не была обновлена</response>
-        [HttpPut]
+        [HttpPut(RouteConstants.UpdateRole)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> UpdateRole([FromBody] RoleDto dto)
@@ -125,7 +128,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если роль удалилась</response>
         /// <response code="400">Если роль не была удалена</response>
-        [HttpDelete("{id}")]
+        [HttpDelete(RouteConstants.DeleteRoleById)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> DeleteRole(long id)
@@ -154,7 +157,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если роль для пользователя создалась</response>
         /// <response code="400">Если роль для пользователя не была создана</response>
-        [HttpPost("add-user-role")]
+        [HttpPost(RouteConstants.AddRoleForUser)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> AddRoleForUser([FromBody] UserRoleDto dto)
@@ -190,7 +193,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если роль для пользователя удалилась</response>
         /// <response code="400">Если роль для пользователя не была удалена</response>
-        [HttpDelete("delete-user-role")]
+        [HttpDelete(RouteConstants.DeleteRoleForUser)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> DeleteRoleForUser([FromBody] DeleteUserRoleDto dto)
@@ -227,7 +230,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если роль для пользователя обновилась</response>
         /// <response code="400">Если роль для пользователя не была удалена</response>
-        [HttpPut("update-user-role")]
+        [HttpPut(RouteConstants.UpdateRoleForUser)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<Role>>> UpdateRoleForUser([FromBody] UpdateUserRoleDto dto)
@@ -250,7 +253,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// <summary>
         /// Получение ролей пользоватекля
         /// </summary>
-        [HttpGet("get-all-roles")]
+        [HttpGet(RouteConstants.GetAllRoles)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<CollectionResult<RoleDto>>> GetAllRoles()

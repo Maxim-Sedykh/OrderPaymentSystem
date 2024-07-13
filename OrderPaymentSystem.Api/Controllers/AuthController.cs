@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
@@ -10,6 +12,8 @@ namespace OrderPaymentSystem.Api.Controllers
     /// Контроллер для работы с авторизацией
     /// </summary>
     [ApiController]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -29,7 +33,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [HttpPost("register")]
+        [HttpPost(RouteConstants.Register)]
         public async Task<ActionResult<BaseResult>> Register([FromBody] RegisterUserDto dto)
         {
             var validationResult = await _registerUserValidator.ValidateAsync(dto);
@@ -52,7 +56,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        [HttpPost("login")]
+        [HttpPost(RouteConstants.Login)]
         public async Task<ActionResult<BaseResult>> Login([FromBody] LoginUserDto dto)
         {
             var validationResult = await _loginUserValidator.ValidateAsync(dto);

@@ -6,7 +6,7 @@ using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
-using OrderPaymentSystem.UnitTests.Fixtures;
+using OrderPaymentSystem.UnitTests.Configurations;
 using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ProductTests

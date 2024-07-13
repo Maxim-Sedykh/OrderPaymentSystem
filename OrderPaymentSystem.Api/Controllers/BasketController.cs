@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
@@ -10,7 +12,8 @@ namespace OrderPaymentSystem.Api.Controllers
     /// Контроллер, предназначенный для работы с корзиной заказов пользователя
     /// </summary>
     [Authorize]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class BasketController : ControllerBase
     {
@@ -36,7 +39,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если корзина была очищена</response>
         /// <response code="400">Если корзина не была очищена</response>
-        [HttpDelete("clear-basket/{basketId}")]
+        [HttpDelete(RouteConstants.ClearUserBasketById)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<OrderDto>>> ClearUserBasket(long basketId)
@@ -64,7 +67,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если заказы из корзины были получены</response>
         /// <response code="400">Если заказы из корзины не были получены</response>
-        [HttpGet("get-basket-user-orders/{basketId}")]
+        [HttpGet(RouteConstants.GetUserBasketOrdersByBasketId)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<CollectionResult<OrderDto>>> GetUserBasketOrders(long basketId)
@@ -92,7 +95,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если корзина пользователя была получена</response>
         /// <response code="400">Если корзина пользователя не была получена</response>
-        [HttpGet("basket/{basketId}")]
+        [HttpGet(RouteConstants.GetBasketById)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<CollectionResult<OrderDto>>> GetBasketById(long basketId)

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Order;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Interfaces.Services;
@@ -45,7 +46,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если заказ был получен</response>
         /// <response code="400">Если заказ не был получен</response>
-        [HttpGet("get-order/{id}")]
+        [HttpGet(RouteConstants.GetOrderById)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<OrderDto>>> GetOrderById(long id)
@@ -66,7 +67,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если заказы были получены</response>
         /// <response code="400">Если заказы не были получены</response>
-        [HttpGet("get-orders")]
+        [HttpGet(RouteConstants.GetOrders)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<CollectionResult<OrderDto>>> GetAllOrders()
@@ -94,7 +95,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если заказ удалился</response>
         /// <response code="400">Если заказ не был удалён</response>
-        [HttpDelete("delete-order/{id}")]
+        [HttpDelete(RouteConstants.DeleteOrderById)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> DeleteOrder(long id)
@@ -124,7 +125,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если заказ создался</response>
         /// <response code="400">Если заказ не был создан</response>
-        [HttpPost("create-order")]
+        [HttpPost(RouteConstants.CreateOrder)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> CreateOrder([FromBody] CreateOrderDto dto)
@@ -161,7 +162,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если заказ обновился</response>
         /// <response code="400">Если заказ не был обновлён</response>
-        [HttpPut("update-order")]
+        [HttpPut(RouteConstants.UpdateOrder)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> UpdateOrder([FromBody] UpdateOrderDto dto)

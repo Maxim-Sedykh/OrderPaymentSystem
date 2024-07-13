@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
@@ -8,7 +10,8 @@ namespace OrderPaymentSystem.Api.Controllers
     /// <summary>
     /// Контроллер для обновления токена пользователя
     /// </summary>
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
     public class UserTokenController : Controller
     {
@@ -25,7 +28,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// <param name="dto"></param>
         /// <returns></returns>
         /// 
-        [Route("refresh")]
+        [Route(RouteConstants.RefreshToken)]
         [HttpPost]
         public async Task<ActionResult<BaseResult<TokenDto>>> RefreshToken([FromBody] TokenDto dto)
         {

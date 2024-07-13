@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Payment;
 using OrderPaymentSystem.Domain.Dto.Product;
@@ -46,7 +47,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если платеж был получен</response>
         /// <response code="400">Если платеж не был получен</response>
-        [HttpGet("payment/{id}")]
+        [HttpGet(RouteConstants.GetPaymentById)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<PaymentDto>>> GetPayment(long id)
@@ -74,7 +75,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если платежи пользователя были получены</response>
         /// <response code="400">Если платежи пользователя не были получены</response>
-        [HttpGet("get-user-payments/{userId}")]
+        [HttpGet(RouteConstants.GetUserPaymentsByUserId)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<CollectionResult<PaymentDto>>> GetUserPayments(long userId)
@@ -102,7 +103,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если платёж удалился</response>
         /// <response code="400">Если платёж не был удалён</response>
-        [HttpDelete("delete-payment/{id}")]
+        [HttpDelete(RouteConstants.DeletePaymentById)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<PaymentDto>>> DeletePayment(long id)
@@ -136,7 +137,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если платеж создался</response>
         /// <response code="400">Если платеж не был создан</response>
-        [HttpPost("create-payment")]
+        [HttpPost(RouteConstants.CreatePayment)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<PaymentDto>>> CreatePayment([FromBody] CreatePaymentDto dto)
@@ -173,7 +174,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если платёж обновился</response>
         /// <response code="400">Если платёж не был обновлён</response>
-        [HttpPut("update-payment")]
+        [HttpPut(RouteConstants.UpdatePayment)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<BaseResult<ProductDto>>> UpdatePayment([FromBody] UpdatePaymentDto dto)
@@ -208,7 +209,7 @@ namespace OrderPaymentSystem.Api.Controllers
         /// </remarks>
         /// <response code="200">Если заказы платежа были получены</response>
         /// <response code="400">Если заказы платежа не были получены</response>
-        [HttpGet("get-payment-orders/{id}")]
+        [HttpGet(RouteConstants.GetPaymentOrdersByPaymentId)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<CollectionResult<OrderDto>>> GetPaymentOrders(long id)
