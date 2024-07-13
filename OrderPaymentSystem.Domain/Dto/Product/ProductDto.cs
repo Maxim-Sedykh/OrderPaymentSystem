@@ -4,7 +4,7 @@
 
     public class ProductDto
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
 
         public string ProductName { get; set; }
 

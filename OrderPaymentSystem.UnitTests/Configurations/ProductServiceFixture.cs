@@ -3,6 +3,7 @@ using MediatR;
 using Microsoft.Extensions.Options;
 using Moq;
 using OrderPaymentSystem.Application.Services;
+using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
@@ -46,6 +47,35 @@ namespace OrderPaymentSystem.UnitTests.Configurations
         public Mock<ICacheService> CacheServiceMock { get; }
         public Mock<IMediator> MediatorMock { get; }
         public Mock<ILogger> LoggerMock { get; }
+
+        public ProductDto[] GetProductDtos() => new ProductDto[]
+        {
+            new ProductDto
+            {
+                Id = 1,
+                ProductName = "Test Product #1",
+                Description = "Test description of product #1",
+                Cost = 5000,
+                CreatedAt = DateTime.UtcNow.ToLongDateString(),
+            },
+            new ProductDto
+            {
+                Id = 2,
+                ProductName = "Test Product #2",
+                Description = "Test description of product #2",
+                Cost = 1500,
+                CreatedAt = DateTime.UtcNow.ToLongDateString(),
+            },
+        };
+
+        public ProductDto GetProductDto() => new ProductDto
+        {
+            Id = 1,
+            ProductName = "Test product #1",
+            Description = "Test description #1",
+            Cost = 5000,
+            CreatedAt = DateTime.UtcNow.ToLongDateString()
+        };
 
         public void Dispose() { }
     }

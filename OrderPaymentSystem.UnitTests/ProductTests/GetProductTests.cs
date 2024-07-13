@@ -21,65 +21,32 @@ namespace OrderPaymentSystem.UnitTests.ProductTests
 {
     public class GetProductTests : IClassFixture<ProductServiceFixture>
     {
-        private readonly Mock<ICacheService> _cacheServiceMock;
-        private readonly Mock<IMediator> _mediatorMock;
-        private readonly Mock<IMessageProducer> _messageProducerMock;
-        private readonly Mock<IOptions<RabbitMqSettings>> _rabbitMqOptionsMock;
-        private readonly Mock<ILogger> _loggerMock;
-        private readonly Mock<IMapper> _mapperMock;
-        private readonly Mock<IBaseRepository<Product>> _productRepositoryMock;
-        private readonly ProductService _productService;
+        private readonly ProductServiceFixture _fixture;
 
         public GetProductTests()
         {
-            _cacheServiceMock = new Mock<ICacheService>();
-            _mediatorMock = new Mock<IMediator>();
-            _messageProducerMock = new Mock<IMessageProducer>();
-            _rabbitMqOptionsMock = new Mock<IOptions<RabbitMqSettings>>();
-            _loggerMock = new Mock<ILogger>();
-            _mapperMock = new Mock<IMapper>();
-            _productRepositoryMock = new Mock<IBaseRepository<Product>>();
-
-            _productService = new ProductService(
-                _productRepositoryMock.Object,
-                _mapperMock.Object,
-                _messageProducerMock.Object,
-                _rabbitMqOptionsMock.Object,
-                _cacheServiceMock.Object,
-                _mediatorMock.Object,
-                _loggerMock.Object
-            );
+            _fixture = new ProductServiceFixture();
         }
 
         [Fact]
         public async Task GetProductByIdAsync_ShouldReturnProductDtoFromCache()
         {
             //Arrange
-            var productId = 1;
-            var product = new ProductDto { 
-                Id = productId, 
-                ProductName = "Test product #1", 
-                Description = "Test description #1", 
-                Cost = 5000, 
-                CreatedAt = DateTime.UtcNow.ToLongDateString() 
-            };
-            _cacheServiceMock.Setup(x => x.GetObjectAsync<ProductDto>(It.IsAny<string>()))
+            var product = _fixture.GetProductDto();
+            _fixture.CacheServiceMock.Setup(x => x.GetObjectAsync<ProductDto>(It.IsAny<string>()))
                 .ReturnsAsync(product);
 
-            var rabbitMqSettings = new RabbitMqSettings { RoutingKey = "test", ExchangeName = "test" };
-            _rabbitMqOptionsMock.Setup(options => options.Value).Returns(rabbitMqSettings);
-
             // Act
-            var result = await _productService.GetProductByIdAsync(productId);
+            var result = await _fixture.ProductService.GetProductByIdAsync(product.Id);
 
             // Assert
             Assert.NotNull(result);
             Assert.True(result.IsSuccess);
             Assert.NotNull(result.Data);
-            Assert.Equal(productId, result.Data.Id);
+            Assert.Equal(product.Id, result.Data.Id);
             Assert.Equal(product, result.Data);
-            _cacheServiceMock.Verify(x => x.GetObjectAsync<ProductDto>(It.IsAny<string>()), Times.Once);
-            _mediatorMock.Verify(x => x.Send(It.IsAny<GetProductByIdQuery>(), It.IsAny<CancellationToken>()), Times.Never);
+            _fixture.CacheServiceMock.Verify(x => x.GetObjectAsync<ProductDto>(It.IsAny<string>()), Times.Once);
+            _fixture.MediatorMock.Verify(x => x.Send(It.IsAny<GetProductByIdQuery>(), It.IsAny<CancellationToken>()), Times.Never);
             Assert.Equal("Test product #1", result.Data.ProductName);
         }
 
@@ -87,54 +54,30 @@ namespace OrderPaymentSystem.UnitTests.ProductTests
         public async Task GetProductByIdAsync_ShouldFetchProductFromDatabaseAndCache()
         {
             // Arrange
-            var productId = 2;
-            var product = new ProductDto
-            {
-                Id = productId,
-                ProductName = "Test product #1",
-                Description = "Test description #1",
-                Cost = 5000,
-                CreatedAt = DateTime.UtcNow.ToLongDateString()
-            };
-            _cacheServiceMock.Setup(x => x.GetObjectAsync<ProductDto>(It.IsAny<string>()))
+            var product = _fixture.GetProductDto();
+            _fixture.CacheServiceMock.Setup(x => x.GetObjectAsync<ProductDto>(It.IsAny<string>()))
                 .ReturnsAsync((ProductDto)null);
-            _mediatorMock.Setup(x => x.Send(It.IsAny<GetProductByIdQuery>(), It.IsAny<CancellationToken>()))
+            _fixture.MediatorMock.Setup(x => x.Send(It.IsAny<GetProductByIdQuery>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(product);
 
-            var rabbitMqSettings = new RabbitMqSettings { RoutingKey = "test", ExchangeName = "test" };
-            _rabbitMqOptionsMock.Setup(options => options.Value).Returns(rabbitMqSettings);
-
             // Act
-            var result = await _productService.GetProductByIdAsync(productId);
+            var result = await _fixture.ProductService.GetProductByIdAsync(1);
 
             // Assert
             Assert.Equal(product, result.Data);
-            _cacheServiceMock.Verify(x => x.GetObjectAsync<ProductDto>(It.IsAny<string>()), Times.Once);
-            _mediatorMock.Verify(x => x.Send(It.IsAny<GetProductByIdQuery>(), It.IsAny<CancellationToken>()), Times.Once);
+            _fixture.CacheServiceMock.Verify(x => x.GetObjectAsync<ProductDto>(It.IsAny<string>()), Times.Once);
+            _fixture.MediatorMock.Verify(x => x.Send(It.IsAny<GetProductByIdQuery>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task GetProductByIdAsync_ProductNotFound_ReturnsErrorResult()
         {
             //Arrange
-            var productId = 2;
-            var product = new ProductDto
-            {
-                Id = productId,
-                ProductName = "Test product #1",
-                Description = "Test description #1",
-                Cost = 5000,
-                CreatedAt = DateTime.UtcNow.ToLongDateString()
-            };
-
-            _cacheServiceMock.Setup(x => x.GetObjectAsync<ProductDto>(It.IsAny<string>()))
+            _fixture.CacheServiceMock.Setup(x => x.GetObjectAsync<ProductDto>(It.IsAny<string>()))
                 .ReturnsAsync((ProductDto)null);
 
-            var rabbitMqSettings = new RabbitMqSettings { RoutingKey = "test", ExchangeName = "test" };
-            _rabbitMqOptionsMock.Setup(options => options.Value).Returns(rabbitMqSettings);
-
             // Act
-            var result = await _productService.GetProductByIdAsync(1);
+            var result = await _fixture.ProductService.GetProductByIdAsync(1);
 
             // Assert
             Assert.NotNull(result);
