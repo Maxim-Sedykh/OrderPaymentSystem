@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Application.Validations.Validators;
 using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Dto.UserRole;
@@ -11,6 +12,7 @@ using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
+using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
 using OrderPaymentSystem.Producer.Interfaces;
@@ -27,11 +29,12 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly IMapper _mapper;
         private readonly ICacheService _cacheService;
+        private readonly IRoleValidator _roleValidator;
 
         public RoleService(IBaseRepository<Role> roleRepository, IBaseRepository<User> userRepository,
             IBaseRepository<UserRole> userRoleRepository, IMapper mapper, IUnitOfWork unitOfWork,
             IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions,
-            ICacheService cacheService)
+            ICacheService cacheService, IRoleValidator roleValidator)
         {
             _roleRepository = roleRepository;
             _userRepository = userRepository;
@@ -41,6 +44,7 @@ namespace OrderPaymentSystem.Application.Services
             _messageProducer = messageProducer;
             _rabbitMqOptions = rabbitMqOptions;
             _cacheService = cacheService;
+            _roleValidator = roleValidator;
         }
 
         /// <inheritdoc/>
@@ -185,23 +189,15 @@ namespace OrderPaymentSystem.Application.Services
                 .Include(x => x.Roles)
                 .FirstOrDefaultAsync(x => x.Login == dto.Login);
 
-            if (user == null)
-            {
-                return new BaseResult<UserRoleDto>()
-                {
-                    ErrorCode = (int)ErrorCodes.UserNotFound,
-                    ErrorMessage = ErrorMessage.UserNotFound
-                };
-            }
-
             var role = user.Roles.FirstOrDefault(x => x.Id == dto.RoleId);
 
-            if (role == null)
+            var validateRoleForUserResult = _roleValidator.ValidateRoleForUser(user, role);
+            if (!validateRoleForUserResult.IsSuccess)
             {
                 return new BaseResult<UserRoleDto>()
                 {
-                    ErrorCode = (int)ErrorCodes.RoleNotFound,
-                    ErrorMessage = ErrorMessage.RoleNotFound
+                    ErrorMessage = validateRoleForUserResult.ErrorMessage,
+                    ErrorCode = validateRoleForUserResult.ErrorCode
                 };
             }
 
@@ -227,32 +223,17 @@ namespace OrderPaymentSystem.Application.Services
                 .Include(x => x.Roles)
                 .FirstOrDefaultAsync(x => x.Login == dto.Login);
 
-            if (user == null)
-            {
-                return new BaseResult<UserRoleDto>()
-                {
-                    ErrorCode = (int)ErrorCodes.UserNotFound,
-                    ErrorMessage = ErrorMessage.UserNotFound
-                };
-            }
-
             var role = user.Roles.FirstOrDefault(x => x.Id == dto.FromRoleId);
-            if (role == null)
-            {
-                return new BaseResult<UserRoleDto>()
-                {
-                    ErrorCode = (int)ErrorCodes.RoleNotFound,
-                    ErrorMessage = ErrorMessage.RoleNotFound
-                };
-            }
 
             var newRoleForUser = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.ToRoleId);
-            if (newRoleForUser == null)
+
+            var validateRoleForUserResult = _roleValidator.ValidateRoleForUser(user, role, newRoleForUser);
+            if (!validateRoleForUserResult.IsSuccess)
             {
                 return new BaseResult<UserRoleDto>()
                 {
-                    ErrorCode = (int)ErrorCodes.RoleNotFound,
-                    ErrorMessage = ErrorMessage.RoleNotFound
+                    ErrorMessage = validateRoleForUserResult.ErrorMessage,
+                    ErrorCode = validateRoleForUserResult.ErrorCode
                 };
             }
 

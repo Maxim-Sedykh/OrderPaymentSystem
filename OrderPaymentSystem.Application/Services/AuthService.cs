@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Application.Validations.Validators;
 using OrderPaymentSystem.Domain.Dto.Auth;
+using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
@@ -9,6 +11,7 @@ using OrderPaymentSystem.Domain.Helpers;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
+using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
 using System.Security.Claims;
 
@@ -22,9 +25,11 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<Role> _roleRepository;
         private readonly IUserTokenService _userTokenService;
         private readonly IMapper _mapper;
+        private readonly IAuthValidator _authValidator;
 
         public AuthService(IBaseRepository<User> userRepository, IMapper mapper, IUserTokenService userTokenService,
-            IBaseRepository<UserToken> userTokenRepository, IBaseRepository<Role> roleRepository, IUnitOfWork unitOfWork)
+            IBaseRepository<UserToken> userTokenRepository, IBaseRepository<Role> roleRepository, IUnitOfWork unitOfWork,
+            IAuthValidator authValidator)
         {
             _userRepository = userRepository;
             _mapper = mapper;
@@ -32,6 +37,7 @@ namespace OrderPaymentSystem.Application.Services
             _userTokenRepository = userTokenRepository;
             _roleRepository = roleRepository;
             _unitOfWork = unitOfWork;
+            _authValidator = authValidator;
         }
 
         /// <inheritdoc/>
@@ -41,21 +47,13 @@ namespace OrderPaymentSystem.Application.Services
                 .Include(x => x.Roles)
                 .FirstOrDefaultAsync(x => x.Login == dto.Login);
 
-            if (user == null)
+            var validateLoginResult = _authValidator.ValidateLogin(user, enteredPassword : dto.Password);
+            if (!validateLoginResult.IsSuccess)
             {
                 return new BaseResult<TokenDto>()
                 {
-                    ErrorCode = (int)ErrorCodes.UserNotFound,
-                    ErrorMessage = ErrorMessage.UserNotFound
-                };
-            }
-
-            if (!IsVerifyPassword(user.Password, dto.Password))
-            {
-                return new BaseResult<TokenDto>()
-                {
-                    ErrorMessage = ErrorMessage.PasswordIsWrong,
-                    ErrorCode = (int)ErrorCodes.PasswordIsWrong,
+                    ErrorMessage = validateLoginResult.ErrorMessage,
+                    ErrorCode = validateLoginResult.ErrorCode
                 };
             }
 
@@ -177,12 +175,6 @@ namespace OrderPaymentSystem.Application.Services
             {
                 Data = _mapper.Map<UserDto>(user),
             };
-        }
-
-        private bool IsVerifyPassword(string userPasswordHash, string userPassword)
-        {
-            var hash = HashPasswordHelper.HashPassword(userPassword);
-            return userPasswordHash == hash;
         }
     }
 }

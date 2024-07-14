@@ -2,13 +2,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Application.Validations.Validators;
 using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
+using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
+using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
 using OrderPaymentSystem.Producer.Interfaces;
@@ -24,9 +27,11 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IMessageProducer _messageProducer;
         private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly ICacheService _cacheService;
+        private readonly IOrderValidator _orderValidator;
 
         public OrderService(IBaseRepository<Order> orderRepository, IBaseRepository<User> userRepository, IBaseRepository<Product> productRepository,
-            IMapper mapper, IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions, ICacheService cacheService)
+            IMapper mapper, IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions, ICacheService cacheService,
+            IOrderValidator orderValidator)
         {
             _orderRepository = orderRepository;
             _mapper = mapper;
@@ -35,6 +40,7 @@ namespace OrderPaymentSystem.Application.Services
             _cacheService = cacheService;
             _productRepository = productRepository;
             _userRepository = userRepository;
+            _orderValidator = orderValidator;
         }
 
 
@@ -45,25 +51,17 @@ namespace OrderPaymentSystem.Application.Services
                 .Include(x => x.Basket)
                 .FirstOrDefaultAsync(x => x.Id == dto.UserId);
 
-            if (user == null)
-            {
-                return new BaseResult<OrderDto>()
-                {
-                    ErrorCode = (int)ErrorCodes.UserNotFound,
-                    ErrorMessage = ErrorMessage.UserNotFound
-                };
-            }
-
             var product = await _productRepository
                 .GetAll()
                 .FirstOrDefaultAsync(x => x.Id == dto.ProductId);
 
-            if (product == null)
+            var validateCreatingOrderResult = _orderValidator.ValidateCreatingOrder(user, product);
+            if (!validateCreatingOrderResult.IsSuccess)
             {
                 return new BaseResult<OrderDto>()
                 {
-                    ErrorCode = (int)ErrorCodes.ProductNotFound,
-                    ErrorMessage = ErrorMessage.ProductNotFound
+                    ErrorMessage = validateCreatingOrderResult.ErrorMessage,
+                    ErrorCode = validateCreatingOrderResult.ErrorCode
                 };
             }
 
@@ -180,25 +178,17 @@ namespace OrderPaymentSystem.Application.Services
                 .GetAll()
                 .FirstOrDefaultAsync(x => x.Id == dto.Id);
 
-            if (order == null)
-            {
-                return new BaseResult<OrderDto>()
-                {
-                    ErrorCode = (int)ErrorCodes.OrderNotFound,
-                    ErrorMessage = ErrorMessage.OrderNotFound
-                };
-            }
-
             var product = await _productRepository
                 .GetAll()
                 .FirstOrDefaultAsync(x => x.Id == dto.ProductId);
 
-            if (product == null)
+            var validateUpdatingOrderResult = _orderValidator.ValidateUpdatingOrder(order, product);
+            if (!validateUpdatingOrderResult.IsSuccess)
             {
                 return new BaseResult<OrderDto>()
                 {
-                    ErrorCode = (int)ErrorCodes.ProductNotFound,
-                    ErrorMessage = ErrorMessage.ProductNotFound
+                    ErrorMessage = validateUpdatingOrderResult.ErrorMessage,
+                    ErrorCode = validateUpdatingOrderResult.ErrorCode
                 };
             }
 

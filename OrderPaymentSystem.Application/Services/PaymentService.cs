@@ -208,7 +208,7 @@ namespace OrderPaymentSystem.Application.Services
         }
 
         /// <inheritdoc/>
-        public async Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(long userId)
+        public async Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(Guid userId)
         {
             var userPayments = await _cacheService.GetObjectAsync(
                 string.Format(CacheKeys.UserPayments, userId),

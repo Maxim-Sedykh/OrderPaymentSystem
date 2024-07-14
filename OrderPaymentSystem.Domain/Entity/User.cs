@@ -2,9 +2,9 @@
 
 namespace OrderPaymentSystem.Domain.Entity
 {
-    public class User : IEntityId<long>, IAuditable
+    public class User : IEntityId<Guid>, IAuditable
     {
-        public long Id { get; set; }
+        public Guid Id { get; set; }
 
         public string Login { get; set; }
 

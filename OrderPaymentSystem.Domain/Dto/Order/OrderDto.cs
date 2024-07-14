@@ -2,7 +2,7 @@
 {
     public record OrderDto(
             long Id,
-            long UserId,
+            Guid UserId,
             long BasketId,
             long ProductId,
             int ProductCount,

@@ -78,7 +78,7 @@ namespace OrderPaymentSystem.Api.Controllers
         [HttpGet(RouteConstants.GetUserPaymentsByUserId)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<CollectionResult<PaymentDto>>> GetUserPayments(long userId)
+        public async Task<ActionResult<CollectionResult<PaymentDto>>> GetUserPayments(Guid userId)
         {
             var response = await _paymentService.GetUserPaymentsAsync(userId);
             if (response.IsSuccess)

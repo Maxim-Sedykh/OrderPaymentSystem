@@ -1,11 +1,8 @@
-﻿using AutoMapper;
-using MockQueryable.Moq;
+﻿using MockQueryable.Moq;
 using Moq;
-using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.UnitTests.Configurations;
 using Xunit;
 

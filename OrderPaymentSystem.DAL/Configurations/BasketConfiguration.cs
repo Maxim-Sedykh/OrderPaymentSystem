@@ -11,14 +11,14 @@ namespace OrderPaymentSystem.DAL.Configurations
             builder.HasData(new Basket
             {
                 Id = 1,
-                UserId = 1,
+                UserId = new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"),
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = 1,
             },
             new Basket
             {
                 Id = 2,
-                UserId = 2,
+                UserId = new Guid("7c9e6679-7425-40de-944b-e07fc1f90ae7"),
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = 1,
             });

@@ -10,7 +10,7 @@ namespace OrderPaymentSystem.Domain.Interfaces.Services
         /// Получение платежей пользователя по его идентификатору
         /// </summary>
         /// <returns></returns>
-        Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(long userId);
+        Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(Guid userId);
 
         /// <summary>
         /// Получение всех заказов платежа по идентификатору

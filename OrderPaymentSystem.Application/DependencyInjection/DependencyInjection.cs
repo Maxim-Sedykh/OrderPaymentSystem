@@ -8,7 +8,9 @@ using OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Product;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Role;
 using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
+using OrderPaymentSystem.Application.Validations.Validators;
 using OrderPaymentSystem.Domain.Interfaces.Services;
+using OrderPaymentSystem.Domain.Interfaces.Validators;
 
 namespace OrderPaymentSystem.Application.DependencyInjection
 {
@@ -26,6 +28,8 @@ namespace OrderPaymentSystem.Application.DependencyInjection
             InitServices(services);
 
             InitFluentValidators(services);
+
+            InitEntityValidators(services);
         }
 
         private static void InitServices(this IServiceCollection services)
@@ -80,6 +84,13 @@ namespace OrderPaymentSystem.Application.DependencyInjection
             {
                 services.AddValidatorsFromAssembly(validatorType.Assembly);
             }
+        }
+
+        public static void InitEntityValidators(this IServiceCollection services)
+        {
+            services.AddScoped<IAuthValidator, AuthValidator>();
+            services.AddScoped<IRoleValidator, RoleValidator>();
+            services.AddScoped<IOrderValidator, OrderValidator>();
         }
     }
 }

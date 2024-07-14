@@ -1,20 +1,9 @@
-﻿using AutoMapper;
-using MediatR;
-using Microsoft.Extensions.Options;
-using MockQueryable.Moq;
-using Moq;
+﻿using Moq;
 using OrderPaymentSystem.Application.Commands;
-using OrderPaymentSystem.Application.Queries;
-using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Interfaces.Cache;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
-using OrderPaymentSystem.Domain.Settings;
-using OrderPaymentSystem.Producer.Interfaces;
 using OrderPaymentSystem.UnitTests.Configurations;
-using Serilog;
 using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ProductTests

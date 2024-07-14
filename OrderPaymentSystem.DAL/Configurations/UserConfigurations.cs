@@ -11,7 +11,7 @@ namespace OrderPaymentSystem.DAL.Configurations
         {
             builder.HasData(new User
             {
-                Id = 1,
+                Id = new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"),
                 Login = "Maximlog",
                 Password = HashPasswordHelper.HashPassword("1234567"),
                 CreatedAt = DateTime.UtcNow,
@@ -19,7 +19,7 @@ namespace OrderPaymentSystem.DAL.Configurations
             },
             new User
             {
-                Id = 2,
+                Id = new Guid("7c9e6679-7425-40de-944b-e07fc1f90ae7"),
                 Login = "SomeNewLogin",
                 Password = HashPasswordHelper.HashPassword("25252525"),
                 CreatedAt = DateTime.UtcNow,

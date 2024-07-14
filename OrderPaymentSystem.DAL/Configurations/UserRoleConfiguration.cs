@@ -10,7 +10,7 @@ namespace OrderPaymentSystem.DAL.Configurations
         {
             builder.HasData(new UserRole()
             {
-                UserId = 1,
+                UserId = new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"),
                 RoleId = 2,
             });
         }
