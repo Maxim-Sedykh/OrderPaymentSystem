@@ -1,4 +1,4 @@
-﻿namespace OrderPaymentSystem.Domain.Interfaces
+﻿namespace OrderPaymentSystem.Domain.Interfaces.Entities
 {
     public interface IEntityId<T> where T : struct
     {

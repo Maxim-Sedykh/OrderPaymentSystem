@@ -5,19 +5,12 @@ using System.Text.Json;
 namespace OrderPaymentSystem.DAL.Cache
 {
     /// <inheritdoc/>
-    public class CacheService : ICacheService
+    public class CacheService(IDistributedCache cache) : ICacheService
     {
-        private readonly IDistributedCache _cache;
-
-        public CacheService(IDistributedCache cache)
-        {
-            _cache = cache;
-        }
-
         /// <inheritdoc/>
         public async Task<T> GetObjectAsync<T>(string key) where T : class
         {
-            var data = await _cache.GetAsync(key);
+            var data = await cache.GetAsync(key);
             return data != null ? JsonSerializer.Deserialize<T>(data) : default;
         }
 
@@ -44,7 +37,7 @@ namespace OrderPaymentSystem.DAL.Cache
             var data = JsonSerializer.SerializeToUtf8Bytes(obj);
             if (data != null && data.Length > 0)
             {
-                await _cache.SetAsync(key, data, options ?? new DistributedCacheEntryOptions() 
+                await cache.SetAsync(key, data, options ?? new DistributedCacheEntryOptions() 
                 { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2)});
             }
         }

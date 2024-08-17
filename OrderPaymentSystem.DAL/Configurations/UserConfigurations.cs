@@ -13,7 +13,7 @@ namespace OrderPaymentSystem.DAL.Configurations
             {
                 Id = new Guid("0f8fad5b-d9cb-469f-a165-70867728950e"),
                 Login = "Maximlog",
-                Password = HashPasswordHelper.HashPassword("1234567"),
+                Password = "BB864652C1B0118573EFC59CC0FF80FA083110D6BDABFA4C81B5515D3C7D1CB1-2BA5EE8C86EF4C052CFB4A79ECE2EAD7",
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = 1,
             },
@@ -21,7 +21,7 @@ namespace OrderPaymentSystem.DAL.Configurations
             {
                 Id = new Guid("7c9e6679-7425-40de-944b-e07fc1f90ae7"),
                 Login = "SomeNewLogin",
-                Password = HashPasswordHelper.HashPassword("25252525"),
+                Password = "196FB27D01E72EF1A92402BB0E5CF20BB56BC96F3182D20322D10E5DA79D022E-4411A9783D861D68C2807CEC937D4AEC",
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = 1,
             });

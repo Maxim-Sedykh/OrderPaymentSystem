@@ -4,6 +4,7 @@ using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Helpers;
+using OrderPaymentSystem.Domain.Interfaces.Auth;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
 using System;
@@ -14,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Application.Validations.Validators
 {
-    public class AuthValidator : IAuthValidator
+    public class AuthValidator(IPasswordHasher passwordHasher) : IAuthValidator
     {
         public BaseResult ValidateLogin(User user, string enteredPassword)
         {
@@ -27,7 +28,9 @@ namespace OrderPaymentSystem.Application.Validations.Validators
                 };
             }
 
-            if (user.Password == HashPasswordHelper.HashPassword(enteredPassword))
+            bool verified = passwordHasher.Verify(enteredPassword, passwordHash: user.Password);
+
+            if (!verified)
             {
                 return new BaseResult<TokenDto>()
                 {

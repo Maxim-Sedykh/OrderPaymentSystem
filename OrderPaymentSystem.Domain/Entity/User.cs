@@ -1,4 +1,4 @@
-﻿using OrderPaymentSystem.Domain.Interfaces;
+﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
 
 namespace OrderPaymentSystem.Domain.Entity
 {

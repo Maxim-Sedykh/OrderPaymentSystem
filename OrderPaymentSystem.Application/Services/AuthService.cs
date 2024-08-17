@@ -1,13 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.Application.Validations.Validators;
 using OrderPaymentSystem.Domain.Dto.Auth;
-using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Helpers;
+using OrderPaymentSystem.Domain.Interfaces.Auth;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
@@ -17,37 +15,19 @@ using System.Security.Claims;
 
 namespace OrderPaymentSystem.Application.Services
 {
-    public class AuthService : IAuthService
-    {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IBaseRepository<User> _userRepository;
-        private readonly IBaseRepository<UserToken> _userTokenRepository;
-        private readonly IBaseRepository<Role> _roleRepository;
-        private readonly IUserTokenService _userTokenService;
-        private readonly IMapper _mapper;
-        private readonly IAuthValidator _authValidator;
-
-        public AuthService(IBaseRepository<User> userRepository, IMapper mapper, IUserTokenService userTokenService,
+    public class AuthService(IBaseRepository<User> userRepository, IMapper mapper, IUserTokenService userTokenService,
             IBaseRepository<UserToken> userTokenRepository, IBaseRepository<Role> roleRepository, IUnitOfWork unitOfWork,
-            IAuthValidator authValidator)
-        {
-            _userRepository = userRepository;
-            _mapper = mapper;
-            _userTokenService = userTokenService;
-            _userTokenRepository = userTokenRepository;
-            _roleRepository = roleRepository;
-            _unitOfWork = unitOfWork;
-            _authValidator = authValidator;
-        }
+            IAuthValidator authValidator, IPasswordHasher passwordHasher) : IAuthService
+    {
 
         /// <inheritdoc/>
         public async Task<BaseResult<TokenDto>> Login(LoginUserDto dto)
         {
-            var user = await _userRepository.GetAll()
+            var user = await userRepository.GetAll()
                 .Include(x => x.Roles)
                 .FirstOrDefaultAsync(x => x.Login == dto.Login);
 
-            var validateLoginResult = _authValidator.ValidateLogin(user, enteredPassword : dto.Password);
+            var validateLoginResult = authValidator.ValidateLogin(user, enteredPassword: dto.Password);
             if (!validateLoginResult.IsSuccess)
             {
                 return new BaseResult<TokenDto>()
@@ -62,9 +42,9 @@ namespace OrderPaymentSystem.Application.Services
             claims.Add(new Claim(ClaimTypes.Name, user.Login));
             claims.Add(new Claim(ClaimTypes.NameIdentifier, Convert.ToString(user.Id)));
 
-            var accessToken = _userTokenService.GenerateAccessToken(claims);
-            var userToken = await _userTokenRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == user.Id);
-            var refreshToken = _userTokenService.GenerateRefreshToken();
+            var accessToken = userTokenService.GenerateAccessToken(claims);
+            var userToken = await userTokenRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == user.Id);
+            var refreshToken = userTokenService.GenerateRefreshToken();
 
             if (userToken == null)
             {
@@ -75,16 +55,16 @@ namespace OrderPaymentSystem.Application.Services
                     RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7)
                 };
 
-                await _userTokenRepository.CreateAsync(userToken);
+                await userTokenRepository.CreateAsync(userToken);
             }
             else
             {
                 userToken.RefreshToken = refreshToken;
                 userToken.RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7);
 
-                _userTokenRepository.Update(userToken);
+                userTokenRepository.Update(userToken);
 
-                await _userTokenRepository.SaveChangesAsync();
+                await userTokenRepository.SaveChangesAsync();
             }
 
             return new BaseResult<TokenDto>()
@@ -109,40 +89,38 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            var user = await _userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == dto.Login);
+            var user = await userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == dto.Login);
 
-            if (user == null)
+            if (user != null)
             {
                 return new BaseResult<UserDto>()
                 {
-                    ErrorCode = (int)ErrorCodes.UserNotFound,
-                    ErrorMessage = ErrorMessage.UserNotFound
+                    ErrorCode = (int)ErrorCodes.UserAlreadyExist,
+                    ErrorMessage = ErrorMessage.UserAlreadyExist
                 };
             }
 
-            var hashUserPassword = HashPasswordHelper.HashPassword(dto.Password);
-
-            using (var transaction = await _unitOfWork.BeginTransactionAsync())
+            using (var transaction = await unitOfWork.BeginTransactionAsync())
             {
                 try
                 {
                     user = new User()
                     {
                         Login = dto.Login,
-                        Password = hashUserPassword,
+                        Password = passwordHasher.Hash(dto.Password),
                     };
-                    await _unitOfWork.Users.CreateAsync(user);
+                    await unitOfWork.Users.CreateAsync(user);
 
-                    await _unitOfWork.SaveChangesAsync();
+                    await unitOfWork.SaveChangesAsync();
 
                     Basket userBasket = new Basket()
                     {
                         UserId = user.Id,
                     };
 
-                    await _unitOfWork.Baskets.CreateAsync(userBasket);
+                    await unitOfWork.Baskets.CreateAsync(userBasket);
 
-                    var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == nameof(Roles.User));
+                    var role = await roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == nameof(Roles.User));
 
                     if (role == null)
                     {
@@ -159,9 +137,9 @@ namespace OrderPaymentSystem.Application.Services
                         RoleId = role.Id
                     };
 
-                    await _unitOfWork.UserRoles.CreateAsync(userRole);
+                    await unitOfWork.UserRoles.CreateAsync(userRole);
 
-                    await _unitOfWork.SaveChangesAsync();
+                    await unitOfWork.SaveChangesAsync();
 
                     await transaction.CommitAsync();
                 }
@@ -173,7 +151,7 @@ namespace OrderPaymentSystem.Application.Services
 
             return new BaseResult<UserDto>()
             {
-                Data = _mapper.Map<UserDto>(user),
+                Data = mapper.Map<UserDto>(user),
             };
         }
     }

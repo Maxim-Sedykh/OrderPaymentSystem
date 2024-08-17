@@ -9,6 +9,8 @@ using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.DAL.Cache;
 using OrderPaymentSystem.Domain.Settings;
+using OrderPaymentSystem.Domain.Interfaces.Auth;
+using OrderPaymentSystem.DAL.Auth;
 
 namespace OrderPaymentSystem.DAL.DependencyInjection
 {
@@ -29,6 +31,8 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
                 options.UseNpgsql(connectionString); 
             });
 
+            services.AddSingleton<IPasswordHasher, PasswordHasher>();
+
             services.InitRepositories();
             services.InitUnitOfWork();
 
@@ -40,12 +44,12 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
             var types = new List<Type>()
             {
                 typeof(User),
-                typeof(Domain.Entity.Order),
+                typeof(Order),
                 typeof(Payment),
                 typeof(Product),
                 typeof(UserToken),
                 typeof(UserRole),
-                typeof(Domain.Entity.Role),
+                typeof(Role),
                 typeof(Basket)
             };
 

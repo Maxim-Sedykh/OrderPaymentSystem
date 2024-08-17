@@ -1,20 +1,13 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using OrderPaymentSystem.Domain.Interfaces;
+using OrderPaymentSystem.Domain.Interfaces.Entities;
 using System.Security.Claims;
 
 namespace OrderPaymentSystem.DAL.Interceptors
 {
-    public class AuditInterceptor: SaveChangesInterceptor
+    public class AuditInterceptor(IHttpContextAccessor httpContextAccessor) : SaveChangesInterceptor
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
-
-        public AuditInterceptor(IHttpContextAccessor httpContextAccessor)
-        {
-            _httpContextAccessor = httpContextAccessor;
-        }
-
         public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result,
             CancellationToken cancellationToken = new CancellationToken())
         {
@@ -52,7 +45,7 @@ namespace OrderPaymentSystem.DAL.Interceptors
 
         private long GetUserId()
         {
-            var httpContext = _httpContextAccessor.HttpContext;
+            var httpContext = httpContextAccessor.HttpContext;
             if (httpContext.User.Identity.IsAuthenticated)
             {
                 var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier);
