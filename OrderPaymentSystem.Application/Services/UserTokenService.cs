@@ -50,6 +50,19 @@ namespace OrderPaymentSystem.Application.Services
         }
 
         /// <inheritdoc/>
+        public List<Claim> GetClaimsFromUser(User user)
+        {
+            var userRoles = user.Roles;
+
+            var claims = userRoles.Select(x => new Claim(ClaimTypes.Role, x.Name)).ToList();
+
+            claims.Add(new Claim(ClaimTypes.Name, user.Login));
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, Convert.ToString(user.Id)));
+
+            return claims;
+        }
+
+        /// <inheritdoc/>
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken)
         {
             var tokenValidationParameters = new TokenValidationParameters()
@@ -77,7 +90,7 @@ namespace OrderPaymentSystem.Application.Services
         {
             string accessToken = dto.AccessToken;
             string refreshToken = dto.RefreshToken;
-            
+
             var claimsPrincipal = GetPrincipalFromExpiredToken(accessToken);
             var userName = claimsPrincipal.Identity?.Name;
 
@@ -94,7 +107,9 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            var newAccessToken = GenerateAccessToken(claimsPrincipal.Claims);
+            var newClaims = GetClaimsFromUser(user);
+
+            var newAccessToken = GenerateAccessToken(newClaims);
             var newRefreshToken = GenerateRefreshToken();
 
             user.UserToken.RefreshToken = newRefreshToken;

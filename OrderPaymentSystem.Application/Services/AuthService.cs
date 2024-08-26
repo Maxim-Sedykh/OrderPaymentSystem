@@ -37,14 +37,12 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            var userRoles = user.Roles;
-            var claims = userRoles.Select(x => new Claim(ClaimTypes.Role, x.Name)).ToList();
-            claims.Add(new Claim(ClaimTypes.Name, user.Login));
-            claims.Add(new Claim(ClaimTypes.NameIdentifier, Convert.ToString(user.Id)));
+            var claims = userTokenService.GetClaimsFromUser(user);
 
             var accessToken = userTokenService.GenerateAccessToken(claims);
-            var userToken = await userTokenRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == user.Id);
             var refreshToken = userTokenService.GenerateRefreshToken();
+
+            var userToken = await userTokenRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == user.Id);
 
             if (userToken == null)
             {

@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OrderPaymentSystem.Domain.Entity;
-using OrderPaymentSystem.Domain.Helpers;
 
 namespace OrderPaymentSystem.DAL.Configurations
 {
