@@ -52,6 +52,11 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public List<Claim> GetClaimsFromUser(User user)
         {
+            if (user is null)
+            {
+                throw new ArgumentNullException(ErrorMessage.UserNotFound);
+            }
+
             if (user.Roles is null)
             {
                 throw new ArgumentNullException(ErrorMessage.UserRolesNotFound);
