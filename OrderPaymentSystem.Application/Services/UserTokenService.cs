@@ -52,22 +52,23 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public List<Claim> GetClaimsFromUser(User user)
         {
-            if (user is null)
+            if (user == null)
             {
-                throw new ArgumentNullException(ErrorMessage.UserNotFound);
+                throw new ArgumentNullException(nameof(user), ErrorMessage.UserNotFound);
             }
 
-            if (user.Roles is null)
+            if (user.Roles == null)
             {
-                throw new ArgumentNullException(ErrorMessage.UserRolesNotFound);
+                throw new ArgumentNullException(nameof(user.Roles), ErrorMessage.UserRolesNotFound);
             }
 
-            var userRoles = user.Roles;
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Login),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            };
 
-            var claims = userRoles.Select(x => new Claim(ClaimTypes.Role, x.Name)).ToList();
-
-            claims.Add(new Claim(ClaimTypes.Name, user.Login));
-            claims.Add(new Claim(ClaimTypes.NameIdentifier, Convert.ToString(user.Id)));
+            claims.AddRange(user.Roles.Select(x => new Claim(ClaimTypes.Role, x.Name)));
 
             return claims;
         }
