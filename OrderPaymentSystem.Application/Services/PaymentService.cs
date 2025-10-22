@@ -13,7 +13,6 @@ using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
-using OrderPaymentSystem.Producer.Interfaces;
 using System.Data;
 
 namespace OrderPaymentSystem.Application.Services
@@ -22,16 +21,11 @@ namespace OrderPaymentSystem.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IMessageProducer _messageProducer;
-        private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly ICacheService _cacheService;
 
-        public PaymentService(IMapper mapper, IMessageProducer messageProducer,
-            IOptions<RabbitMqSettings> rabbitMqOptions, IUnitOfWork unitOfWord, ICacheService cacheService)
+        public PaymentService(IMapper mapper, IUnitOfWork unitOfWord, ICacheService cacheService)
         {
             _mapper = mapper;
-            _messageProducer = messageProducer;
-            _rabbitMqOptions = rabbitMqOptions;
             _unitOfWork = unitOfWord;
             _cacheService = cacheService;
         }
@@ -50,9 +44,9 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            var basketOrders = await _unitOfWork.Orders.GetAll()
+            var basketOrders = _unitOfWork.Orders.GetAll()
                 .Where(x => x.Id == dto.BasketId)
-                .ToListAsync();
+                .ToList();
 
             if (basketOrders.Count == 0)
             {
@@ -103,10 +97,7 @@ namespace OrderPaymentSystem.Application.Services
 
                     _unitOfWork.Orders.UpdateRange(basketOrders);
 
-                    _messageProducer.SendMessage(payment, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
-
                     await _unitOfWork.SaveChangesAsync();
-
 
                     await transaction.CommitAsync();
 
@@ -144,8 +135,6 @@ namespace OrderPaymentSystem.Application.Services
 
             _unitOfWork.Payments.Remove(payment);
             await _unitOfWork.Payments.SaveChangesAsync();
-
-            _messageProducer.SendMessage(payment, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<PaymentDto>()
             {
@@ -231,8 +220,6 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            _messageProducer.SendMessage(userPayments, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
-
             return new CollectionResult<PaymentDto>()
             {
                 Data = userPayments,
@@ -275,8 +262,6 @@ namespace OrderPaymentSystem.Application.Services
 
                 var updatedPayment = _unitOfWork.Payments.Update(payment);
                 await _unitOfWork.Payments.SaveChangesAsync();
-
-                _messageProducer.SendMessage(updatedPayment, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
                 return new BaseResult<PaymentDto>()
                 {

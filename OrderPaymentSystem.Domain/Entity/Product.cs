@@ -20,6 +20,6 @@ namespace OrderPaymentSystem.Domain.Entity
 
         public long? UpdatedBy { get; set; }
 
-        public ICollection<Order> Orders { get; set; }
+        public List<Order> Orders { get; set; }
     }
 }

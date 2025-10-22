@@ -21,7 +21,6 @@
   <ItemGroup>
     <ProjectReference Include="..\OrderPaymentSystem.Application\OrderPaymentSystem.Application.csproj" />
     <ProjectReference Include="..\OrderPaymentSystem.Domain\OrderPaymentSystem.Domain.csproj" />
-    <ProjectReference Include="..\OrderPaymentSystem.Producer\OrderPaymentSystem.Producer.csproj" />
   </ItemGroup>
 
 </Project>

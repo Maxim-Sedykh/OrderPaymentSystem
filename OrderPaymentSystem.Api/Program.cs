@@ -1,16 +1,13 @@
-using OrderPaymentSystem.DAL.DependencyInjection;
-using OrderPaymentSystem.Application.DependencyInjection;
-using Serilog;
 using OrderPaymentSystem.Api;
-using OrderPaymentSystem.Domain.Settings;
 using OrderPaymentSystem.Api.Middlewares;
-using OrderPaymentSystem.Consumer.DependencyInjection;
-using OrderPaymentSystem.Producer.DependencyInjection;
+using OrderPaymentSystem.Application.DependencyInjection;
+using OrderPaymentSystem.DAL.DependencyInjection;
+using OrderPaymentSystem.Domain.Settings;
 using Prometheus;
+using Serilog;
 
-var builder = WebApplication.CreateBuilder(args);   
+var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<RabbitMqSettings>(builder.Configuration.GetSection(nameof(RabbitMqSettings)));
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.DefaultSection));
 builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection(nameof(RedisSettings)));
 
@@ -27,8 +24,6 @@ builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Confi
 
 builder.Services.AddDataAccessLayer(builder.Configuration);
 builder.Services.AddApplication();
-builder.Services.AddProducer();
-builder.Services.AddConsumer();
 
 var app = builder.Build();
 

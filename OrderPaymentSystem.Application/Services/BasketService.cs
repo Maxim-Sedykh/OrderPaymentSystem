@@ -10,7 +10,6 @@ using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
-using OrderPaymentSystem.Producer.Interfaces;
 
 namespace OrderPaymentSystem.Application.Services
 {
@@ -19,16 +18,11 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<Order> _orderRepository;
         private readonly IBaseRepository<Basket> _basketRepository;
         private readonly IMapper _mapper;
-        private readonly IMessageProducer _messageProducer;
-        private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
 
-        public BasketService(IBaseRepository<Order> orderRepository, IMapper mapper, IMessageProducer messageProducer,
-            IOptions<RabbitMqSettings> rabbitMqOptions, IBaseRepository<Basket> basketRepository)
+        public BasketService(IBaseRepository<Order> orderRepository, IMapper mapper, IBaseRepository<Basket> basketRepository)
         {
             _orderRepository = orderRepository;
             _mapper = mapper;
-            _messageProducer = messageProducer;
-            _rabbitMqOptions = rabbitMqOptions;
             _basketRepository = basketRepository;
         }
 
@@ -111,8 +105,6 @@ namespace OrderPaymentSystem.Application.Services
                     ErrorCode = (int)ErrorCodes.OrdersNotFound
                 };
             }
-
-            _messageProducer.SendMessage(userBasketOrders, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new CollectionResult<OrderDto>()
             {

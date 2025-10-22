@@ -11,7 +11,6 @@ using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
-using System.Security.Claims;
 
 namespace OrderPaymentSystem.Application.Services
 {

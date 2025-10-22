@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Commands;
 using OrderPaymentSystem.Application.Queries;
 using OrderPaymentSystem.Application.Resources;
@@ -13,8 +12,6 @@ using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
-using OrderPaymentSystem.Domain.Settings;
-using OrderPaymentSystem.Producer.Interfaces;
 using Serilog;
 
 
@@ -24,24 +21,18 @@ namespace OrderPaymentSystem.Application.Services
     {
         private readonly IBaseRepository<Product> _productRepository;
         private readonly IMapper _mapper;
-        private readonly IMessageProducer _messageProducer;
-        private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly ICacheService _cacheService;
         private readonly IMediator _mediator;
         private readonly ILogger _logger;
 
         public ProductService(IBaseRepository<Product> productRepository,
             IMapper mapper,
-            IMessageProducer messageProducer,
-            IOptions<RabbitMqSettings> rabbitMqOptions,
             ICacheService cacheService,
             IMediator mediator,
             ILogger logger)
         {
             _productRepository = productRepository;
             _mapper = mapper;
-            _messageProducer = messageProducer;
-            _rabbitMqOptions = rabbitMqOptions;
             _cacheService = cacheService;
             _mediator = mediator;
             _logger = logger;
@@ -62,8 +53,6 @@ namespace OrderPaymentSystem.Application.Services
             }
 
             ProductDto createdProduct = await _mediator.Send(new CreateProductCommand(dto.ProductName, dto.Description, dto.Cost));
-
-            _messageProducer.SendMessage(createdProduct, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<ProductDto>()
             {
@@ -86,8 +75,6 @@ namespace OrderPaymentSystem.Application.Services
             }
 
             await _mediator.Send(new DeleteProductCommand(product));
-
-            _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<ProductDto>()
             {
@@ -126,8 +113,6 @@ namespace OrderPaymentSystem.Application.Services
                     ErrorCode = (int)ErrorCodes.ProductNotFound
                 };
             }
-
-            _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<ProductDto>()
             {
@@ -169,8 +154,6 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            _messageProducer.SendMessage(products, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
-
             return new CollectionResult<ProductDto>()
             {
                 Data = products,
@@ -197,8 +180,6 @@ namespace OrderPaymentSystem.Application.Services
                 || product.Cost != dto.Cost)
             {
                 await _mediator.Send(new UpdateProductCommand(dto.ProductName, dto.Description, dto.Cost, product));
-
-                _messageProducer.SendMessage(product, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
                 return new BaseResult<ProductDto>()
                 {

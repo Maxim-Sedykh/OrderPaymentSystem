@@ -1,11 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.Application.Validations.Validators;
 using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
-using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
@@ -13,8 +10,6 @@ using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
-using OrderPaymentSystem.Domain.Settings;
-using OrderPaymentSystem.Producer.Interfaces;
 
 namespace OrderPaymentSystem.Application.Services
 {
@@ -24,19 +19,15 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<Product> _productRepository;
         private readonly IBaseRepository<User> _userRepository;
         private readonly IMapper _mapper;
-        private readonly IMessageProducer _messageProducer;
-        private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly ICacheService _cacheService;
         private readonly IOrderValidator _orderValidator;
 
         public OrderService(IBaseRepository<Order> orderRepository, IBaseRepository<User> userRepository, IBaseRepository<Product> productRepository,
-            IMapper mapper, IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions, ICacheService cacheService,
+            IMapper mapper, ICacheService cacheService,
             IOrderValidator orderValidator)
         {
             _orderRepository = orderRepository;
             _mapper = mapper;
-            _messageProducer = messageProducer;
-            _rabbitMqOptions = rabbitMqOptions;
             _cacheService = cacheService;
             _productRepository = productRepository;
             _userRepository = userRepository;
@@ -78,8 +69,6 @@ namespace OrderPaymentSystem.Application.Services
             await _orderRepository.CreateAsync(order);
             await _orderRepository.SaveChangesAsync();
 
-            _messageProducer.SendMessage(order, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
-
             return new BaseResult<OrderDto>()
             {
                 Data = _mapper.Map<OrderDto>(order),
@@ -104,8 +93,6 @@ namespace OrderPaymentSystem.Application.Services
 
             _orderRepository.Remove(order);
             await _orderRepository.SaveChangesAsync();
-
-            _messageProducer.SendMessage(order, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<OrderDto>()
             {
@@ -135,8 +122,6 @@ namespace OrderPaymentSystem.Application.Services
                 };
             }
 
-            _messageProducer.SendMessage(order, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
-
             return new BaseResult<OrderDto>()
             {
                 Data = order,
@@ -161,8 +146,6 @@ namespace OrderPaymentSystem.Application.Services
                     ErrorCode = (int)ErrorCodes.ProductsNotFound
                 };
             }
-
-            _messageProducer.SendMessage(orders, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new CollectionResult<OrderDto>()
             {
@@ -200,8 +183,6 @@ namespace OrderPaymentSystem.Application.Services
 
                 var updatedOrder = _orderRepository.Update(order);
                 await _orderRepository.SaveChangesAsync();
-
-                _messageProducer.SendMessage(order, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
                 return new BaseResult<OrderDto>()
                 {

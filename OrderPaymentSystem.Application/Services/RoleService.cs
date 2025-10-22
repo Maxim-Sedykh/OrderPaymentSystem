@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.Application.Validations.Validators;
 using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Dto.UserRole;
@@ -15,7 +14,6 @@ using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;
-using OrderPaymentSystem.Producer.Interfaces;
 
 namespace OrderPaymentSystem.Application.Services
 {
@@ -25,15 +23,12 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<Role> _roleRepository;
         private readonly IBaseRepository<User> _userRepository;
         private readonly IBaseRepository<UserRole> _userRoleRepository;
-        private readonly IMessageProducer _messageProducer;
-        private readonly IOptions<RabbitMqSettings> _rabbitMqOptions;
         private readonly IMapper _mapper;
         private readonly ICacheService _cacheService;
         private readonly IRoleValidator _roleValidator;
 
         public RoleService(IBaseRepository<Role> roleRepository, IBaseRepository<User> userRepository,
             IBaseRepository<UserRole> userRoleRepository, IMapper mapper, IUnitOfWork unitOfWork,
-            IMessageProducer messageProducer, IOptions<RabbitMqSettings> rabbitMqOptions,
             ICacheService cacheService, IRoleValidator roleValidator)
         {
             _roleRepository = roleRepository;
@@ -41,8 +36,6 @@ namespace OrderPaymentSystem.Application.Services
             _userRoleRepository = userRoleRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _messageProducer = messageProducer;
-            _rabbitMqOptions = rabbitMqOptions;
             _cacheService = cacheService;
             _roleValidator = roleValidator;
         }
@@ -85,8 +78,6 @@ namespace OrderPaymentSystem.Application.Services
                 await _userRoleRepository.CreateAsync(userRole);
                 await _userRoleRepository.SaveChangesAsync();
 
-                _messageProducer.SendMessage(userRole, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
-
                 return new BaseResult<UserRoleDto>()
                 {
                     Data = new UserRoleDto(user.Login, role.Name)
@@ -122,8 +113,6 @@ namespace OrderPaymentSystem.Application.Services
             await _roleRepository.CreateAsync(role);
             await _roleRepository.SaveChangesAsync();
 
-            _messageProducer.SendMessage(role, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
-
             return new BaseResult<RoleDto>
             {
                 Data = _mapper.Map<RoleDto>(role),
@@ -146,8 +135,6 @@ namespace OrderPaymentSystem.Application.Services
 
             _roleRepository.Remove(role);
             await _roleRepository.SaveChangesAsync();
-
-            _messageProducer.SendMessage(role, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<RoleDto>()
             {
@@ -173,8 +160,6 @@ namespace OrderPaymentSystem.Application.Services
 
             var updatedRole = _roleRepository.Update(role);
             await _roleRepository.SaveChangesAsync();
-
-            _messageProducer.SendMessage(role, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<RoleDto>()
             {
@@ -207,8 +192,6 @@ namespace OrderPaymentSystem.Application.Services
 
             _userRoleRepository.Remove(userRole);
             await _userRoleRepository.SaveChangesAsync();
-
-            _messageProducer.SendMessage(userRole, _rabbitMqOptions.Value.RoutingKey, _rabbitMqOptions.Value.ExchangeName);
 
             return new BaseResult<UserRoleDto>()
             {

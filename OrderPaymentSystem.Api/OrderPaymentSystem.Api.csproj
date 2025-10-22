@@ -23,8 +23,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\OrderPaymentSystem.DAL\OrderPaymentSystem.DAL.csproj" />
 		<ProjectReference Include="..\OrderPaymentSystem.Application\OrderPaymentSystem.Application.csproj" />
-		<ProjectReference Include="..\OrderPaymentSystem.Producer\OrderPaymentSystem.Producer.csproj" />
-		<ProjectReference Include="..\OrderPaymentSystem.Consumer\OrderPaymentSystem.Consumer.csproj" />
 	</ItemGroup>
 
 </Project>
