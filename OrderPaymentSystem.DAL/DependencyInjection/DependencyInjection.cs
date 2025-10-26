@@ -36,7 +36,7 @@ namespace OrderPaymentSystem.DAL.DependencyInjection
             services.InitRepositories();
             services.InitUnitOfWork();
 
-            services.InitCaching(configuration);
+            //services.InitCaching(configuration);
         }
 
         private static void InitRepositories(this IServiceCollection services)

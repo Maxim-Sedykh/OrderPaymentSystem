@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.ComplexTypes;
 using OrderPaymentSystem.Domain.Constants;
@@ -12,7 +11,6 @@ using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
-using OrderPaymentSystem.Domain.Settings;
 using System.Data;
 
 namespace OrderPaymentSystem.Application.Services
@@ -21,13 +19,13 @@ namespace OrderPaymentSystem.Application.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ICacheService _cacheService;
+        //private readonly ICacheService _cacheService;
 
-        public PaymentService(IMapper mapper, IUnitOfWork unitOfWord, ICacheService cacheService)
+        public PaymentService(IMapper mapper, IUnitOfWork unitOfWord/* ICacheService cacheService*/)
         {
             _mapper = mapper;
             _unitOfWork = unitOfWord;
-            _cacheService = cacheService;
+            //_cacheService = cacheService;
         }
 
         /// <inheritdoc/>
@@ -144,15 +142,10 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<BaseResult<PaymentDto>> GetPaymentByIdAsync(long id)
         {
-            var payment = await _cacheService.GetObjectAsync(
-                string.Format(CacheKeys.Payment, id),
-                async () =>
-                {
-                    return await _unitOfWork.Payments.GetAll()
+            var payment = await _unitOfWork.Payments.GetAll()
                         .Where(x => x.Id == id)
                         .Select(x => _mapper.Map<PaymentDto>(x))
                         .FirstOrDefaultAsync();
-                });
 
             if (payment == null)
             {
@@ -199,16 +192,11 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(Guid userId)
         {
-            var userPayments = await _cacheService.GetObjectAsync(
-                string.Format(CacheKeys.UserPayments, userId),
-                async () =>
-                {
-                    return await _unitOfWork.Payments.GetAll()
+            var userPayments = await _unitOfWork.Payments.GetAll()
                         .Include(x => x.Basket)
                         .Where(x => x.Basket.UserId == userId)
                         .Select(x => _mapper.Map<PaymentDto>(x))
                         .ToArrayAsync();
-                });
 
 
             if (userPayments.Length == 0)

@@ -19,16 +19,16 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<Product> _productRepository;
         private readonly IBaseRepository<User> _userRepository;
         private readonly IMapper _mapper;
-        private readonly ICacheService _cacheService;
+        //private readonly ICacheService _cacheService;
         private readonly IOrderValidator _orderValidator;
 
         public OrderService(IBaseRepository<Order> orderRepository, IBaseRepository<User> userRepository, IBaseRepository<Product> productRepository,
-            IMapper mapper, ICacheService cacheService,
+            IMapper mapper,
             IOrderValidator orderValidator)
         {
             _orderRepository = orderRepository;
             _mapper = mapper;
-            _cacheService = cacheService;
+            //_cacheService = cacheService;
             _productRepository = productRepository;
             _userRepository = userRepository;
             _orderValidator = orderValidator;
@@ -103,15 +103,10 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<BaseResult<OrderDto>> GetOrderByIdAsync(long id)
         {
-            var order = await _cacheService.GetObjectAsync(
-                string.Format(CacheKeys.Order, id),
-                async () =>
-                {
-                    return await _orderRepository.GetAll()
+            var order = await _orderRepository.GetAll()
                         .Where(x => x.Id == id)
                         .Select(x => _mapper.Map<OrderDto>(x))
                         .FirstOrDefaultAsync();
-                });
 
             if (order == null)
             {

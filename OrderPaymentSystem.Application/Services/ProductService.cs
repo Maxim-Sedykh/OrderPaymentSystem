@@ -21,19 +21,19 @@ namespace OrderPaymentSystem.Application.Services
     {
         private readonly IBaseRepository<Product> _productRepository;
         private readonly IMapper _mapper;
-        private readonly ICacheService _cacheService;
+        //private readonly ICacheService _cacheService;
         private readonly IMediator _mediator;
         private readonly ILogger _logger;
 
         public ProductService(IBaseRepository<Product> productRepository,
             IMapper mapper,
-            ICacheService cacheService,
+            //ICacheService cacheService,
             IMediator mediator,
             ILogger logger)
         {
             _productRepository = productRepository;
             _mapper = mapper;
-            _cacheService = cacheService;
+            //_cacheService = cacheService;
             _mediator = mediator;
             _logger = logger;
         }
@@ -85,24 +85,15 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<BaseResult<ProductDto>> GetProductByIdAsync(int id)
         {
-            var product = await _cacheService.GetObjectAsync<ProductDto>(string.Format(CacheKeys.Product, id));
+            var product = await _mediator.Send(new GetProductByIdQuery(id), new CancellationToken());
 
             if (product == null)
             {
-                try
+                return new BaseResult<ProductDto>()
                 {
-                    product = await _mediator.Send(new GetProductByIdQuery(id), new CancellationToken());
-                    await _cacheService.SetObjectAsync(string.Format(CacheKeys.Product, id), product);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex.Message, ex);
-                    return new BaseResult<ProductDto>()
-                    {
-                        ErrorMessage = ErrorMessage.InternalServerError,
-                        ErrorCode = (int)ErrorCodes.InternalServerError
-                    };
-                }
+                    ErrorMessage = ErrorMessage.InternalServerError,
+                    ErrorCode = (int)ErrorCodes.InternalServerError
+                };
             }
 
             if (product == null)
@@ -123,25 +114,15 @@ namespace OrderPaymentSystem.Application.Services
         /// <inheritdoc/>
         public async Task<CollectionResult<ProductDto>> GetProductsAsync()
         {
-            var products = await _cacheService.GetObjectAsync<ProductDto[]>(CacheKeys.Products);
+            var products = await _mediator.Send(new GetProductsQuery(), new CancellationToken());
 
             if (products == null)
             {
-                try
+                return new CollectionResult<ProductDto>()
                 {
-                    products = await _mediator.Send(new GetProductsQuery(), new CancellationToken());
-
-                    await _cacheService.SetObjectAsync(CacheKeys.Products, products);
-                }
-                catch (Exception ex)
-                {
-                    _logger.Error(ex.Message, ex);
-                    return new CollectionResult<ProductDto>()
-                    {
-                        ErrorMessage = ErrorMessage.InternalServerError,
-                        ErrorCode = (int)ErrorCodes.InternalServerError
-                    };
-                }
+                    ErrorMessage = ErrorMessage.InternalServerError,
+                    ErrorCode = (int)ErrorCodes.InternalServerError
+                };
             }
 
             if (!products.Any())

@@ -11,7 +11,7 @@ namespace OrderPaymentSystem.Api.Controllers
     /// <summary>
     /// Контроллер, предназначенный для работы с корзиной заказов пользователя
     /// </summary>
-    [Authorize]
+    //[Authorize]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]

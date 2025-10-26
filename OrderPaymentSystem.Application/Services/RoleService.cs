@@ -24,19 +24,19 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<User> _userRepository;
         private readonly IBaseRepository<UserRole> _userRoleRepository;
         private readonly IMapper _mapper;
-        private readonly ICacheService _cacheService;
+        //private readonly ICacheService _cacheService;
         private readonly IRoleValidator _roleValidator;
 
         public RoleService(IBaseRepository<Role> roleRepository, IBaseRepository<User> userRepository,
             IBaseRepository<UserRole> userRoleRepository, IMapper mapper, IUnitOfWork unitOfWork,
-            ICacheService cacheService, IRoleValidator roleValidator)
+            IRoleValidator roleValidator)
         {
             _roleRepository = roleRepository;
             _userRepository = userRepository;
             _userRoleRepository = userRoleRepository;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
-            _cacheService = cacheService;
+            //_cacheService = cacheService;
             _roleValidator = roleValidator;
         }
 
@@ -254,15 +254,10 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<CollectionResult<RoleDto>> GetAllRoles()
         {
-            var roles = await _cacheService.GetObjectAsync(
-                CacheKeys.Roles,
-                async () =>
-                {
-                    return await _roleRepository
+            var roles = await _roleRepository
                         .GetAll()
                         .Select(x => new RoleDto(x.Id, x.Name))
                         .ToArrayAsync();
-                });
 
 
             if (roles.Length == 0)
