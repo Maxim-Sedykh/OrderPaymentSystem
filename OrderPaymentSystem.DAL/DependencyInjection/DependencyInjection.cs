@@ -12,70 +12,69 @@ using OrderPaymentSystem.Domain.Settings;
 using OrderPaymentSystem.Domain.Interfaces.Auth;
 using OrderPaymentSystem.DAL.Auth;
 
-namespace OrderPaymentSystem.DAL.DependencyInjection
+namespace OrderPaymentSystem.DAL.DependencyInjection;
+
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    /// <summary>
+    /// Внедрение зависимостей слоя DAL
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="configuration"></param>
+    public static void AddDataAccessLayer(this IServiceCollection services, IConfiguration configuration)
     {
-        /// <summary>
-        /// Внедрение зависимостей слоя DAL
-        /// </summary>
-        /// <param name="services"></param>
-        /// <param name="configuration"></param>
-        public static void AddDataAccessLayer(this IServiceCollection services, IConfiguration configuration)
+        var connectionString = configuration.GetConnectionString("PostgresSQL");
+
+        services.AddSingleton<AuditInterceptor>();
+        services.AddDbContext<ApplicationDbContext>(options => 
+        { 
+            options.UseNpgsql(connectionString); 
+        });
+
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+
+        services.InitRepositories();
+        services.InitUnitOfWork();
+
+        //services.InitCaching(configuration);
+    }
+
+    private static void InitRepositories(this IServiceCollection services)
+    {
+        var types = new List<Type>()
         {
-            var connectionString = configuration.GetConnectionString("PostgresSQL");
+            typeof(User),
+            typeof(Order),
+            typeof(Payment),
+            typeof(Product),
+            typeof(UserToken),
+            typeof(UserRole),
+            typeof(Role),
+            typeof(Basket)
+        };
 
-            services.AddSingleton<AuditInterceptor>();
-            services.AddDbContext<ApplicationDbContext>(options => 
-            { 
-                options.UseNpgsql(connectionString); 
-            });
-
-            services.AddSingleton<IPasswordHasher, PasswordHasher>();
-
-            services.InitRepositories();
-            services.InitUnitOfWork();
-
-            //services.InitCaching(configuration);
-        }
-
-        private static void InitRepositories(this IServiceCollection services)
+        foreach (var type in types)
         {
-            var types = new List<Type>()
-            {
-                typeof(User),
-                typeof(Order),
-                typeof(Payment),
-                typeof(Product),
-                typeof(UserToken),
-                typeof(UserRole),
-                typeof(Role),
-                typeof(Basket)
-            };
-
-            foreach (var type in types)
-            {
-                var interfaceType = typeof(IBaseRepository<>).MakeGenericType(type);
-                var implementationType = typeof(BaseRepository<>).MakeGenericType(type);
-                services.AddScoped(interfaceType, implementationType);
-            }
+            var interfaceType = typeof(IBaseRepository<>).MakeGenericType(type);
+            var implementationType = typeof(BaseRepository<>).MakeGenericType(type);
+            services.AddScoped(interfaceType, implementationType);
         }
+    }
 
-        private static void InitUnitOfWork(this IServiceCollection services)
+    private static void InitUnitOfWork(this IServiceCollection services)
+    {
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+    }
+
+    private static void InitCaching(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddScoped<ICacheService, CacheService>();
+
+        var redisConfig = configuration.GetSection(nameof(RedisSettings));
+        services.AddStackExchangeRedisCache(options =>
         {
-            services.AddScoped<IUnitOfWork, UnitOfWork>();
-        }
-
-        private static void InitCaching(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddScoped<ICacheService, CacheService>();
-
-            var redisConfig = configuration.GetSection(nameof(RedisSettings));
-            services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = redisConfig["Url"];
-                options.InstanceName = redisConfig["InstanceName"];
-            });
-        }
+            options.Configuration = redisConfig["Url"];
+            options.InstanceName = redisConfig["InstanceName"];
+        });
     }
 }

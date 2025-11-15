@@ -1,13 +1,12 @@
-﻿namespace OrderPaymentSystem.Domain.Dto.Product
+﻿namespace OrderPaymentSystem.Domain.Dto.Product;
+
+public class UpdateProductDto
 {
-    public class UpdateProductDto
-    {
-        public int Id { get; set; }
+    public int Id { get; set; }
 
-        public string ProductName { get; set; }
+    public string ProductName { get; set; }
 
-        public string Description { get; set; }
+    public string Description { get; set; }
 
-        public decimal Cost { get; set; }
-    }
+    public decimal Cost { get; set; }
 }

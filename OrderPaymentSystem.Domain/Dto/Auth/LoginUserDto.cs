@@ -1,4 +1,3 @@
-﻿namespace OrderPaymentSystem.Domain.Dto.Auth
-{
-    public record LoginUserDto(string Login, string Password);
-}
+﻿namespace OrderPaymentSystem.Domain.Dto.Auth;
+
+public record LoginUserDto(string Login, string Password);

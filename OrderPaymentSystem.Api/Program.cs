@@ -29,7 +29,6 @@ var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -48,12 +47,7 @@ app.UseHttpsRedirection();
 app.UseMetricServer();
 app.UseHttpMetrics();
 
-app.MapGet("/test-random-number", () =>
-{
-    var number = Random.Shared.Next(0, 100);
-    return Results.Ok(number);
-}
-);
+app.MapGet("/ping", () => Results.Ok());
 
 app.UseAuthorization();
 

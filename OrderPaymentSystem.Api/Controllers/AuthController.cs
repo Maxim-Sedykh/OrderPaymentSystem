@@ -6,72 +6,71 @@ using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 
-namespace OrderPaymentSystem.Api.Controllers
+namespace OrderPaymentSystem.Api.Controllers;
+
+/// <summary>
+/// Контроллер для работы с авторизацией
+/// </summary>
+[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
+public class AuthController : ControllerBase
 {
-    /// <summary>
-    /// Контроллер для работы с авторизацией
-    /// </summary>
-    [ApiController]
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/[controller]")]
-    public class AuthController : ControllerBase
+    private readonly IAuthService _authService;
+    private readonly LoginUserValidator _loginUserValidator;
+    private readonly RegisterUserValidation _registerUserValidator;
+
+    public AuthController(IAuthService authService, LoginUserValidator loginUserValidator,
+        RegisterUserValidation registerUserValidator)
     {
-        private readonly IAuthService _authService;
-        private readonly LoginUserValidator _loginUserValidator;
-        private readonly RegisterUserValidation _registerUserValidator;
+        _authService = authService;
+        _loginUserValidator = loginUserValidator;
+        _registerUserValidator = registerUserValidator;
+    }
 
-        public AuthController(IAuthService authService, LoginUserValidator loginUserValidator,
-            RegisterUserValidation registerUserValidator)
+    /// <summary>
+    /// Регистрация пользователя
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    [HttpPost(RouteConstants.Register)]
+    public async Task<ActionResult<BaseResult>> Register([FromBody] RegisterUserDto dto)
+    {
+        var validationResult = await _registerUserValidator.ValidateAsync(dto);
+
+        if (!validationResult.IsValid)
         {
-            _authService = authService;
-            _loginUserValidator = loginUserValidator;
-            _registerUserValidator = registerUserValidator;
+            return BadRequest(validationResult.Errors);
         }
 
-        /// <summary>
-        /// Регистрация пользователя
-        /// </summary>
-        /// <param name="dto"></param>
-        /// <returns></returns>
-        [HttpPost(RouteConstants.Register)]
-        public async Task<ActionResult<BaseResult>> Register([FromBody] RegisterUserDto dto)
+        var response = await _authService.Register(dto);
+        if (response.IsSuccess)
         {
-            var validationResult = await _registerUserValidator.ValidateAsync(dto);
+            return Ok(response);
+        }
+        return BadRequest(response);
+    }
 
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
+    /// <summary>
+    /// Логин пользователя
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    [HttpPost(RouteConstants.Login)]
+    public async Task<ActionResult<BaseResult>> Login([FromBody] LoginUserDto dto)
+    {
+        var validationResult = await _loginUserValidator.ValidateAsync(dto);
 
-            var response = await _authService.Register(dto);
-            if (response.IsSuccess)
-            {
-                return Ok(response);
-            }
-            return BadRequest(response);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(validationResult.Errors);
         }
 
-        /// <summary>
-        /// Логин пользователя
-        /// </summary>
-        /// <param name="dto"></param>
-        /// <returns></returns>
-        [HttpPost(RouteConstants.Login)]
-        public async Task<ActionResult<BaseResult>> Login([FromBody] LoginUserDto dto)
+        var response = await _authService.Login(dto);
+        if (response.IsSuccess)
         {
-            var validationResult = await _loginUserValidator.ValidateAsync(dto);
-
-            if (!validationResult.IsValid)
-            {
-                return BadRequest(validationResult.Errors);
-            }
-
-            var response = await _authService.Login(dto);
-            if (response.IsSuccess)
-            {
-                return Ok(response);
-            }
-            return BadRequest(response);
+            return Ok(response);
         }
+        return BadRequest(response);
     }
 }

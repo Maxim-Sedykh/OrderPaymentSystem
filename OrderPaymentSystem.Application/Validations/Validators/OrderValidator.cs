@@ -11,54 +11,53 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.Application.Validations.Validators
+namespace OrderPaymentSystem.Application.Validations.Validators;
+
+public class OrderValidator: IOrderValidator
 {
-    public class OrderValidator: IOrderValidator
+    public BaseResult ValidateUpdatingOrder(Order order, Product product)
     {
-        public BaseResult ValidateUpdatingOrder(Order order, Product product)
+        if (order == null)
         {
-            if (order == null)
+            return new BaseResult()
             {
-                return new BaseResult()
-                {
-                    ErrorCode = (int)ErrorCodes.OrderNotFound,
-                    ErrorMessage = ErrorMessage.OrderNotFound
-                };
-            }
-
-            if (product == null)
-            {
-                return new BaseResult()
-                {
-                    ErrorCode = (int)ErrorCodes.ProductNotFound,
-                    ErrorMessage = ErrorMessage.ProductNotFound
-                };
-            }
-
-            return new BaseResult();
+                ErrorCode = (int)ErrorCodes.OrderNotFound,
+                ErrorMessage = ErrorMessage.OrderNotFound
+            };
         }
 
-        public BaseResult ValidateCreatingOrder(User user, Product product)
+        if (product == null)
         {
-            if (user == null)
+            return new BaseResult()
             {
-                return new BaseResult<UserRoleDto>()
-                {
-                    ErrorCode = (int)ErrorCodes.UserNotFound,
-                    ErrorMessage = ErrorMessage.UserNotFound
-                };
-            }
-
-            if (product == null)
-            {
-                return new BaseResult()
-                {
-                    ErrorCode = (int)ErrorCodes.ProductNotFound,
-                    ErrorMessage = ErrorMessage.ProductNotFound
-                };
-            }
-
-            return new BaseResult();
+                ErrorCode = (int)ErrorCodes.ProductNotFound,
+                ErrorMessage = ErrorMessage.ProductNotFound
+            };
         }
+
+        return new BaseResult();
+    }
+
+    public BaseResult ValidateCreatingOrder(User user, Product product)
+    {
+        if (user == null)
+        {
+            return new BaseResult<UserRoleDto>()
+            {
+                ErrorCode = (int)ErrorCodes.UserNotFound,
+                ErrorMessage = ErrorMessage.UserNotFound
+            };
+        }
+
+        if (product == null)
+        {
+            return new BaseResult()
+            {
+                ErrorCode = (int)ErrorCodes.ProductNotFound,
+                ErrorMessage = ErrorMessage.ProductNotFound
+            };
+        }
+
+        return new BaseResult();
     }
 }

@@ -2,25 +2,24 @@
 using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Result;
 
-namespace OrderPaymentSystem.Domain.Interfaces.Services
+namespace OrderPaymentSystem.Domain.Interfaces.Services;
+
+/// <summary>
+/// Сервис отвечающий за работу с авторизацией и аутентификацией
+/// </summary>
+public interface IAuthService
 {
     /// <summary>
-    /// Сервис отвечающий за работу с авторизацией и аутентификацией
+    /// Регистрация пользователя
     /// </summary>
-    public interface IAuthService
-    {
-        /// <summary>
-        /// Регистрация пользователя
-        /// </summary>
-        /// <param name="dto"></param>
-        /// <returns></returns>
-        Task<BaseResult<UserDto>> Register(RegisterUserDto dto);
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    Task<BaseResult<UserDto>> Register(RegisterUserDto dto);
 
-        /// <summary>
-        /// Авторизация пользователя
-        /// </summary>
-        /// <param name="dto"></param>
-        /// <returns></returns>
-        Task<BaseResult<TokenDto>> Login(LoginUserDto dto);
-    }
+    /// <summary>
+    /// Авторизация пользователя
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    Task<BaseResult<TokenDto>> Login(LoginUserDto dto);
 }

@@ -6,12 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.Domain.Interfaces.Validators
-{
-    public interface IOrderValidator
-    {
-        BaseResult ValidateUpdatingOrder(Order order, Product product);
+namespace OrderPaymentSystem.Domain.Interfaces.Validators;
 
-        BaseResult ValidateCreatingOrder(User user, Product product);
-    }
+public interface IOrderValidator
+{
+    BaseResult ValidateUpdatingOrder(Order order, Product product);
+
+    BaseResult ValidateCreatingOrder(User user, Product product);
 }

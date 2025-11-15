@@ -1,13 +1,12 @@
 ﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
 
-namespace OrderPaymentSystem.Domain.Entity
+namespace OrderPaymentSystem.Domain.Entity;
+
+public class Role: IEntityId<long>
 {
-    public class Role: IEntityId<long>
-    {
-        public long Id { get; set; }
+    public long Id { get; set; }
 
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        public ICollection<User> Users { get; set; }
-    }
+    public ICollection<User> Users { get; set; }
 }

@@ -2,13 +2,12 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OrderPaymentSystem.Domain.Entity;
 
-namespace OrderPaymentSystem.DAL.Configurations
+namespace OrderPaymentSystem.DAL.Configurations;
+
+public class OrderConfigurations : IEntityTypeConfiguration<Order>
 {
-    public class OrderConfigurations : IEntityTypeConfiguration<Order>
+    public void Configure(EntityTypeBuilder<Order> builder)
     {
-        public void Configure(EntityTypeBuilder<Order> builder)
-        {
-            builder.Property(x => x.Id).ValueGeneratedOnAdd();
-        }
+        builder.Property(x => x.Id).ValueGeneratedOnAdd();
     }
 }

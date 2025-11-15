@@ -2,14 +2,13 @@
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Entity;
 
-namespace OrderPaymentSystem.Application.Mapping
+namespace OrderPaymentSystem.Application.Mapping;
+
+public class OrderMapping : Profile
 {
-    public class OrderMapping : Profile
+    public OrderMapping()
     {
-        public OrderMapping()
-        {
-            CreateMap<Order, OrderDto>()
-                .ReverseMap();
-        }
+        CreateMap<Order, OrderDto>()
+            .ReverseMap();
     }
 }

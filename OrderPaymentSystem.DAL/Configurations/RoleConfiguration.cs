@@ -2,31 +2,30 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OrderPaymentSystem.Domain.Entity;
 
-namespace OrderPaymentSystem.DAL.Configurations
+namespace OrderPaymentSystem.DAL.Configurations;
+
+public class RoleConfiguration : IEntityTypeConfiguration<Role>
 {
-    public class RoleConfiguration : IEntityTypeConfiguration<Role>
+    public void Configure(EntityTypeBuilder<Role> builder)
     {
-        public void Configure(EntityTypeBuilder<Role> builder)
+        builder.Property(x => x.Id).ValueGeneratedOnAdd();
+        builder.Property(x => x.Name).IsRequired().HasMaxLength(50);
+
+        builder.HasData(new Role
         {
-            builder.Property(x => x.Id).ValueGeneratedOnAdd();
-            builder.Property(x => x.Name).IsRequired().HasMaxLength(50);
+            Id = 1,
+            Name = "User"
+        },
+        new Role
+        {
+            Id = 2,
+            Name = "Admin"
+        }, 
+        new Role
+        {
+            Id = 3,
+            Name = "Moderator"
+        });
 
-            builder.HasData(new Role
-            {
-                Id = 1,
-                Name = "User"
-            },
-            new Role
-            {
-                Id = 2,
-                Name = "Admin"
-            }, 
-            new Role
-            {
-                Id = 3,
-                Name = "Moderator"
-            });
-
-        }
     }
 }

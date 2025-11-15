@@ -1,16 +1,15 @@
 ﻿using FluentValidation;
 using OrderPaymentSystem.Domain.Dto.UserRole;
 
-namespace OrderPaymentSystem.Application.Validations.FluentValidations.UserRole
+namespace OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
+
+public class DeleteUserRoleValidation : AbstractValidator<DeleteUserRoleDto>
 {
-    public class DeleteUserRoleValidation : AbstractValidator<DeleteUserRoleDto>
+    public DeleteUserRoleValidation()
     {
-        public DeleteUserRoleValidation()
-        {
-            RuleFor(x => x.Login)
-                .NotEmpty().WithMessage("Логин пользователя должен быть указан");
-            RuleFor(x => x.RoleId)
-                .NotEmpty().WithMessage("Идентификатор для роли должен быть указан");
-        }
+        RuleFor(x => x.Login)
+            .NotEmpty().WithMessage("Логин пользователя должен быть указан");
+        RuleFor(x => x.RoleId)
+            .NotEmpty().WithMessage("Идентификатор для роли должен быть указан");
     }
 }

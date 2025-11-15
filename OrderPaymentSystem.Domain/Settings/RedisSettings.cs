@@ -1,9 +1,8 @@
-﻿namespace OrderPaymentSystem.Domain.Settings
-{
-    public class RedisSettings
-    {
-        public string Url { get; set; }
+﻿namespace OrderPaymentSystem.Domain.Settings;
 
-        public string InstanceName { get; set; }
-    }
+public class RedisSettings
+{
+    public string Url { get; set; }
+
+    public string InstanceName { get; set; }
 }

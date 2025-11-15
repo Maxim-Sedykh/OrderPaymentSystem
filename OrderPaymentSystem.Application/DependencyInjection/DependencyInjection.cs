@@ -12,85 +12,79 @@ using OrderPaymentSystem.Application.Validations.Validators;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
 
-namespace OrderPaymentSystem.Application.DependencyInjection
+namespace OrderPaymentSystem.Application.DependencyInjection;
+
+/// <summary>
+/// Внедрение зависимостей слоя Application
+/// </summary>
+public static class DependencyInjection
 {
-    /// <summary>
-    /// Внедрение зависимостей слоя Application
-    /// </summary>
-    public static class DependencyInjection
+    public static void AddApplication(this IServiceCollection services)
     {
-        public static void AddApplication(this IServiceCollection services)
+        InitAutoMapper(services);
+
+        services.AddMediatR(cf => cf.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
+
+        InitServices(services);
+
+        InitFluentValidators(services);
+
+        InitEntityValidators(services);
+    }
+
+    private static void InitServices(this IServiceCollection services)
+    {
+        services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IUserTokenService, UserTokenService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IBasketService, BasketService>();
+    }
+
+    private static void InitAutoMapper(this IServiceCollection services)
+    {
+        services.AddAutoMapper(config =>
         {
-            InitAutoMapper(services);
+            config.AddProfile<ProductMapping>();
+            config.AddProfile<RoleMapping>();
+            config.AddProfile<UserMapping>();
+            config.AddProfile<BasketMapping>();
+            config.AddProfile<PaymentMapping>();
+            config.AddProfile<OrderMapping>();
+        });
+    }
 
-            services.AddMediatR(cf => cf.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
-
-            InitServices(services);
-
-            InitFluentValidators(services);
-
-            InitEntityValidators(services);
-        }
-
-        private static void InitServices(this IServiceCollection services)
+    public static void InitFluentValidators(this IServiceCollection services)
+    {
+        var validatorsTypes = new List<Type>()
         {
-            services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IUserTokenService, UserTokenService>();
-            services.AddScoped<IRoleService, RoleService>();
-            services.AddScoped<IOrderService, OrderService>();
-            services.AddScoped<IPaymentService, PaymentService>();
-            services.AddScoped<IBasketService, BasketService>();
-        }
+            typeof(CreateProductValidator),
+            typeof(UpdateProductValidator),
+            typeof(CreatePaymentValidator),
+            typeof(UpdatePaymentValidation),
+            typeof(UpdateOrderValidation),
+            typeof(CreateOrderValidation),
+            typeof(LoginUserValidator),
+            typeof(RegisterUserValidation),
+            typeof(CreateRoleValidation),
+            typeof(DeleteUserRoleValidation),
+            typeof(UpdateUserRoleValidation),
+            typeof(UserRoleValidation),
+            typeof(RoleValidation)
+        };
 
-        private static void InitAutoMapper(this IServiceCollection services)
+        foreach (var validatorType in validatorsTypes)
         {
-            var validatorsTypes = new List<Type>()
-            {
-                typeof(ProductMapping),
-                typeof(RoleMapping),
-                typeof(UserMapping),
-                typeof(BasketMapping),
-                typeof(PaymentMapping),
-                typeof(OrderMapping)
-            };
-
-            foreach (var validatorType in validatorsTypes)
-            {
-                services.AddAutoMapper(validatorType);
-            }
+            services.AddValidatorsFromAssembly(validatorType.Assembly);
         }
+    }
 
-        public static void InitFluentValidators(this IServiceCollection services)
-        {
-            var validatorsTypes = new List<Type>()
-            {
-                typeof(CreateProductValidator),
-                typeof(UpdateProductValidator),
-                typeof(CreatePaymentValidator),
-                typeof(UpdatePaymentValidation),
-                typeof(UpdateOrderValidation),
-                typeof(CreateOrderValidation),
-                typeof(LoginUserValidator),
-                typeof(RegisterUserValidation),
-                typeof(CreateRoleValidation),
-                typeof(DeleteUserRoleValidation),
-                typeof(UpdateUserRoleValidation),
-                typeof(UserRoleValidation),
-                typeof(RoleValidation)
-            };
-
-            foreach (var validatorType in validatorsTypes)
-            {
-                services.AddValidatorsFromAssembly(validatorType.Assembly);
-            }
-        }
-
-        public static void InitEntityValidators(this IServiceCollection services)
-        {
-            services.AddScoped<IAuthValidator, AuthValidator>();
-            services.AddScoped<IRoleValidator, RoleValidator>();
-            services.AddScoped<IOrderValidator, OrderValidator>();
-        }
+    public static void InitEntityValidators(this IServiceCollection services)
+    {
+        services.AddScoped<IAuthValidator, AuthValidator>();
+        services.AddScoped<IRoleValidator, RoleValidator>();
+        services.AddScoped<IOrderValidator, OrderValidator>();
     }
 }

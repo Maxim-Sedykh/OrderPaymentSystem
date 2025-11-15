@@ -1,9 +1,8 @@
-﻿namespace OrderPaymentSystem.Domain.Entity
-{
-    public class UserRole
-    {
-       public Guid UserId { get; set; }
+﻿namespace OrderPaymentSystem.Domain.Entity;
 
-       public long RoleId { get; set; }
-    }
+public class UserRole
+{
+   public Guid UserId { get; set; }
+
+   public long RoleId { get; set; }
 }

@@ -1,22 +1,21 @@
 ﻿using FluentValidation;
 using OrderPaymentSystem.Domain.Dto.Auth;
 
-namespace OrderPaymentSystem.Application.Validations.FluentValidations.Auth
+namespace OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
+
+public class RegisterUserValidation : AbstractValidator<RegisterUserDto>
 {
-    public class RegisterUserValidation : AbstractValidator<RegisterUserDto>
+    public RegisterUserValidation()
     {
-        public RegisterUserValidation()
-        {
-            RuleFor(x => x.Login)
-                .NotEmpty().WithMessage("Логин пользователя должен быть указан")
-                .MaximumLength(50).WithMessage("Логин должен быть меньше 50 символов")
-                .MinimumLength(5).WithMessage("Логин должен быть больше 5 символов");
-            RuleFor(x => x.Password)
-                .NotEmpty().WithMessage("Пароль пользователя должен быть указан")
-                .MaximumLength(50).WithMessage("Пароль должен быть меньше 50 символов")
-                .MinimumLength(5).WithMessage("Пароль должен быть больше 5 символов");
-            RuleFor(x => x.PasswordConfirm)
-                .NotEmpty().WithMessage("Подтверждение пароля должно быть указано");
-        }
+        RuleFor(x => x.Login)
+            .NotEmpty().WithMessage("Логин пользователя должен быть указан")
+            .MaximumLength(50).WithMessage("Логин должен быть меньше 50 символов")
+            .MinimumLength(5).WithMessage("Логин должен быть больше 5 символов");
+        RuleFor(x => x.Password)
+            .NotEmpty().WithMessage("Пароль пользователя должен быть указан")
+            .MaximumLength(50).WithMessage("Пароль должен быть меньше 50 символов")
+            .MinimumLength(5).WithMessage("Пароль должен быть больше 5 символов");
+        RuleFor(x => x.PasswordConfirm)
+            .NotEmpty().WithMessage("Подтверждение пароля должно быть указано");
     }
 }

@@ -1,17 +1,16 @@
 ﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
 
-namespace OrderPaymentSystem.Domain.Entity
+namespace OrderPaymentSystem.Domain.Entity;
+
+public class UserToken : IEntityId<long>
 {
-    public class UserToken : IEntityId<long>
-    {
-        public long Id { get; set; }
+    public long Id { get; set; }
 
-        public string RefreshToken { get; set; } 
+    public string RefreshToken { get; set; } 
 
-        public DateTime RefreshTokenExpireTime { get; set; }
+    public DateTime RefreshTokenExpireTime { get; set; }
 
-        public Guid UserId { get; set; }
+    public Guid UserId { get; set; }
 
-        public User User { get; set; }
-    }
+    public User User { get; set; }
 }

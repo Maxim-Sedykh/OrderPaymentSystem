@@ -1,9 +1,8 @@
-﻿namespace OrderPaymentSystem.Domain.Enum
+﻿namespace OrderPaymentSystem.Domain.Enum;
+
+public enum Roles
 {
-    public enum Roles
-    {
-        User = 0,
-        Admin = 2,
-        Moderator = 3
-    }
+    User = 0,
+    Admin = 2,
+    Moderator = 3
 }

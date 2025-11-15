@@ -6,10 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.Domain.Interfaces.Validators
+namespace OrderPaymentSystem.Domain.Interfaces.Validators;
+
+public interface IRoleValidator
 {
-    public interface IRoleValidator
-    {
-        BaseResult ValidateRoleForUser(User user, params Role[] roles);
-    }
+    BaseResult ValidateRoleForUser(User user, params Role[] roles);
 }

@@ -1,7 +1,6 @@
-﻿namespace OrderPaymentSystem.Domain.Interfaces.Entities
+﻿namespace OrderPaymentSystem.Domain.Interfaces.Entities;
+
+public interface IEntityId<T> where T : struct
 {
-    public interface IEntityId<T> where T : struct
-    {
-        public T Id { get; set; }
-    }
+    public T Id { get; set; }
 }

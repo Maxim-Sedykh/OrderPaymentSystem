@@ -1,7 +1,6 @@
-﻿namespace OrderPaymentSystem.Domain.Interfaces.Databases
+﻿namespace OrderPaymentSystem.Domain.Interfaces.Databases;
+
+public interface IStateSaveChanges
 {
-    public interface IStateSaveChanges
-    {
-        Task<int> SaveChangesAsync();
-    }
+    Task<int> SaveChangesAsync();
 }

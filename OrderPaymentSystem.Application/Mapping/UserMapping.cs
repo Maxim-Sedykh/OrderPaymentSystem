@@ -2,13 +2,12 @@
 using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Entity;
 
-namespace OrderPaymentSystem.Application.Mapping
+namespace OrderPaymentSystem.Application.Mapping;
+
+public class UserMapping : Profile
 {
-    public class UserMapping : Profile
+    public UserMapping()
     {
-        public UserMapping()
-        {
-            CreateMap<User, UserDto>().ReverseMap();
-        }
+        CreateMap<User, UserDto>().ReverseMap();
     }
 }

@@ -15,164 +15,163 @@ using OrderPaymentSystem.Domain.Result;
 using Serilog;
 
 
-namespace OrderPaymentSystem.Application.Services
+namespace OrderPaymentSystem.Application.Services;
+
+public class ProductService : IProductService
 {
-    public class ProductService : IProductService
+    private readonly IBaseRepository<Product> _productRepository;
+    private readonly IMapper _mapper;
+    //private readonly ICacheService _cacheService;
+    private readonly IMediator _mediator;
+    private readonly ILogger _logger;
+
+    public ProductService(IBaseRepository<Product> productRepository,
+        IMapper mapper,
+        //ICacheService cacheService,
+        IMediator mediator,
+        ILogger logger)
     {
-        private readonly IBaseRepository<Product> _productRepository;
-        private readonly IMapper _mapper;
-        //private readonly ICacheService _cacheService;
-        private readonly IMediator _mediator;
-        private readonly ILogger _logger;
+        _productRepository = productRepository;
+        _mapper = mapper;
+        //_cacheService = cacheService;
+        _mediator = mediator;
+        _logger = logger;
+    }
 
-        public ProductService(IBaseRepository<Product> productRepository,
-            IMapper mapper,
-            //ICacheService cacheService,
-            IMediator mediator,
-            ILogger logger)
+
+    public async Task<BaseResult<ProductDto>> CreateProductAsync(CreateProductDto dto)
+    {
+        var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.ProductName == dto.ProductName);
+
+        if (product != null)
         {
-            _productRepository = productRepository;
-            _mapper = mapper;
-            //_cacheService = cacheService;
-            _mediator = mediator;
-            _logger = logger;
-        }
-
-
-        public async Task<BaseResult<ProductDto>> CreateProductAsync(CreateProductDto dto)
-        {
-            var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.ProductName == dto.ProductName);
-
-            if (product != null)
-            {
-                return new BaseResult<ProductDto>()
-                {
-                    ErrorCode = (int)ErrorCodes.ProductAlreadyExist,
-                    ErrorMessage = ErrorMessage.ProductAlreadyExist
-                };
-            }
-
-            ProductDto createdProduct = await _mediator.Send(new CreateProductCommand(dto.ProductName, dto.Description, dto.Cost));
-
             return new BaseResult<ProductDto>()
             {
-                Data = createdProduct,
+                ErrorCode = (int)ErrorCodes.ProductAlreadyExist,
+                ErrorMessage = ErrorMessage.ProductAlreadyExist
             };
         }
 
-        /// <inheritdoc/>
-        public async Task<BaseResult<ProductDto>> DeleteProductAsync(int id)
+        ProductDto createdProduct = await _mediator.Send(new CreateProductCommand(dto.ProductName, dto.Description, dto.Cost));
+
+        return new BaseResult<ProductDto>()
         {
-            var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+            Data = createdProduct,
+        };
+    }
 
-            if (product == null)
-            {
-                return new BaseResult<ProductDto>()
-                {
-                    ErrorCode = (int)ErrorCodes.ProductNotFound,
-                    ErrorMessage = ErrorMessage.ProductNotFound
-                };
-            }
+    /// <inheritdoc/>
+    public async Task<BaseResult<ProductDto>> DeleteProductAsync(int id)
+    {
+        var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
 
-            await _mediator.Send(new DeleteProductCommand(product));
-
+        if (product == null)
+        {
             return new BaseResult<ProductDto>()
             {
-                Data = _mapper.Map<ProductDto>(product)
+                ErrorCode = (int)ErrorCodes.ProductNotFound,
+                ErrorMessage = ErrorMessage.ProductNotFound
             };
         }
 
-        /// <inheritdoc/>
-        public async Task<BaseResult<ProductDto>> GetProductByIdAsync(int id)
+        await _mediator.Send(new DeleteProductCommand(product));
+
+        return new BaseResult<ProductDto>()
         {
-            var product = await _mediator.Send(new GetProductByIdQuery(id), new CancellationToken());
+            Data = _mapper.Map<ProductDto>(product)
+        };
+    }
 
-            if (product == null)
-            {
-                return new BaseResult<ProductDto>()
-                {
-                    ErrorMessage = ErrorMessage.InternalServerError,
-                    ErrorCode = (int)ErrorCodes.InternalServerError
-                };
-            }
+    /// <inheritdoc/>
+    public async Task<BaseResult<ProductDto>> GetProductByIdAsync(int id)
+    {
+        var product = await _mediator.Send(new GetProductByIdQuery(id), new CancellationToken());
 
-            if (product == null)
-            {
-                return new BaseResult<ProductDto>()
-                {
-                    ErrorMessage = ErrorMessage.ProductNotFound,
-                    ErrorCode = (int)ErrorCodes.ProductNotFound
-                };
-            }
-
+        if (product == null)
+        {
             return new BaseResult<ProductDto>()
             {
-                Data = product,
+                ErrorMessage = ErrorMessage.InternalServerError,
+                ErrorCode = (int)ErrorCodes.InternalServerError
             };
         }
 
-        /// <inheritdoc/>
-        public async Task<CollectionResult<ProductDto>> GetProductsAsync()
+        if (product == null)
         {
-            var products = await _mediator.Send(new GetProductsQuery(), new CancellationToken());
-
-            if (products == null)
+            return new BaseResult<ProductDto>()
             {
-                return new CollectionResult<ProductDto>()
-                {
-                    ErrorMessage = ErrorMessage.InternalServerError,
-                    ErrorCode = (int)ErrorCodes.InternalServerError
-                };
-            }
+                ErrorMessage = ErrorMessage.ProductNotFound,
+                ErrorCode = (int)ErrorCodes.ProductNotFound
+            };
+        }
 
-            if (!products.Any())
-            {
-                _logger.Error(ErrorMessage.ProductsNotFound, products.Length);
-                return new CollectionResult<ProductDto>()
-                {
-                    ErrorMessage = ErrorMessage.ProductsNotFound,
-                    ErrorCode = (int)ErrorCodes.ProductsNotFound
-                };
-            }
+        return new BaseResult<ProductDto>()
+        {
+            Data = product,
+        };
+    }
 
+    /// <inheritdoc/>
+    public async Task<CollectionResult<ProductDto>> GetProductsAsync()
+    {
+        var products = await _mediator.Send(new GetProductsQuery(), new CancellationToken());
+
+        if (products == null)
+        {
             return new CollectionResult<ProductDto>()
             {
-                Data = products,
-                Count = products.Length
+                ErrorMessage = ErrorMessage.InternalServerError,
+                ErrorCode = (int)ErrorCodes.InternalServerError
             };
         }
 
-        /// <inheritdoc/>
-        public async Task<BaseResult<ProductDto>> UpdateProductAsync(UpdateProductDto dto)
+        if (!products.Any())
         {
-            var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.Id);
-
-            if (product == null)
+            _logger.Error(ErrorMessage.ProductsNotFound, products.Length);
+            return new CollectionResult<ProductDto>()
             {
-                return new BaseResult<ProductDto>()
-                {
-                    ErrorCode = (int)ErrorCodes.ProductNotFound,
-                    ErrorMessage = ErrorMessage.ProductNotFound
-                };
-            }
+                ErrorMessage = ErrorMessage.ProductsNotFound,
+                ErrorCode = (int)ErrorCodes.ProductsNotFound
+            };
+        }
 
-            if (product.ProductName != dto.ProductName
-                || product.Description != dto.Description
-                || product.Cost != dto.Cost)
+        return new CollectionResult<ProductDto>()
+        {
+            Data = products,
+            Count = products.Length
+        };
+    }
+
+    /// <inheritdoc/>
+    public async Task<BaseResult<ProductDto>> UpdateProductAsync(UpdateProductDto dto)
+    {
+        var product = await _productRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.Id);
+
+        if (product == null)
+        {
+            return new BaseResult<ProductDto>()
             {
-                await _mediator.Send(new UpdateProductCommand(dto.ProductName, dto.Description, dto.Cost, product));
+                ErrorCode = (int)ErrorCodes.ProductNotFound,
+                ErrorMessage = ErrorMessage.ProductNotFound
+            };
+        }
 
-                return new BaseResult<ProductDto>()
-                {
-                    Data = _mapper.Map<ProductDto>(product),
-                };
-            }
+        if (product.ProductName != dto.ProductName
+            || product.Description != dto.Description
+            || product.Cost != dto.Cost)
+        {
+            await _mediator.Send(new UpdateProductCommand(dto.ProductName, dto.Description, dto.Cost, product));
 
             return new BaseResult<ProductDto>()
             {
-                ErrorMessage = ErrorMessage.NoChangesFound,
-                ErrorCode = (int)ErrorCodes.NoChangesFound
+                Data = _mapper.Map<ProductDto>(product),
             };
         }
+
+        return new BaseResult<ProductDto>()
+        {
+            ErrorMessage = ErrorMessage.NoChangesFound,
+            ErrorCode = (int)ErrorCodes.NoChangesFound
+        };
     }
 }

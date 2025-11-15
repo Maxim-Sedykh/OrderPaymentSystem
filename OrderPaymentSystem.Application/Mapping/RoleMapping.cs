@@ -2,13 +2,12 @@
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Entity;
 
-namespace OrderPaymentSystem.Application.Mapping
+namespace OrderPaymentSystem.Application.Mapping;
+
+public class RoleMapping : Profile
 {
-    public class RoleMapping : Profile
+    public RoleMapping()
     {
-        public RoleMapping()
-        {
-            CreateMap<Role, RoleDto>().ReverseMap();
-        }
+        CreateMap<Role, RoleDto>().ReverseMap();
     }
 }

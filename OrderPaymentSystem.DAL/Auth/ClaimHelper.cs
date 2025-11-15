@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.DAL.Auth
+namespace OrderPaymentSystem.DAL.Auth;
+
+internal class ClaimHelper
 {
-    internal class ClaimHelper
-    {
-    }
 }

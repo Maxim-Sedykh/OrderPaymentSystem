@@ -1,9 +1,8 @@
-﻿namespace OrderPaymentSystem.Domain.Dto.Token
-{
-    public class TokenDto
-    {
-        public string AccessToken { get; set; }
+﻿namespace OrderPaymentSystem.Domain.Dto.Token;
 
-        public string RefreshToken { get; set; }
-    }
+public class TokenDto
+{
+    public string AccessToken { get; set; }
+
+    public string RefreshToken { get; set; }
 }

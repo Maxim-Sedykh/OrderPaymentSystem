@@ -6,10 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.Domain.Interfaces.Validators
+namespace OrderPaymentSystem.Domain.Interfaces.Validators;
+
+public interface IAuthValidator
 {
-    public interface IAuthValidator
-    {
-        BaseResult ValidateLogin(User user, string enteredPassword);
-    }
+    BaseResult ValidateLogin(User user, string enteredPassword);
 }

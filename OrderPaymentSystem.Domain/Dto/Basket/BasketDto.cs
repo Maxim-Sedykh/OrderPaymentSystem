@@ -1,13 +1,12 @@
-﻿namespace OrderPaymentSystem.Domain.Dto.Basket
+﻿namespace OrderPaymentSystem.Domain.Dto.Basket;
+
+public class BasketDto
 {
-    public class BasketDto
-    {
-        public long Id { get; set; }
+    public long Id { get; set; }
 
-        public Guid UserId { get; set; }
+    public Guid UserId { get; set; }
 
-        public string CreatedAt { get; set; }
+    public string CreatedAt { get; set; }
 
-        public decimal CostOfAllOrders { get; set; }
-    }
+    public decimal CostOfAllOrders { get; set; }
 }

@@ -10,34 +10,33 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace OrderPaymentSystem.Application.Validations.Validators
+namespace OrderPaymentSystem.Application.Validations.Validators;
+
+public class RoleValidator : IRoleValidator
 {
-    public class RoleValidator : IRoleValidator
+    public BaseResult ValidateRoleForUser(User user, params Role[] roles)
     {
-        public BaseResult ValidateRoleForUser(User user, params Role[] roles)
+        if (user == null)
         {
-            if (user == null)
+            return new BaseResult<UserRoleDto>()
+            {
+                ErrorCode = (int)ErrorCodes.UserNotFound,
+                ErrorMessage = ErrorMessage.UserNotFound
+            };
+        }
+
+        foreach (Role role in roles)
+        {
+            if (role == null)
             {
                 return new BaseResult<UserRoleDto>()
                 {
-                    ErrorCode = (int)ErrorCodes.UserNotFound,
-                    ErrorMessage = ErrorMessage.UserNotFound
+                    ErrorCode = (int)ErrorCodes.RoleNotFound,
+                    ErrorMessage = ErrorMessage.RoleNotFound
                 };
             }
-
-            foreach (Role role in roles)
-            {
-                if (role == null)
-                {
-                    return new BaseResult<UserRoleDto>()
-                    {
-                        ErrorCode = (int)ErrorCodes.RoleNotFound,
-                        ErrorMessage = ErrorMessage.RoleNotFound
-                    };
-                }
-            }
-
-            return new BaseResult();
         }
+
+        return new BaseResult();
     }
 }

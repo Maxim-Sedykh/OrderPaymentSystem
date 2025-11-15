@@ -5,39 +5,38 @@ using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 
-namespace OrderPaymentSystem.Api.Controllers
+namespace OrderPaymentSystem.Api.Controllers;
+
+/// <summary>
+/// Контроллер для обновления токена пользователя
+/// </summary>
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[ApiController]
+public class UserTokenController : Controller
 {
-    /// <summary>
-    /// Контроллер для обновления токена пользователя
-    /// </summary>
-    [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/[controller]")]
-    [ApiController]
-    public class UserTokenController : Controller
+    private readonly IUserTokenService _userTokenService;
+
+    public UserTokenController(IUserTokenService userTokenService)
     {
-        private readonly IUserTokenService _userTokenService;
+        _userTokenService = userTokenService;   
+    }
 
-        public UserTokenController(IUserTokenService userTokenService)
+    /// <summary>
+    /// Обновление токена пользователя
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <returns></returns>
+    /// 
+    [Route(RouteConstants.RefreshToken)]
+    [HttpPost]
+    public async Task<ActionResult<BaseResult<TokenDto>>> RefreshToken([FromBody] TokenDto dto)
+    {
+        var response = await _userTokenService.RefreshToken(dto);
+        if (response.IsSuccess)
         {
-            _userTokenService = userTokenService;   
+            return Ok(response);
         }
-
-        /// <summary>
-        /// Обновление токена пользователя
-        /// </summary>
-        /// <param name="dto"></param>
-        /// <returns></returns>
-        /// 
-        [Route(RouteConstants.RefreshToken)]
-        [HttpPost]
-        public async Task<ActionResult<BaseResult<TokenDto>>> RefreshToken([FromBody] TokenDto dto)
-        {
-            var response = await _userTokenService.RefreshToken(dto);
-            if (response.IsSuccess)
-            {
-                return Ok(response);
-            }
-            return BadRequest(response);
-        }
+        return BadRequest(response);
     }
 }
