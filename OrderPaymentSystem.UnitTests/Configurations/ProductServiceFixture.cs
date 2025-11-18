@@ -4,12 +4,12 @@ using Microsoft.Extensions.Options;
 using Moq;
 using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Domain.Dto.Product;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using Serilog;
 
-namespace OrderPaymentSystem.Tests.UnitTests.Configurations;
+namespace OrderPaymentSystem.UnitTests.Configurations;
 
 public class ProductServiceFixture : IDisposable
 {

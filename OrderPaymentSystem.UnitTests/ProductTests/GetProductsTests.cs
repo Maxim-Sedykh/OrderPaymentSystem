@@ -2,10 +2,10 @@
 using OrderPaymentSystem.Application.Queries;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Tests.UnitTests.Configurations;
+using OrderPaymentSystem.UnitTests.Configurations;
 using Xunit;
 
-namespace OrderPaymentSystem.Tests.UnitTests.ProductTests;
+namespace OrderPaymentSystem.UnitTests.ProductTests;
 
 public class GetProductsTests : IClassFixture<ProductServiceFixture>
 {
@@ -70,6 +70,6 @@ public class GetProductsTests : IClassFixture<ProductServiceFixture>
         // Assert
         Assert.NotNull(result);
         Assert.False(result.IsSuccess);
-        Assert.Equal(result.ErrorCode, (int)ErrorCodes.ProductsNotFound);
+        Assert.Equal(result.Error.Code, (int)ErrorCodes.ProductsNotFound);
     }
 }

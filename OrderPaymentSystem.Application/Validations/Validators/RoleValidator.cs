@@ -1,42 +1,32 @@
 ﻿using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.Domain.Dto.UserRole;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OrderPaymentSystem.Application.Validations.Validators;
 
+/// <summary>
+/// Валидатор для взаимодействия с ролями.
+/// </summary>
 public class RoleValidator : IRoleValidator
 {
+    /// <inheritdoc/>
     public BaseResult ValidateRoleForUser(User user, params Role[] roles)
     {
         if (user == null)
         {
-            return new BaseResult<UserRoleDto>()
-            {
-                ErrorCode = (int)ErrorCodes.UserNotFound,
-                ErrorMessage = ErrorMessage.UserNotFound
-            };
+            return BaseResult.Failure((int)ErrorCodes.UserNotFound, ErrorMessage.UserNotFound);
         }
 
         foreach (Role role in roles)
         {
             if (role == null)
             {
-                return new BaseResult<UserRoleDto>()
-                {
-                    ErrorCode = (int)ErrorCodes.RoleNotFound,
-                    ErrorMessage = ErrorMessage.RoleNotFound
-                };
+                return BaseResult.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
             }
         }
 
-        return new BaseResult();
+        return BaseResult.Success();
     }
 }

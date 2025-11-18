@@ -1,115 +1,85 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Basket;
 using OrderPaymentSystem.Domain.Dto.Order;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
-using OrderPaymentSystem.Domain.Settings;
 
 namespace OrderPaymentSystem.Application.Services;
 
-public class BasketService : IBasketService
+/// <summary>
+/// Cервис для работы с корзиной пользователя
+/// </summary>
+/// <param name="orderRepository">Репозиторий заказов</param>
+/// <param name="mapper">Маппер</param>
+/// <param name="basketRepository">Репозиторий корзин</param>
+public class BasketService(IBaseRepository<Order> orderRepository, IMapper mapper, IBaseRepository<Basket> basketRepository) : IBasketService
 {
-    private readonly IBaseRepository<Order> _orderRepository;
-    private readonly IBaseRepository<Basket> _basketRepository;
-    private readonly IMapper _mapper;
-
-    public BasketService(IBaseRepository<Order> orderRepository, IMapper mapper, IBaseRepository<Basket> basketRepository)
-    {
-        _orderRepository = orderRepository;
-        _mapper = mapper;
-        _basketRepository = basketRepository;
-    }
+    private readonly IBaseRepository<Order> _orderRepository = orderRepository;
+    private readonly IBaseRepository<Basket> _basketRepository = basketRepository;
+    private readonly IMapper _mapper = mapper;
 
     /// <inheritdoc/>
-    public async Task<CollectionResult<OrderDto>> ClearBasketAsync(long id)
+    public async Task<CollectionResult<OrderDto>> ClearBasketAsync(long id, CancellationToken cancellationToken = default)
     {
-        var basket = await _basketRepository.GetAll()
+        var basket = await _basketRepository.GetQueryable()
             .Include(x => x.Orders)
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (basket == null)
         {
-            return new CollectionResult<OrderDto>()
-            {
-                ErrorCode = (int)ErrorCodes.BasketNotFound,
-                ErrorMessage = ErrorMessage.BasketNotFound
-            };
+            return CollectionResult<OrderDto>.Failure((int)ErrorCodes.BasketNotFound, ErrorMessage.BasketNotFound);
         }
 
-        var basketOrders = await _orderRepository.GetAll()
+        var basketOrders = await _orderRepository.GetQueryable()
             .Where(x => x.BasketId == basket.Id)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         if (basketOrders.Count == 0)
         {
-            return new CollectionResult<OrderDto>()
-            {
-                ErrorMessage = ErrorMessage.OrdersNotFound,
-                ErrorCode = (int)ErrorCodes.OrdersNotFound
-            };
+            return CollectionResult<OrderDto>.Failure((int)ErrorCodes.OrdersNotFound, ErrorMessage.OrdersNotFound);
         }
 
         _orderRepository.RemoveRange(basketOrders);
-        await _orderRepository.SaveChangesAsync();
+        await _orderRepository.SaveChangesAsync(cancellationToken);
 
-        return new CollectionResult<OrderDto>()
-        {
-            Data = basketOrders.Select(x => _mapper.Map<OrderDto>(x)),
-            Count = basketOrders.Count
-        };
+        return CollectionResult<OrderDto>.Success(basketOrders.Select(_mapper.Map<OrderDto>));
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<BasketDto>> GetBasketByIdAsync(long basketId)
+    public async Task<DataResult<BasketDto>> GetBasketByIdAsync(long basketId, CancellationToken cancellationToken = default)
     {
-        var basket = await _basketRepository.GetAll()
+        var basket = await _basketRepository.GetQueryable()
             .Include(x => x.Orders)
-            .FirstOrDefaultAsync(x => x.Id == basketId);
+            .FirstOrDefaultAsync(x => x.Id == basketId, cancellationToken);
 
         if (basket == null)
         {
-            return new BaseResult<BasketDto>()
-            {
-                ErrorCode = (int)ErrorCodes.BasketNotFound,
-                ErrorMessage = ErrorMessage.BasketNotFound
-            };
+            return DataResult<BasketDto>.Failure((int)ErrorCodes.BasketNotFound, ErrorMessage.BasketNotFound);
         }
 
-        return new BaseResult<BasketDto>()
-        {
-            Data = _mapper.Map<BasketDto>(basket)
-        };
+        return DataResult<BasketDto>.Success(_mapper.Map<BasketDto>(basket));
     }
 
     /// <inheritdoc/>
-    public async Task<CollectionResult<OrderDto>> GetBasketOrdersAsync(long basketId)
+    public async Task<CollectionResult<OrderDto>> GetBasketOrdersAsync(long basketId, CancellationToken cancellationToken = default)
     {
         OrderDto[] userBasketOrders;
 
-        userBasketOrders = await _orderRepository.GetAll()
+        userBasketOrders = await _orderRepository.GetQueryable()
             .Where(x => x.BasketId == basketId)
             .Select(x => _mapper.Map<OrderDto>(x))
-            .ToArrayAsync();
+            .ToArrayAsync(cancellationToken);
 
         if (userBasketOrders.Length == 0)
         {
-            return new CollectionResult<OrderDto>()
-            {
-                ErrorMessage = ErrorMessage.OrdersNotFound,
-                ErrorCode = (int)ErrorCodes.OrdersNotFound
-            };
+            return CollectionResult<OrderDto>.Failure((int)ErrorCodes.OrdersNotFound, ErrorMessage.OrdersNotFound);
         }
 
-        return new CollectionResult<OrderDto>()
-        {
-            Data = userBasketOrders,
-            Count = userBasketOrders.Length
-        };
+        return CollectionResult<OrderDto>.Success(userBasketOrders);
     }
 }

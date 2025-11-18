@@ -2,71 +2,56 @@
 using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.ComplexTypes;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Payment;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
+using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 using System.Data;
 
 namespace OrderPaymentSystem.Application.Services;
 
-public class PaymentService : IPaymentService
+/// <summary>
+/// Cервис для работы с платежами
+/// </summary>
+/// <param name="mapper">Маппер</param>
+/// <param name="unitOfWork">Сервис для транзакций</param>
+public class PaymentService(IMapper mapper,
+    IUnitOfWork unitOfWork,
+    IBaseRepository<Basket> basketRepository,
+    IBaseRepository<Payment> paymentRepository,
+    IBaseRepository<Order> orderRepository) : IPaymentService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
-    //private readonly ICacheService _cacheService;
-
-    public PaymentService(IMapper mapper, IUnitOfWork unitOfWord/* ICacheService cacheService*/)
-    {
-        _mapper = mapper;
-        _unitOfWork = unitOfWord;
-        //_cacheService = cacheService;
-    }
-
     /// <inheritdoc/>
-    public async Task<BaseResult<PaymentDto>> CreatePaymentAsync(CreatePaymentDto dto)
+    public async Task<DataResult<PaymentDto>> CreatePaymentAsync(CreatePaymentDto dto, CancellationToken cancellationToken = default)
     {
-        var basket = await _unitOfWork.Baskets.GetAll().FirstOrDefaultAsync(x => x.Id == dto.BasketId);
+        var basket = await basketRepository.GetQueryable().FirstOrDefaultAsync(x => x.Id == dto.BasketId, cancellationToken);
 
         if (basket == null)
         {
-            return new BaseResult<PaymentDto>()
-            {
-                ErrorCode = (int)ErrorCodes.BasketNotFound,
-                ErrorMessage = ErrorMessage.BasketNotFound
-            };
+            return DataResult<PaymentDto>.Failure((int)ErrorCodes.BasketNotFound, ErrorMessage.BasketNotFound);
         }
 
-        var basketOrders = _unitOfWork.Orders.GetAll()
+        var basketOrders = await orderRepository.GetQueryable()
             .Where(x => x.Id == dto.BasketId)
-            .ToList();
+            .ToArrayAsync(cancellationToken);
 
-        if (basketOrders.Count == 0)
+        if (basketOrders.Length == 0)
         {
-            return new BaseResult<PaymentDto>()
-            {
-                ErrorMessage = ErrorMessage.OrdersNotFound,
-                ErrorCode = (int)ErrorCodes.OrdersNotFound
-            };
+            return DataResult<PaymentDto>.Failure((int)ErrorCodes.OrdersNotFound, ErrorMessage.OrdersNotFound);
         }
 
         var costOfBasketOrders = basketOrders.Sum(o => o.OrderCost);
 
         if (costOfBasketOrders > dto.AmountOfPayment)
         {
-            return new BaseResult<PaymentDto>()
-            {
-                ErrorMessage = ErrorMessage.NotEnoughPayFunds,
-                ErrorCode = (int)ErrorCodes.NotEnoughPayFunds
-            };
+            return DataResult<PaymentDto>.Failure((int)ErrorCodes.NotEnoughPayFunds, ErrorMessage.NotEnoughPayFunds);
         }
 
-        using (var transaction = await _unitOfWork.BeginTransactionAsync())
+        using (var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken))
         {
             try
             {
@@ -86,149 +71,112 @@ public class PaymentService : IPaymentService
                     }
                 };
 
-                await _unitOfWork.Payments.CreateAsync(payment);
+                await paymentRepository.CreateAsync(payment, cancellationToken);
 
-                await _unitOfWork.SaveChangesAsync();
+                await unitOfWork.SaveChangesAsync(cancellationToken);
 
-                basketOrders.ForEach(x => x.BasketId = null);
-                basketOrders.ForEach(x => x.PaymentId = payment.Id);
-
-                _unitOfWork.Orders.UpdateRange(basketOrders);
-
-                await _unitOfWork.SaveChangesAsync();
-
-                await transaction.CommitAsync();
-
-                return new BaseResult<PaymentDto>()
+                foreach (var order in basketOrders)
                 {
-                    Data = _mapper.Map<PaymentDto>(payment),
-                };
+                    order.BasketId = null;
+                    order.PaymentId = payment.Id;
+                }
+
+                orderRepository.UpdateRange(basketOrders);
+
+                await unitOfWork.SaveChangesAsync(cancellationToken);
+
+                await transaction.CommitAsync(cancellationToken);
+
+                return DataResult<PaymentDto>.Success(mapper.Map<PaymentDto>(payment));
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                await transaction.RollbackAsync(cancellationToken);
             }
         }
 
-        return new BaseResult<PaymentDto>()
-        {
-            ErrorCode = (int)ErrorCodes.InternalServerError,
-            ErrorMessage = ErrorMessage.InternalServerError
-        };
+        return DataResult<PaymentDto>.Failure((int)ErrorCodes.InternalServerError, ErrorMessage.InternalServerError);
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<PaymentDto>> DeletePaymentAsync(long id)
+    public async Task<DataResult<PaymentDto>> DeletePaymentAsync(long id, CancellationToken cancellationToken = default)
     {
-        var payment = await _unitOfWork.Payments.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+        var payment = await paymentRepository.GetQueryable()
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (payment == null)
         {
-            return new BaseResult<PaymentDto>()
-            {
-                ErrorCode = (int)ErrorCodes.PaymentNotFound,
-                ErrorMessage = ErrorMessage.PaymentNotFound
-            };
+            return DataResult<PaymentDto>.Failure((int)ErrorCodes.PaymentNotFound, ErrorMessage.PaymentNotFound);
         }
 
-        _unitOfWork.Payments.Remove(payment);
-        await _unitOfWork.Payments.SaveChangesAsync();
+        paymentRepository.Remove(payment);
+        await paymentRepository.SaveChangesAsync();
 
-        return new BaseResult<PaymentDto>()
-        {
-            Data = _mapper.Map<PaymentDto>(payment),
-        };
+        return DataResult<PaymentDto>.Success(mapper.Map<PaymentDto>(payment));
     }
 
-    public async Task<BaseResult<PaymentDto>> GetPaymentByIdAsync(long id)
+    public async Task<DataResult<PaymentDto>> GetPaymentByIdAsync(long id, CancellationToken cancellationToken = default)
     {
-        var payment = await _unitOfWork.Payments.GetAll()
+        var payment = await paymentRepository.GetQueryable()
                     .Where(x => x.Id == id)
-                    .Select(x => _mapper.Map<PaymentDto>(x))
-                    .FirstOrDefaultAsync();
+                    .Select(x => mapper.Map<PaymentDto>(x))
+                    .FirstOrDefaultAsync(cancellationToken);
 
         if (payment == null)
         {
-            return new BaseResult<PaymentDto>()
-            {
-                ErrorMessage = ErrorMessage.PaymentNotFound,
-                ErrorCode = (int)ErrorCodes.PaymentNotFound
-            };
+            return DataResult<PaymentDto>.Failure((int)ErrorCodes.PaymentNotFound, ErrorMessage.PaymentNotFound);
         }
 
-        return new BaseResult<PaymentDto>()
-        {
-            Data = _mapper.Map<PaymentDto>(payment),
-        };
+        return DataResult<PaymentDto>.Success(payment);
     }
 
     /// <inheritdoc/>
-    public async Task<CollectionResult<OrderDto>> GetPaymentOrdersAsync(long id)
+    public async Task<CollectionResult<OrderDto>> GetPaymentOrdersAsync(long id, CancellationToken cancellationToken = default)
     {
-        var payment = await _unitOfWork.Payments.GetAll()
+        var payment = await paymentRepository.GetQueryable()
             .Include(x => x.Orders)
-            .FirstOrDefaultAsync(x => x.Id == id);
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (payment == null)
         {
-            return new CollectionResult<OrderDto>()
-            {
-                ErrorCode = (int)ErrorCodes.PaymentNotFound,
-                ErrorMessage = ErrorMessage.PaymentNotFound
-            };
+            return CollectionResult<OrderDto>.Failure((int)ErrorCodes.PaymentNotFound, ErrorMessage.PaymentNotFound);
         }
 
         var result = payment.Orders
             .Where(x => x.PaymentId == payment.Id)
-            .Select(x => _mapper.Map<OrderDto>(x)).ToList();
+            .Select(mapper.Map<OrderDto>).ToList();
 
-        return new CollectionResult<OrderDto>()
-        {
-            Count = result.Count,
-            Data = result
-        };
+        return CollectionResult<OrderDto>.Success(result);
     }
 
     /// <inheritdoc/>
-    public async Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(Guid userId)
+    public async Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(Guid userId, CancellationToken cancellationToken = default)
     {
-        var userPayments = await _unitOfWork.Payments.GetAll()
+        var userPayments = await paymentRepository.GetQueryable()
                     .Include(x => x.Basket)
                     .Where(x => x.Basket.UserId == userId)
-                    .Select(x => _mapper.Map<PaymentDto>(x))
-                    .ToArrayAsync();
+                    .Select(x => mapper.Map<PaymentDto>(x))
+                    .ToArrayAsync(cancellationToken);
 
 
         if (userPayments.Length == 0)
         {
-            return new CollectionResult<PaymentDto>()
-            {
-                ErrorMessage = ErrorMessage.PaymentsNotFound,
-                ErrorCode = (int)ErrorCodes.PaymentsNotFound
-            };
+            return CollectionResult<PaymentDto>.Failure((int)ErrorCodes.PaymentsNotFound, ErrorMessage.PaymentsNotFound);
         }
 
-        return new CollectionResult<PaymentDto>()
-        {
-            Data = userPayments,
-            Count = userPayments.Length
-        };
+        return CollectionResult<PaymentDto>.Success(userPayments);
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<PaymentDto>> UpdatePaymentAsync(UpdatePaymentDto dto)
+    public async Task<DataResult<PaymentDto>> UpdatePaymentAsync(UpdatePaymentDto dto, CancellationToken cancellationToken = default)
     {
-        var payment = await _unitOfWork.Payments.GetAll()
+        var payment = await paymentRepository.GetQueryable()
             .Include(x => x.Basket.Orders)
-            .FirstOrDefaultAsync(x => x.Id == dto.Id);
+            .FirstOrDefaultAsync(x => x.Id == dto.Id, cancellationToken);
 
         if (payment == null)
         {
-            return new BaseResult<PaymentDto>()
-            {
-                ErrorCode = (int)ErrorCodes.PaymentNotFound,
-                ErrorMessage = ErrorMessage.PaymentNotFound
-            };
+            return DataResult<PaymentDto>.Failure((int)ErrorCodes.PaymentNotFound, ErrorMessage.PaymentNotFound);
         }
 
         if (payment.AmountOfPayment != dto.AmountOfPayment && payment.PaymentMethod != dto.PaymentMethod)
@@ -237,30 +185,19 @@ public class PaymentService : IPaymentService
 
             if (costOfBasketOrders > dto.AmountOfPayment)
             {
-                return new BaseResult<PaymentDto>()
-                {
-                    ErrorMessage = ErrorMessage.NotEnoughPayFunds,
-                    ErrorCode = (int)ErrorCodes.NotEnoughPayFunds
-                };
+                return DataResult<PaymentDto>.Failure((int)ErrorCodes.NotEnoughPayFunds, ErrorMessage.NotEnoughPayFunds);
             }
 
             payment.PaymentMethod = dto.PaymentMethod;
             payment.AmountOfPayment = dto.AmountOfPayment;
             payment.CashChange = dto.AmountOfPayment - costOfBasketOrders;
 
-            var updatedPayment = _unitOfWork.Payments.Update(payment);
-            await _unitOfWork.Payments.SaveChangesAsync();
+            var updatedPayment = paymentRepository.Update(payment);
+            await paymentRepository.SaveChangesAsync(cancellationToken);
 
-            return new BaseResult<PaymentDto>()
-            {
-                Data = _mapper.Map<PaymentDto>(updatedPayment)
-            };
+            return DataResult<PaymentDto>.Success(mapper.Map<PaymentDto>(updatedPayment));
         }
 
-        return new BaseResult<PaymentDto>()
-        {
-            ErrorMessage = ErrorMessage.NoChangesFound,
-            ErrorCode = (int)ErrorCodes.NoChangesFound
-        };
+        return DataResult<PaymentDto>.Failure((int)ErrorCodes.NoChangesFound, ErrorMessage.NoChangesFound);
     }
 }

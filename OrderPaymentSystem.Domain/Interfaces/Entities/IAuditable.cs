@@ -1,13 +1,17 @@
 ﻿namespace OrderPaymentSystem.Domain.Interfaces.Entities;
 
-
+/// <summary>
+/// Интерфейс для маркировки сущностей, изменение и создание которых нужно отслеживать по времени
+/// </summary>
 public interface IAuditable
 {
+    /// <summary>
+    /// Дата создания сущности
+    /// </summary>
     public DateTime CreatedAt { get; set; }
 
-    public long CreatedBy { get; set; }
-
+    /// <summary>
+    /// Дата последнего обновления сущности
+    /// </summary>
     public DateTime? UpdatedAt { get; set; }
-
-    public long? UpdatedBy { get; set; }
 }

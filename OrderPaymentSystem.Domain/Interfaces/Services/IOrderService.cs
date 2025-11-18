@@ -13,33 +13,33 @@ public interface IOrderService
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Task<CollectionResult<OrderDto>> GetAllOrdersAsync();
+    Task<CollectionResult<OrderDto>> GetAllOrdersAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получение заказа по идентификатору
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Task<BaseResult<OrderDto>> GetOrderByIdAsync(long id);
+    Task<DataResult<OrderDto>> GetOrderByIdAsync(long id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Удаление заказа по идентификатору
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<BaseResult<OrderDto>> DeleteOrderByIdAsync(long id);
+    Task<DataResult<OrderDto>> DeleteOrderByIdAsync(long id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Обновление заказа
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<BaseResult<OrderDto>> UpdateOrderAsync(UpdateOrderDto dto);
+    Task<DataResult<OrderDto>> UpdateOrderAsync(UpdateOrderDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Создание заказа и добавление его в корзину
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<BaseResult<OrderDto>> CreateOrderAsync(CreateOrderDto dto);
+    Task<DataResult<OrderDto>> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken = default);
 }

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Text;
 
-namespace OrderPaymentSystem.Tests.UnitTests.Configurations
+namespace OrderPaymentSystem.UnitTests.Configurations
 {
     public static class MockDbContextExtensions
     {

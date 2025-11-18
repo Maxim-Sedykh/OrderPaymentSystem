@@ -4,7 +4,7 @@ using OrderPaymentSystem.Domain.Result;
 namespace OrderPaymentSystem.Domain.Interfaces.Services;
 
 /// <summary>
-/// Сервис отвечающий за работу с доменной части товаров (Product)
+/// Интерфейс сервиса отвечающий за работу с доменной части товаров (Product)
 /// </summary>
 public interface IProductService
 {
@@ -12,33 +12,33 @@ public interface IProductService
     /// Получение всех товаров
     /// </summary>
     /// <returns></returns>
-    Task<CollectionResult<ProductDto>> GetProductsAsync();
+    Task<CollectionResult<ProductDto>> GetProductsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получение товара по идентификатору
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Task<BaseResult<ProductDto>> GetProductByIdAsync(int id);
+    Task<DataResult<ProductDto>> GetProductByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Добавление товара
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<BaseResult<ProductDto>> CreateProductAsync(CreateProductDto dto);
+    Task<DataResult<ProductDto>> CreateProductAsync(CreateProductDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Удаление товара по идентификатору
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<BaseResult<ProductDto>> DeleteProductAsync(int id);
+    Task<DataResult<ProductDto>> DeleteProductAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Обновление товара
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<BaseResult<ProductDto>> UpdateProductAsync(UpdateProductDto dto);
+    Task<DataResult<ProductDto>> UpdateProductAsync(UpdateProductDto dto, CancellationToken cancellationToken = default);
 }

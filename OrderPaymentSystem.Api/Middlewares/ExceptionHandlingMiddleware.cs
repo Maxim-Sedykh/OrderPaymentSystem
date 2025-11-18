@@ -1,5 +1,7 @@
 ﻿using OrderPaymentSystem.Domain.Result;
+using System.Diagnostics;
 using System.Net;
+using System.Net.Mime;
 using ILogger = Serilog.ILogger;
 
 namespace OrderPaymentSystem.Api.Middlewares;
@@ -7,47 +9,51 @@ namespace OrderPaymentSystem.Api.Middlewares;
 /// <summary>
 /// Обработчик исключений
 /// </summary>
-public class ExceptionHandlingMiddleware
+/// <summary>
+/// Единый обработчик ошибок (глобальный try - catch)
+/// </summary>
+public class ExceptionHandlingMiddleware(ILogger logger, RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-    private readonly ILogger _logger;
-
     /// <summary>
-    /// Конструктор для глобального обработчика ошибок
+    /// Выполнить глобальную обработку ошибок асинхронно
     /// </summary>
-    /// <param name="next">Делегат, представляющий собой выполнение следующего Middleware</param>
-    /// <param name="logger">Логгер</param>
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger logger)
-    {
-        _next = next;
-        _logger = logger;
-    }
-
+    /// <param name="httpContext"></param>
+    /// <returns></returns>
     public async Task InvokeAsync(HttpContext httpContext)
     {
         try
         {
-            await _next(httpContext);
+            await next(httpContext);
         }
         catch (Exception ex)
         {
+#if DEBUG
+            Debugger.Break();
+#endif
+
             await HandleExceptionAsync(httpContext, ex);
         }
     }
 
+    /// <summary>
+    /// Обработать ошибку
+    /// </summary>
+    /// <param name="httpContext">Контекст выполнения запроса</param>
+    /// <param name="exception">Исключение</param>
     private async Task HandleExceptionAsync(HttpContext httpContext, Exception exception)
     {
-        _logger.Error(exception, exception.Message);
+        logger.Error(exception, exception.Message);
 
         var errorMessage = exception.Message;
         var response = exception switch
         {
-            UnauthorizedAccessException => new BaseResult() { ErrorMessage = errorMessage, ErrorCode = (int)HttpStatusCode.Unauthorized },
-            _ => new BaseResult() { ErrorMessage = "Internal server error", ErrorCode = (int)HttpStatusCode.InternalServerError },
+            UnauthorizedAccessException => BaseResult.Failure((int)HttpStatusCode.Unauthorized, errorMessage),
+            _ => BaseResult.Failure((int)HttpStatusCode.InternalServerError, errorMessage),
         };
 
-        httpContext.Response.ContentType = "application/json";
-        httpContext.Response.StatusCode = (int)response.ErrorCode;
+        httpContext.Response.ContentType = MediaTypeNames.Application.Json;
+        httpContext.Response.StatusCode = response.Error.Code;
+
         await httpContext.Response.WriteAsJsonAsync(response);
     }
 }

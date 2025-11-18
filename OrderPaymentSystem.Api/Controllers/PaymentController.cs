@@ -7,7 +7,6 @@ using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Payment;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Interfaces.Services;
-using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Api.Controllers;
 
@@ -24,6 +23,12 @@ public class PaymentController : ControllerBase
     private readonly UpdatePaymentValidation _updatePaymentValidator;
     private readonly CreatePaymentValidator _createPaymentValidator;
 
+    /// <summary>
+    /// Конструктор контроллера для работы с платежами
+    /// </summary>
+    /// <param name="paymentService"></param>
+    /// <param name="updatePaymentValidator"></param>
+    /// <param name="createPaymentValidator"></param>
     public PaymentController(IPaymentService paymentService, UpdatePaymentValidation updatePaymentValidator,
         CreatePaymentValidator createPaymentValidator)
     {
@@ -36,6 +41,7 @@ public class PaymentController : ControllerBase
     /// Получение платежа по ID
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for getting payment
     /// 
@@ -50,20 +56,21 @@ public class PaymentController : ControllerBase
     [HttpGet(RouteConstants.GetPaymentById)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BaseResult<PaymentDto>>> GetPayment(long id)
+    public async Task<ActionResult<PaymentDto>> GetPayment(long id, CancellationToken cancellationToken)
     {
-        var response = await _paymentService.GetPaymentByIdAsync(id);
+        var response = await _paymentService.GetPaymentByIdAsync(id, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
     /// Получение всех платежей пользователя
     /// </summary>
     /// <param name="userId"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     ///<remarks>
     /// Request for getting user payments
     /// 
@@ -78,9 +85,9 @@ public class PaymentController : ControllerBase
     [HttpGet(RouteConstants.GetUserPaymentsByUserId)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CollectionResult<PaymentDto>>> GetUserPayments(Guid userId)
+    public async Task<ActionResult<PaymentDto>> GetUserPayments(Guid userId, CancellationToken cancellationToken)
     {
-        var response = await _paymentService.GetUserPaymentsAsync(userId);
+        var response = await _paymentService.GetUserPaymentsAsync(userId, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response);
@@ -92,6 +99,7 @@ public class PaymentController : ControllerBase
     /// Удаление платежа по идентификатору
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for delete payment
     /// 
@@ -106,20 +114,21 @@ public class PaymentController : ControllerBase
     [HttpDelete(RouteConstants.DeletePaymentById)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BaseResult<PaymentDto>>> DeletePayment(long id)
+    public async Task<ActionResult<PaymentDto>> DeletePayment(long id, CancellationToken cancellationToken)
     {
-        var response = await _paymentService.DeletePaymentAsync(id);
+        var response = await _paymentService.DeletePaymentAsync(id, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
     /// Создание платежа
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for create payment
     ///     
@@ -140,27 +149,28 @@ public class PaymentController : ControllerBase
     [HttpPost(RouteConstants.CreatePayment)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BaseResult<PaymentDto>>> CreatePayment([FromBody] CreatePaymentDto dto)
+    public async Task<ActionResult<PaymentDto>> CreatePayment(CreatePaymentDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _createPaymentValidator.ValidateAsync(dto);
+        var validationResult = await _createPaymentValidator.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
             return BadRequest(validationResult.Errors);
         }
 
-        var response = await _paymentService.CreatePaymentAsync(dto);
+        var response = await _paymentService.CreatePaymentAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
     /// Обновление платежа
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for update payment
     /// 
@@ -177,27 +187,28 @@ public class PaymentController : ControllerBase
     [HttpPut(RouteConstants.UpdatePayment)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BaseResult<ProductDto>>> UpdatePayment([FromBody] UpdatePaymentDto dto)
+    public async Task<ActionResult<ProductDto>> UpdatePayment(UpdatePaymentDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _updatePaymentValidator.ValidateAsync(dto);
+        var validationResult = await _updatePaymentValidator.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
             return BadRequest(validationResult.Errors);
         }
 
-        var response = await _paymentService.UpdatePaymentAsync(dto);
+        var response = await _paymentService.UpdatePaymentAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
     /// Получение заказов определённого платежа по идентификатору
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for getting payment orders
     /// 
@@ -212,13 +223,13 @@ public class PaymentController : ControllerBase
     [HttpGet(RouteConstants.GetPaymentOrdersByPaymentId)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CollectionResult<OrderDto>>> GetPaymentOrders(long id)
+    public async Task<ActionResult<OrderDto>> GetPaymentOrders(long id, CancellationToken cancellationToken)
     {
-        var response = await _paymentService.GetPaymentOrdersAsync(id);
+        var response = await _paymentService.GetPaymentOrdersAsync(id, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 }

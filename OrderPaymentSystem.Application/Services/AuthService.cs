@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Dto.Token;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Auth;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
@@ -14,26 +14,44 @@ using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Application.Services;
 
-public class AuthService(IBaseRepository<User> userRepository, IMapper mapper, IUserTokenService userTokenService,
-        IBaseRepository<UserToken> userTokenRepository, IBaseRepository<Role> roleRepository, IUnitOfWork unitOfWork,
-        IAuthValidator authValidator, IPasswordHasher passwordHasher) : IAuthService
+/// <summary>
+/// Сервис авторизации и аутентификации
+/// </summary>
+/// <param name="userRepository">Репозиторий для работы с сущностью Пользователь</param>
+/// <param name="mapper">Маппер объектов</param>
+/// <param name="userTokenService">Сервис для работы с JWT-токенами</param>
+/// <param name="userTokenRepository"></param>
+/// <param name="roleRepository">Репозиторий для работы с сущностью Роль</param>
+/// <param name="unitOfWork">Сервис для работы с транзакциями</param>
+/// <param name="authValidator">Валидатор</param>
+/// <param name="passwordHasher">Сервис для хэширования паролей</param>
+public class AuthService(IBaseRepository<User> userRepository,
+    IMapper mapper,
+    IUserTokenService userTokenService,
+    IBaseRepository<UserToken> userTokenRepository,
+    IBaseRepository<Basket> basketRepository,
+    IBaseRepository<Role> roleRepository,
+    IBaseRepository<UserRole> userRoleRepository,
+    IUnitOfWork unitOfWork,
+    IAuthValidator authValidator,
+    IPasswordHasher passwordHasher) : IAuthService
 {
+    /// <summary>
+    /// Время жизни токена в днях
+    /// </summary>
+    private const int TokenLifeTimeInDays = 7;
 
     /// <inheritdoc/>
-    public async Task<BaseResult<TokenDto>> Login(LoginUserDto dto)
+    public async Task<DataResult<TokenDto>> LoginAsync(LoginUserDto dto, CancellationToken cancellationToken = default)
     {
-        var user = await userRepository.GetAll()
+        var user = await userRepository.GetQueryable()
             .Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.Login == dto.Login);
+            .FirstOrDefaultAsync(x => x.Login == dto.Login, cancellationToken);
 
         var validateLoginResult = authValidator.ValidateLogin(user, enteredPassword: dto.Password);
         if (!validateLoginResult.IsSuccess)
         {
-            return new BaseResult<TokenDto>()
-            {
-                ErrorMessage = validateLoginResult.ErrorMessage,
-                ErrorCode = validateLoginResult.ErrorCode
-            };
+            return DataResult<TokenDto>.Failure(validateLoginResult.Error);
         }
 
         var claims = userTokenService.GetClaimsFromUser(user);
@@ -41,7 +59,7 @@ public class AuthService(IBaseRepository<User> userRepository, IMapper mapper, I
         var accessToken = userTokenService.GenerateAccessToken(claims);
         var refreshToken = userTokenService.GenerateRefreshToken();
 
-        var userToken = await userTokenRepository.GetAll().FirstOrDefaultAsync(x => x.UserId == user.Id);
+        var userToken = await userTokenRepository.GetQueryable().FirstOrDefaultAsync(x => x.UserId == user.Id, cancellationToken);
 
         if (userToken == null)
         {
@@ -49,55 +67,47 @@ public class AuthService(IBaseRepository<User> userRepository, IMapper mapper, I
             {
                 UserId = user.Id,
                 RefreshToken = refreshToken,
-                RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7)
+                RefreshTokenExpireTime = DateTime.UtcNow.AddDays(TokenLifeTimeInDays)
             };
 
-            await userTokenRepository.CreateAsync(userToken);
+            await userTokenRepository.CreateAsync(userToken, cancellationToken);
         }
         else
         {
             userToken.RefreshToken = refreshToken;
-            userToken.RefreshTokenExpireTime = DateTime.UtcNow.AddDays(7);
+            userToken.RefreshTokenExpireTime = DateTime.UtcNow.AddDays(TokenLifeTimeInDays);
 
             userTokenRepository.Update(userToken);
 
-            await userTokenRepository.SaveChangesAsync();
+            await userTokenRepository.SaveChangesAsync(cancellationToken);
         }
 
-        return new BaseResult<TokenDto>()
+        var result = new TokenDto()
         {
-            Data = new TokenDto()
-            {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-            }
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
         };
+
+        return DataResult<TokenDto>.Success(result);
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<UserDto>> Register(RegisterUserDto dto)
+    public async Task<DataResult<UserDto>> RegisterAsync(RegisterUserDto dto, CancellationToken cancellationToken = default)
     {
         if (dto.Password != dto.PasswordConfirm)
         {
-            return new BaseResult<UserDto>()
-            {
-                ErrorMessage = ErrorMessage.PasswordNotEqualsPasswordConfirm,
-                ErrorCode = (int)ErrorCodes.PasswordNotEqualsPasswordConfirm,
-            };
+            return DataResult<UserDto>.Failure((int)ErrorCodes.PasswordNotEqualsPasswordConfirm,
+                ErrorMessage.PasswordNotEqualsPasswordConfirm);
         }
 
-        var user = await userRepository.GetAll().FirstOrDefaultAsync(x => x.Login == dto.Login);
+        var user = await userRepository.GetQueryable().FirstOrDefaultAsync(x => x.Login == dto.Login, cancellationToken);
 
         if (user != null)
         {
-            return new BaseResult<UserDto>()
-            {
-                ErrorCode = (int)ErrorCodes.UserAlreadyExist,
-                ErrorMessage = ErrorMessage.UserAlreadyExist
-            };
+            return DataResult<UserDto>.Failure((int)ErrorCodes.UserAlreadyExist, ErrorMessage.UserAlreadyExist);
         }
 
-        using (var transaction = await unitOfWork.BeginTransactionAsync())
+        using (var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken))
         {
             try
             {
@@ -106,26 +116,22 @@ public class AuthService(IBaseRepository<User> userRepository, IMapper mapper, I
                     Login = dto.Login,
                     Password = passwordHasher.Hash(dto.Password),
                 };
-                await unitOfWork.Users.CreateAsync(user);
+                await userRepository.CreateAsync(user, cancellationToken);
 
-                await unitOfWork.SaveChangesAsync();
+                await unitOfWork.SaveChangesAsync(cancellationToken);
 
                 var userBasket = new Basket()
                 {
                     UserId = user.Id,
                 };
 
-                await unitOfWork.Baskets.CreateAsync(userBasket);
+                await basketRepository.CreateAsync(userBasket, cancellationToken);
 
-                var role = await roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == nameof(Roles.User));
+                var role = await roleRepository.GetQueryable().FirstOrDefaultAsync(x => x.Name == nameof(Roles.User), cancellationToken);
 
                 if (role == null)
                 {
-                    return new BaseResult<UserDto>()
-                    {
-                        ErrorCode = (int)ErrorCodes.RoleNotFound,
-                        ErrorMessage = ErrorMessage.RoleNotFound
-                    };
+                    return DataResult<UserDto>.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
                 }
 
                 var userRole = new UserRole()
@@ -134,21 +140,18 @@ public class AuthService(IBaseRepository<User> userRepository, IMapper mapper, I
                     RoleId = role.Id
                 };
 
-                await unitOfWork.UserRoles.CreateAsync(userRole);
+                await userRoleRepository.CreateAsync(userRole, cancellationToken);
 
-                await unitOfWork.SaveChangesAsync();
+                await unitOfWork.SaveChangesAsync(cancellationToken);
 
-                await transaction.CommitAsync();
+                await transaction.CommitAsync(cancellationToken);
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                await transaction.RollbackAsync(cancellationToken);
             }
         }
 
-        return new BaseResult<UserDto>()
-        {
-            Data = mapper.Map<UserDto>(user),
-        };
+        return DataResult<UserDto>.Success(mapper.Map<UserDto>(user));
     }
 }

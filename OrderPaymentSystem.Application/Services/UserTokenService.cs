@@ -3,7 +3,8 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Token;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
+using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
@@ -15,20 +16,16 @@ using System.Text;
 
 namespace OrderPaymentSystem.Application.Services;
 
-public class UserTokenService : IUserTokenService
+/// <summary>
+/// Cервис для работы с JWT-токенами
+/// </summary>
+/// <param name="options"></param>
+/// <param name="userRepository"></param>
+public class UserTokenService(IOptions<JwtSettings> options, IBaseRepository<User> userRepository) : IUserTokenService
 {
-    private readonly IBaseRepository<User> _userRepository;
-    private readonly string _jwtKey;
-    private readonly string _issuer;
-    private readonly string _audience;
-
-    public UserTokenService(IOptions<JwtSettings> options, IBaseRepository<User> userRepository)
-    {
-        _jwtKey = options.Value.JwtKey;
-        _issuer = options.Value.Issuer;
-        _audience = options.Value.Audience;
-        _userRepository = userRepository;
-    }
+    private readonly string _jwtKey = options.Value.JwtKey;
+    private readonly string _issuer = options.Value.Issuer;
+    private readonly string _audience = options.Value.Audience;
 
     /// <inheritdoc/>
     public string GenerateAccessToken(IEnumerable<Claim> claims)
@@ -37,6 +34,7 @@ public class UserTokenService : IUserTokenService
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
         var securityToken = new JwtSecurityToken(_issuer, _audience, claims, null, DateTime.UtcNow.AddMinutes(10), credentials);
         var token = new JwtSecurityTokenHandler().WriteToken(securityToken);
+
         return token;
     }
 
@@ -46,11 +44,12 @@ public class UserTokenService : IUserTokenService
         var randomNumbers = new byte[32];
         using var randomNumberGenerator = RandomNumberGenerator.Create();
         randomNumberGenerator.GetBytes(randomNumbers);
+
         return Convert.ToBase64String(randomNumbers);
     }
 
     /// <inheritdoc/>
-    public List<Claim> GetClaimsFromUser(User user)
+    public IReadOnlyCollection<Claim> GetClaimsFromUser(User user)
     {
         if (user == null)
         {
@@ -74,7 +73,49 @@ public class UserTokenService : IUserTokenService
     }
 
     /// <inheritdoc/>
-    public ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken)
+    public async Task<DataResult<TokenDto>> RefreshTokenAsync(TokenDto dto, CancellationToken cancellationToken = default)
+    {
+        string accessToken = dto.AccessToken;
+        string refreshToken = dto.RefreshToken;
+
+        var claimsPrincipal = GetPrincipalFromExpiredToken(accessToken);
+        var userName = claimsPrincipal.Identity?.Name;
+
+        var user = await userRepository.GetQueryable()
+            .Include(x => x.UserToken)
+            .FirstOrDefaultAsync(x => x.Login == userName, cancellationToken);
+
+        if (user == null || user.UserToken.RefreshToken != refreshToken ||
+            user.UserToken.RefreshTokenExpireTime <= DateTime.UtcNow)
+        {
+            return DataResult<TokenDto>.Failure((int)ErrorCodes.InvalidClientRequest, ErrorMessage.InvalidClientRequest);
+        }
+
+        var newClaims = GetClaimsFromUser(user);
+
+        var newAccessToken = GenerateAccessToken(newClaims);
+        var newRefreshToken = GenerateRefreshToken();
+
+        user.UserToken.RefreshToken = newRefreshToken;
+
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync(cancellationToken);
+
+        var token = new TokenDto()
+        {
+            AccessToken = newAccessToken,
+            RefreshToken = newRefreshToken,
+        };
+
+        return DataResult<TokenDto>.Success(token);
+    }
+
+    /// <summary>
+    /// Получение ClaimsPrincipal из исчезающего токена
+    /// </summary>
+    /// <param name="accessToken"></param>
+    /// <returns></returns>
+    private ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken)
     {
         var tokenValidationParameters = new TokenValidationParameters()
         {
@@ -88,7 +129,7 @@ public class UserTokenService : IUserTokenService
         };
         var tokenHandler = new JwtSecurityTokenHandler();
         var claimsPrincipal = tokenHandler.ValidateToken(accessToken, tokenValidationParameters, out var securityToken);
-        if (securityToken is not JwtSecurityToken jwtSecurityToken || 
+        if (securityToken is not JwtSecurityToken jwtSecurityToken ||
             !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.CurrentCultureIgnoreCase))
         {
             throw new SecurityTokenException(ErrorMessage.InvalidToken);
@@ -96,45 +137,4 @@ public class UserTokenService : IUserTokenService
         return claimsPrincipal;
     }
 
-    /// <inheritdoc/>
-    public async Task<BaseResult<TokenDto>> RefreshToken(TokenDto dto)
-    {
-        string accessToken = dto.AccessToken;
-        string refreshToken = dto.RefreshToken;
-
-        var claimsPrincipal = GetPrincipalFromExpiredToken(accessToken);
-        var userName = claimsPrincipal.Identity?.Name;
-
-        var user = await _userRepository.GetAll()
-            .Include(x => x.UserToken)
-            .FirstOrDefaultAsync(x => x.Login == userName);
-
-        if (user == null || user.UserToken.RefreshToken != refreshToken ||
-            user.UserToken.RefreshTokenExpireTime <= DateTime.UtcNow)
-        {
-            return new BaseResult<TokenDto>()
-            {
-                ErrorMessage = ErrorMessage.InvalidClientRequest,
-            };
-        }
-
-        var newClaims = GetClaimsFromUser(user);
-
-        var newAccessToken = GenerateAccessToken(newClaims);
-        var newRefreshToken = GenerateRefreshToken();
-
-        user.UserToken.RefreshToken = newRefreshToken;
-
-        _userRepository.Update(user);
-        await _userRepository.SaveChangesAsync();
-
-        return new BaseResult<TokenDto>()
-        {
-            Data = new TokenDto()
-            {
-                AccessToken = newAccessToken,
-                RefreshToken = newRefreshToken,
-            }
-        };
-    }
 }

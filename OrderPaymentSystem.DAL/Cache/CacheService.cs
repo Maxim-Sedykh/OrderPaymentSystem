@@ -4,7 +4,9 @@ using System.Text.Json;
 
 namespace OrderPaymentSystem.DAL.Cache;
 
-/// <inheritdoc/>
+/// <summary>
+/// Сервис для работы с кэшем
+/// </summary>
 public class CacheService(IDistributedCache cache) : ICacheService
 {
     /// <inheritdoc/>

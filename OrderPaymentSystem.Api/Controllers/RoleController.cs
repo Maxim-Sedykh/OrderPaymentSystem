@@ -6,9 +6,8 @@ using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
 using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Dto.UserRole;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Interfaces.Services;
-using OrderPaymentSystem.Domain.Result;
 using System.Net.Mime;
 
 namespace OrderPaymentSystem.Api.Controllers;
@@ -30,6 +29,15 @@ public class RoleController : ControllerBase
     private readonly UserRoleValidation _userRoleValidation;
     private readonly RoleValidation _roleValidation;
 
+    /// <summary>
+    /// Конструктор для работы с ролями
+    /// </summary>
+    /// <param name="roleService">Сервис для работы с ролями</param>
+    /// <param name="createRoleValidation">Валидатор создания роли</param>
+    /// <param name="deleteUserRoleValidation">Валидатор удаления роли для пользователя</param>
+    /// <param name="updateUserRoleValidation">Обновление роли для пользователя</param>
+    /// <param name="userRoleValidation">Валидатор роли для пользователя</param>
+    /// <param name="roleValidation">Валидатор роли</param>
     public RoleController(IRoleService roleService, CreateRoleValidation createRoleValidation,
         DeleteUserRoleValidation deleteUserRoleValidation, UpdateUserRoleValidation updateUserRoleValidation,
         UserRoleValidation userRoleValidation, RoleValidation roleValidation)
@@ -46,6 +54,7 @@ public class RoleController : ControllerBase
     /// Создание роли
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for create role:
     /// 
@@ -60,27 +69,28 @@ public class RoleController : ControllerBase
     [HttpPost(RouteConstants.CreateRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BaseResult<Role>>> CreateRole([FromBody] CreateRoleDto dto)
+    public async Task<ActionResult<Role>> CreateRole(CreateRoleDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _createRoleValidation.ValidateAsync(dto);
+        var validationResult = await _createRoleValidation.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
             return BadRequest(validationResult.Errors);
         }
 
-        var response = await _roleService.CreateRoleAsync(dto);
+        var response = await _roleService.CreateRoleAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
     /// Обновление роли
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for update role:
     /// 
@@ -96,27 +106,28 @@ public class RoleController : ControllerBase
     [HttpPut(RouteConstants.UpdateRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BaseResult<Role>>> UpdateRole([FromBody] RoleDto dto)
+    public async Task<ActionResult<Role>> UpdateRole(RoleDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _roleValidation.ValidateAsync(dto);
+        var validationResult = await _roleValidation.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
             return BadRequest(validationResult.Errors);
         }
 
-        var response = await _roleService.UpdateRoleAsync(dto);
+        var response = await _roleService.UpdateRoleAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
     /// Удаление роли с указанием идентификатора
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for delete role:
     /// 
@@ -131,20 +142,21 @@ public class RoleController : ControllerBase
     [HttpDelete(RouteConstants.DeleteRoleById)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BaseResult<Role>>> DeleteRole(long id)
+    public async Task<ActionResult<Role>> DeleteRole(long id, CancellationToken cancellationToken)
     {
-        var response = await _roleService.DeleteRoleAsync(id);
+        var response = await _roleService.DeleteRoleAsync(id, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
     /// Создание роли для пользователя
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for add role for user
     /// 
@@ -160,27 +172,28 @@ public class RoleController : ControllerBase
     [HttpPost(RouteConstants.AddRoleForUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BaseResult<Role>>> AddRoleForUser([FromBody] UserRoleDto dto)
+    public async Task<ActionResult<Role>> AddRoleForUser(UserRoleDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _userRoleValidation.ValidateAsync(dto);
+        var validationResult = await _userRoleValidation.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
             return BadRequest(validationResult.Errors);
         }
 
-        var response = await _roleService.AddRoleForUserAsync(dto);
+        var response = await _roleService.AddRoleForUserAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
     /// Удаление роли у пользователя
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for delete role for user
     /// 
@@ -196,27 +209,28 @@ public class RoleController : ControllerBase
     [HttpDelete(RouteConstants.DeleteRoleForUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BaseResult<Role>>> DeleteRoleForUser([FromBody] DeleteUserRoleDto dto)
+    public async Task<ActionResult<Role>> DeleteRoleForUser(DeleteUserRoleDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _deleteUserRoleValidation.ValidateAsync(dto);
+        var validationResult = await _deleteUserRoleValidation.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
             return BadRequest(validationResult.Errors);
         }
 
-        var response = await _roleService.DeleteRoleForUserAsync(dto);
+        var response = await _roleService.DeleteRoleForUserAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
     /// Обновление роли пользователя
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for update role for user
     /// 
@@ -233,36 +247,37 @@ public class RoleController : ControllerBase
     [HttpPut(RouteConstants.UpdateRoleForUser)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BaseResult<Role>>> UpdateRoleForUser([FromBody] UpdateUserRoleDto dto)
+    public async Task<ActionResult<Role>> UpdateRoleForUser(UpdateUserRoleDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _updateUserRoleValidation.ValidateAsync(dto);
+        var validationResult = await _updateUserRoleValidation.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
             return BadRequest(validationResult.Errors);
         }
 
-        var response = await _roleService.UpdateRoleForUserAsync(dto);
+        var response = await _roleService.UpdateRoleForUserAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
-    /// Получение ролей пользоватекля
+    /// Получение ролей пользователя
     /// </summary>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     [HttpGet(RouteConstants.GetAllRoles)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CollectionResult<RoleDto>>> GetAllRoles()
+    public async Task<ActionResult<RoleDto>> GetAllRoles(CancellationToken cancellationToken)
     {
-        var response = await _roleService.GetAllRoles();
+        var response = await _roleService.GetAllRolesAsync(cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 }

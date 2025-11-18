@@ -8,19 +8,12 @@ namespace OrderPaymentSystem.Api.Swagger
     /// <summary>
     /// Настройки конфигурации Swagger
     /// </summary>
-    public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
+    /// <remarks>
+    /// Конструктор настроек
+    /// </remarks>
+    /// <param name="provider">Провайдер API описания</param>
+    public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : IConfigureOptions<SwaggerGenOptions>
     {
-        private readonly IApiVersionDescriptionProvider _provider;
-
-        /// <summary>
-        /// Конструктор настроек
-        /// </summary>
-        /// <param name="provider">Провайдер API описания</param>
-        public ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
-        {
-            _provider = provider;
-        }
-
         /// <summary>
         /// Выполнить конфигурацию Swagger
         /// </summary>
@@ -29,7 +22,7 @@ namespace OrderPaymentSystem.Api.Swagger
         {
             var contactUri = new Uri("https://vk.com/maximsedykh2000");
 
-            foreach (var description in _provider.ApiVersionDescriptions)
+            foreach (var description in provider.ApiVersionDescriptions)
             {
                 options.SwaggerDoc(
                     description.GroupName,

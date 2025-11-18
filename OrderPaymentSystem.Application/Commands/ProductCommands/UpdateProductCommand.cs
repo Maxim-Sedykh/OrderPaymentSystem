@@ -1,6 +1,6 @@
 ﻿using MediatR;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 
-namespace OrderPaymentSystem.Application.Commands;
+namespace OrderPaymentSystem.Application.Commands.ProductCommands;
 
 public record UpdateProductCommand(string ProductName, string Description, decimal Cost, Product Product) : IRequest;

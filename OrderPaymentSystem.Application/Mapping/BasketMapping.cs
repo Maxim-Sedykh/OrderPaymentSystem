@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using OrderPaymentSystem.Domain.Dto.Basket;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.Application.Mapping;
 

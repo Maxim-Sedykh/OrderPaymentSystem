@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Interfaces.Services;
-using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Api.Controllers;
 
@@ -17,26 +16,30 @@ public class UserTokenController : Controller
 {
     private readonly IUserTokenService _userTokenService;
 
+    /// <summary>
+    /// Конструктор для работы с токеном-JWT
+    /// </summary>
+    /// <param name="userTokenService"></param>
     public UserTokenController(IUserTokenService userTokenService)
     {
-        _userTokenService = userTokenService;   
+        _userTokenService = userTokenService;
     }
 
     /// <summary>
     /// Обновление токена пользователя
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <returns></returns>
-    /// 
     [Route(RouteConstants.RefreshToken)]
     [HttpPost]
-    public async Task<ActionResult<BaseResult<TokenDto>>> RefreshToken([FromBody] TokenDto dto)
+    public async Task<ActionResult<TokenDto>> RefreshToken(TokenDto dto, CancellationToken cancellationToken)
     {
-        var response = await _userTokenService.RefreshToken(dto);
+        var response = await _userTokenService.RefreshTokenAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 }

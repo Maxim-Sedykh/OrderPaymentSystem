@@ -2,7 +2,7 @@
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
 
-namespace OrderPaymentSystem.Domain.Entity;
+namespace OrderPaymentSystem.Domain.Entities;
 
 public class Payment : IEntityId<long>, IAuditable
 {

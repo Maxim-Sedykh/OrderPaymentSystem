@@ -1,6 +1,6 @@
 ﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
 
-namespace OrderPaymentSystem.Domain.Entity;
+namespace OrderPaymentSystem.Domain.Entities;
 
 public class User : IEntityId<Guid>, IAuditable
 {

@@ -23,10 +23,4 @@
     <ProjectReference Include="..\OrderPaymentSystem.Domain\OrderPaymentSystem.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ArchitectureTests\" />
-    <Folder Include="IntergrationTests\" />
-    <Folder Include="FunctionalTests\" />
-  </ItemGroup>
-
 </Project>

@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
@@ -13,47 +11,35 @@ using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Application.Services;
 
-public class OrderService : IOrderService
+/// <summary>
+/// Сервис для работы с заказами
+/// </summary>
+/// <param name="orderRepository">Репозиторий для работы с заказами</param>
+/// <param name="userRepository">Репозиторий для работы с пользователями</param>
+/// <param name="productRepository">Репозиторий для работы с товарами</param>
+/// <param name="mapper">Маппер</param>
+/// <param name="orderValidator">Валидатор заказов</param>
+public class OrderService(IBaseRepository<Order> orderRepository,
+    IBaseRepository<User> userRepository,
+    IBaseRepository<Product> productRepository,
+    IMapper mapper,
+    IOrderValidator orderValidator) : IOrderService
 {
-    private readonly IBaseRepository<Order> _orderRepository;
-    private readonly IBaseRepository<Product> _productRepository;
-    private readonly IBaseRepository<User> _userRepository;
-    private readonly IMapper _mapper;
-    //private readonly ICacheService _cacheService;
-    private readonly IOrderValidator _orderValidator;
-
-    public OrderService(IBaseRepository<Order> orderRepository, IBaseRepository<User> userRepository, IBaseRepository<Product> productRepository,
-        IMapper mapper,
-        IOrderValidator orderValidator)
-    {
-        _orderRepository = orderRepository;
-        _mapper = mapper;
-        //_cacheService = cacheService;
-        _productRepository = productRepository;
-        _userRepository = userRepository;
-        _orderValidator = orderValidator;
-    }
-
-
     /// <inheritdoc/>
-    public async Task<BaseResult<OrderDto>> CreateOrderAsync(CreateOrderDto dto)
+    public async Task<DataResult<OrderDto>> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetAll()
+        var user = await userRepository.GetQueryable()
             .Include(x => x.Basket)
-            .FirstOrDefaultAsync(x => x.Id == dto.UserId);
+            .FirstOrDefaultAsync(x => x.Id == dto.UserId, cancellationToken);
 
-        var product = await _productRepository
-            .GetAll()
-            .FirstOrDefaultAsync(x => x.Id == dto.ProductId);
+        var product = await productRepository
+            .GetQueryable()
+            .FirstOrDefaultAsync(x => x.Id == dto.ProductId, cancellationToken);
 
-        var validateCreatingOrderResult = _orderValidator.ValidateCreatingOrder(user, product);
+        var validateCreatingOrderResult = orderValidator.ValidateCreatingOrder(user, product);
         if (!validateCreatingOrderResult.IsSuccess)
         {
-            return new BaseResult<OrderDto>()
-            {
-                ErrorMessage = validateCreatingOrderResult.ErrorMessage,
-                ErrorCode = validateCreatingOrderResult.ErrorCode
-            };
+            return DataResult<OrderDto>.Failure(validateCreatingOrderResult.Error);
         }
 
         Order order = new()
@@ -66,108 +52,77 @@ public class OrderService : IOrderService
             OrderCost = product.Cost * dto.ProductCount
         };
 
-        await _orderRepository.CreateAsync(order);
-        await _orderRepository.SaveChangesAsync();
+        await orderRepository.CreateAsync(order, cancellationToken);
+        await orderRepository.SaveChangesAsync(cancellationToken);
 
-        return new BaseResult<OrderDto>()
-        {
-            Data = _mapper.Map<OrderDto>(order),
-        };
+        return DataResult<OrderDto>.Success(mapper.Map<OrderDto>(order));
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<OrderDto>> DeleteOrderByIdAsync(long id)
+    public async Task<DataResult<OrderDto>> DeleteOrderByIdAsync(long id, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository
-            .GetAll()
+        var order = await orderRepository
+            .GetQueryable()
             .FirstOrDefaultAsync(x => x.Id == id);
 
         if (order == null)
         {
-            return new BaseResult<OrderDto>()
-            {
-                ErrorCode = (int)ErrorCodes.OrderNotFound,
-                ErrorMessage = ErrorMessage.OrderNotFound
-            };
+            return DataResult<OrderDto>.Failure((int)ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
         }
 
-        _orderRepository.Remove(order);
-        await _orderRepository.SaveChangesAsync();
+        orderRepository.Remove(order);
+        await orderRepository.SaveChangesAsync(cancellationToken);
 
-        return new BaseResult<OrderDto>()
-        {
-            Data = _mapper.Map<OrderDto>(order),
-        };
+        return DataResult<OrderDto>.Success(mapper.Map<OrderDto>(order));
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<OrderDto>> GetOrderByIdAsync(long id)
+    public async Task<DataResult<OrderDto>> GetOrderByIdAsync(long id, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository.GetAll()
+        var order = await orderRepository.GetQueryable()
                     .Where(x => x.Id == id)
-                    .Select(x => _mapper.Map<OrderDto>(x))
+                    .Select(x => mapper.Map<OrderDto>(x))
                     .FirstOrDefaultAsync();
 
         if (order == null)
         {
-            return new BaseResult<OrderDto>()
-            {
-                ErrorCode = (int)ErrorCodes.OrderNotFound,
-                ErrorMessage = ErrorMessage.OrderNotFound
-            };
+            return DataResult<OrderDto>.Failure((int)ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
         }
 
-        return new BaseResult<OrderDto>()
-        {
-            Data = order,
-        };
+        return DataResult<OrderDto>.Success(order);
     }
 
     /// <inheritdoc/>
-    public async Task<CollectionResult<OrderDto>> GetAllOrdersAsync()
+    public async Task<CollectionResult<OrderDto>> GetAllOrdersAsync(CancellationToken cancellationToken = default)
     {
-        OrderDto[] orders;
-
-        orders = await _orderRepository.GetAll()
+        var orders = await orderRepository.GetQueryable()
             .Include(x => x.Basket)
-            .Select(x => _mapper.Map<OrderDto>(x))
+            .Select(x => mapper.Map<OrderDto>(x))
             .ToArrayAsync();
 
         if (orders.Length == 0)
         {
-            return new CollectionResult<OrderDto>()
-            {
-                ErrorMessage = ErrorMessage.ProductsNotFound,
-                ErrorCode = (int)ErrorCodes.ProductsNotFound
-            };
+            return CollectionResult<OrderDto>.Failure((int)ErrorCodes.ProductsNotFound, ErrorMessage.ProductsNotFound);
         }
 
-        return new CollectionResult<OrderDto>()
-        {
-            Data = orders,
-            Count = orders.Length
-        };
+        return CollectionResult<OrderDto>.Success(orders);
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<OrderDto>> UpdateOrderAsync(UpdateOrderDto dto)
+    public async Task<DataResult<OrderDto>> UpdateOrderAsync(UpdateOrderDto dto, CancellationToken cancellationToken = default)
     {
-        var order = await _orderRepository
-            .GetAll()
+        var order = await orderRepository
+            .GetQueryable()
             .FirstOrDefaultAsync(x => x.Id == dto.Id);
 
-        var product = await _productRepository
-            .GetAll()
+        var product = await productRepository
+            .GetQueryable()
             .FirstOrDefaultAsync(x => x.Id == dto.ProductId);
 
-        var validateUpdatingOrderResult = _orderValidator.ValidateUpdatingOrder(order, product);
+        var validateUpdatingOrderResult = orderValidator.ValidateUpdatingOrder(order, product);
         if (!validateUpdatingOrderResult.IsSuccess)
         {
-            return new BaseResult<OrderDto>()
-            {
-                ErrorMessage = validateUpdatingOrderResult.ErrorMessage,
-                ErrorCode = validateUpdatingOrderResult.ErrorCode
-            };
+            return DataResult<OrderDto>.Failure(validateUpdatingOrderResult.Error);
         }
 
         if (order.ProductId != dto.ProductId || order.ProductCount != dto.ProductCount)
@@ -176,19 +131,12 @@ public class OrderService : IOrderService
             order.ProductCount = dto.ProductCount;
             order.OrderCost = product.Cost * dto.ProductCount;
 
-            var updatedOrder = _orderRepository.Update(order);
-            await _orderRepository.SaveChangesAsync();
+            var updatedOrder = orderRepository.Update(order);
+            await orderRepository.SaveChangesAsync();
 
-            return new BaseResult<OrderDto>()
-            {
-                Data = _mapper.Map<OrderDto>(updatedOrder),
-            };
+            return DataResult<OrderDto>.Success(mapper.Map<OrderDto>(updatedOrder));
         }
 
-        return new BaseResult<OrderDto>()
-        {
-            ErrorMessage = ErrorMessage.NoChangesFound,
-            ErrorCode = (int)ErrorCodes.NoChangesFound
-        };
+        return DataResult<OrderDto>.Failure((int)ErrorCodes.NoChangesFound, ErrorMessage.NoChangesFound);
     }
 }

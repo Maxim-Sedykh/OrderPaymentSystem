@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.8.34316.72
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11205.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{029ABAF9-C5D5-488E-88EA-28181DF1FE67}"
 EndProject
@@ -19,15 +19,25 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderPaymentSystem.Applicat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A5A2BEF5-9D6E-4FB7-B4B7-454C3E6711CE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderPaymentSystem.Tests", "OrderPaymentSystem.UnitTests\OrderPaymentSystem.Tests.csproj", "{170A5211-56F8-477B-B96E-8846D2905A1B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderPaymentSystem.UnitTests", "OrderPaymentSystem.UnitTests\OrderPaymentSystem.UnitTests.csproj", "{170A5211-56F8-477B-B96E-8846D2905A1B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EE35FB4D-0CB1-4470-9159-F1094A595DD9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderPaymentSystem.Benchmarks", "OrderPaymentSystem.Benchmarks\OrderPaymentSystem.Benchmarks.csproj", "{2EFDBE40-8C97-4CF6-867F-3C73C809AA99}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2BD61642-0AD8-42E0-8D49-0A80E61D2C1F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deploy", "deploy", "{CE6DCD97-6823-433B-BA8F-A337EA9C383C}"
 	ProjectSection(SolutionItems) = preProject
 		docker-compose.yml = docker-compose.yml
 		prometheus.yml = prometheus.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderPaymentSystem.Benchmarks", "OrderPaymentSystem.Benchmarks\OrderPaymentSystem.Benchmarks.csproj", "{2EFDBE40-8C97-4CF6-867F-3C73C809AA99}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmarks", "Benchmarks", "{91F6D930-07E7-4B33-8DD6-38BD4A77B65D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderPaymentSystem.ArchitectureTests", "OrderPaymentSystem.ArchitectureTests\OrderPaymentSystem.ArchitectureTests.csproj", "{F94C71CA-BF9C-4463-A7A1-6D54768FBAD8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderPaymentSystem.IntegrationTests", "OrderPaymentSystem.IntegrationTests\OrderPaymentSystem.IntegrationTests.csproj", "{957EBF8D-AF65-4161-9E60-1DB25FD988F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderPaymentSystem.FunctionalTests", "OrderPaymentSystem.FunctionalTests\OrderPaymentSystem.FunctionalTests.csproj", "{AC5CF2E5-267A-42D4-B378-553E7111B2E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,17 +69,35 @@ Global
 		{2EFDBE40-8C97-4CF6-867F-3C73C809AA99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2EFDBE40-8C97-4CF6-867F-3C73C809AA99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2EFDBE40-8C97-4CF6-867F-3C73C809AA99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F94C71CA-BF9C-4463-A7A1-6D54768FBAD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F94C71CA-BF9C-4463-A7A1-6D54768FBAD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F94C71CA-BF9C-4463-A7A1-6D54768FBAD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F94C71CA-BF9C-4463-A7A1-6D54768FBAD8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{957EBF8D-AF65-4161-9E60-1DB25FD988F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{957EBF8D-AF65-4161-9E60-1DB25FD988F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{957EBF8D-AF65-4161-9E60-1DB25FD988F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{957EBF8D-AF65-4161-9E60-1DB25FD988F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC5CF2E5-267A-42D4-B378-553E7111B2E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC5CF2E5-267A-42D4-B378-553E7111B2E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC5CF2E5-267A-42D4-B378-553E7111B2E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC5CF2E5-267A-42D4-B378-553E7111B2E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{029ABAF9-C5D5-488E-88EA-28181DF1FE67} = {2BD61642-0AD8-42E0-8D49-0A80E61D2C1F}
+		{72494A2B-14A4-4964-BD1D-A4B46F3C21A6} = {2BD61642-0AD8-42E0-8D49-0A80E61D2C1F}
+		{6715E464-8539-4421-9ADD-2D88EDD8CA27} = {2BD61642-0AD8-42E0-8D49-0A80E61D2C1F}
 		{D9BB517D-C51E-4823-B806-5BFAB9319635} = {029ABAF9-C5D5-488E-88EA-28181DF1FE67}
 		{9DE52DDA-5B38-46E6-9C09-C679166EB1E5} = {6715E464-8539-4421-9ADD-2D88EDD8CA27}
 		{D2914141-71A0-4147-BE0F-D99E4C261821} = {72494A2B-14A4-4964-BD1D-A4B46F3C21A6}
 		{49B57D31-6C6E-44BE-B172-CF92C1D6200B} = {029ABAF9-C5D5-488E-88EA-28181DF1FE67}
 		{170A5211-56F8-477B-B96E-8846D2905A1B} = {A5A2BEF5-9D6E-4FB7-B4B7-454C3E6711CE}
-		{2EFDBE40-8C97-4CF6-867F-3C73C809AA99} = {A5A2BEF5-9D6E-4FB7-B4B7-454C3E6711CE}
+		{2EFDBE40-8C97-4CF6-867F-3C73C809AA99} = {91F6D930-07E7-4B33-8DD6-38BD4A77B65D}
+		{F94C71CA-BF9C-4463-A7A1-6D54768FBAD8} = {A5A2BEF5-9D6E-4FB7-B4B7-454C3E6711CE}
+		{957EBF8D-AF65-4161-9E60-1DB25FD988F9} = {A5A2BEF5-9D6E-4FB7-B4B7-454C3E6711CE}
+		{AC5CF2E5-267A-42D4-B378-553E7111B2E7} = {A5A2BEF5-9D6E-4FB7-B4B7-454C3E6711CE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {651B92B9-C01E-46BF-8BC9-913460277ED7}

@@ -1,4 +1,4 @@
-﻿namespace OrderPaymentSystem.Domain.Entity;
+﻿namespace OrderPaymentSystem.Domain.Entities;
 
 public class UserRole
 {

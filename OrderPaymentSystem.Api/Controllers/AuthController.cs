@@ -32,18 +32,19 @@ public class AuthController : ControllerBase
     /// Регистрация пользователя
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <returns></returns>
     [HttpPost(RouteConstants.Register)]
-    public async Task<ActionResult<BaseResult>> Register([FromBody] RegisterUserDto dto)
+    public async Task<ActionResult<BaseResult>> Register(RegisterUserDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _registerUserValidator.ValidateAsync(dto);
+        var validationResult = await _registerUserValidator.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
             return BadRequest(validationResult.Errors);
         }
 
-        var response = await _authService.Register(dto);
+        var response = await _authService.RegisterAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response);
@@ -55,9 +56,10 @@ public class AuthController : ControllerBase
     /// Логин пользователя
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <returns></returns>
     [HttpPost(RouteConstants.Login)]
-    public async Task<ActionResult<BaseResult>> Login([FromBody] LoginUserDto dto)
+    public async Task<ActionResult<BaseResult>> Login(LoginUserDto dto, CancellationToken cancellationToken)
     {
         var validationResult = await _loginUserValidator.ValidateAsync(dto);
 
@@ -66,7 +68,7 @@ public class AuthController : ControllerBase
             return BadRequest(validationResult.Errors);
         }
 
-        var response = await _authService.Login(dto);
+        var response = await _authService.LoginAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response);

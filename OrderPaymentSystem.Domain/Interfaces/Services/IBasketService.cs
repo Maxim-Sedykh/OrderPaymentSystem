@@ -5,7 +5,7 @@ using OrderPaymentSystem.Domain.Result;
 namespace OrderPaymentSystem.Domain.Interfaces.Services;
 
 /// <summary>
-/// Сервис для работы с корзиной пользователя
+/// Интерфейс сервиса для работы с корзиной пользователя
 /// </summary>
 public interface IBasketService
 {
@@ -13,17 +13,17 @@ public interface IBasketService
     /// Добавление заказа в корзину пользователя
     /// </summary>
     /// <returns></returns>
-    Task<CollectionResult<OrderDto>> GetBasketOrdersAsync(long basketId);
+    Task<CollectionResult<OrderDto>> GetBasketOrdersAsync(long basketId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получение всех заказов из корзины пользователя
     /// </summary>
     /// <returns></returns>
-    Task<CollectionResult<OrderDto>> ClearBasketAsync(long basketId);
+    Task<CollectionResult<OrderDto>> ClearBasketAsync(long basketId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получение информации о корзине пользователя
     /// </summary>
     /// <returns></returns>
-    Task<BaseResult<BasketDto>> GetBasketByIdAsync(long basketId);
+    Task<DataResult<BasketDto>> GetBasketByIdAsync(long basketId, CancellationToken cancellationToken = default);
 }

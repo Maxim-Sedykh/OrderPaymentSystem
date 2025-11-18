@@ -1,25 +1,23 @@
 ﻿namespace OrderPaymentSystem.Domain.Result
 {
+    /// <summary>
+    /// Класс для реализации паттерна Result Pattern.
+    /// Абстракция, которая представляет собой результат выполнения операции
+    /// </summary>
     public class BaseResult
     {
-        public bool IsSuccess => ErrorMessage == null;
-
-        public string ErrorMessage { get; set; }
-
-        public int? ErrorCode { get; set; }
-    }
-
-    public class BaseResult<T>: BaseResult
-    {
-        public BaseResult(string errorMessage, int errorCode, T data)
+        protected BaseResult(Error error = null)
         {
-            ErrorMessage = errorMessage;
-            ErrorCode = errorCode;
-            Data = data;
+            Error = error ?? new Error();
         }
 
-        public BaseResult() { }
+        public bool IsSuccess => Error.Message == null;
 
-        public T Data { get; set; }
+        public Error Error { get; }
+
+        public static BaseResult Success() => new();
+
+        public static BaseResult Failure(int errorCode, string errorMessage) =>
+            new(new Error(errorMessage, errorCode));
     }
 }

@@ -1,13 +1,13 @@
 ﻿using MockQueryable.Moq;
 using Moq;
-using OrderPaymentSystem.Application.Commands;
+using OrderPaymentSystem.Application.Commands.ProductCommands;
 using OrderPaymentSystem.Domain.Dto.Product;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Tests.UnitTests.Configurations;
+using OrderPaymentSystem.UnitTests.Configurations;
 using Xunit;
 
-namespace OrderPaymentSystem.Tests.UnitTests.ProductTests;
+namespace OrderPaymentSystem.UnitTests.ProductTests;
 
 public class DeleteProductTests : IClassFixture<ProductServiceFixture>
 {
@@ -21,7 +21,7 @@ public class DeleteProductTests : IClassFixture<ProductServiceFixture>
         var product = new Product { Id = productId };
         var productDto = new ProductDto { Id = productId };
 
-        _fixture.ProductRepositoryMock.Setup(repo => repo.GetAll()).Returns(new List<Product> { product }.AsQueryable().CreateMockDbSet().Object);
+        _fixture.ProductRepositoryMock.Setup(repo => repo.GetQueryable()).Returns(new List<Product> { product }.AsQueryable().CreateMockDbSet().Object);
         _fixture.MapperMock.Setup(x => x.Map<ProductDto>(product)).Returns(productDto);
 
         // Act
@@ -44,6 +44,6 @@ public class DeleteProductTests : IClassFixture<ProductServiceFixture>
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Equal((int)ErrorCodes.ProductNotFound, result.ErrorCode);
+        Assert.Equal((int)ErrorCodes.ProductNotFound, result.Error.Code);
     }
 }

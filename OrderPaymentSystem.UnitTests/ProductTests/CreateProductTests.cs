@@ -1,12 +1,12 @@
 ﻿using Moq;
-using OrderPaymentSystem.Application.Commands;
+using OrderPaymentSystem.Application.Commands.ProductCommands;
 using OrderPaymentSystem.Domain.Dto.Product;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Tests.UnitTests.Configurations;
+using OrderPaymentSystem.UnitTests.Configurations;
 using Xunit;
 
-namespace OrderPaymentSystem.Tests.UnitTests.ProductTests;
+namespace OrderPaymentSystem.UnitTests.ProductTests;
 
 public class CreateProductTests : IClassFixture<ProductServiceFixture>
 {
@@ -48,6 +48,6 @@ public class CreateProductTests : IClassFixture<ProductServiceFixture>
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Equal((int)ErrorCodes.ProductAlreadyExist, result.ErrorCode);
+        Assert.Equal((int)ErrorCodes.ProductAlreadyExist, result.Error.Code);
     }
 }

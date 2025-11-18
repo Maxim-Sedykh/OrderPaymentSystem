@@ -1,10 +1,13 @@
 ﻿using OrderPaymentSystem.Domain.Dto.Token;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Result;
 using System.Security.Claims;
 
 namespace OrderPaymentSystem.Domain.Interfaces.Services;
 
+/// <summary>
+/// Интерфейс сервиса для работы с JWT-токенами
+/// </summary>
 public interface IUserTokenService
 {
     /// <summary>
@@ -21,23 +24,16 @@ public interface IUserTokenService
     string GenerateRefreshToken();
 
     /// <summary>
-    /// Получение ClaimsPrincipal из исчезающего токена
-    /// </summary>
-    /// <param name="accessToken"></param>
-    /// <returns></returns>
-    ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken);
-
-    /// <summary>
     /// Обновление токена пользователя
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<BaseResult<TokenDto>> RefreshToken(TokenDto dto);
+    Task<DataResult<TokenDto>> RefreshTokenAsync(TokenDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получение основных клаймов из пользователя
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    List<Claim> GetClaimsFromUser(User user);
+    IReadOnlyCollection<Claim> GetClaimsFromUser(User user);
 }

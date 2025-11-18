@@ -28,7 +28,9 @@ public enum ErrorCodes
     PaymentsNotFound = 82,
     NotEnoughPayFunds = 83,
 
-    NoChangesFound = 411,
+    NoChangesFound = 91,
+
+    InvalidClientRequest = 95,
 
     InternalServerError = 500
 }

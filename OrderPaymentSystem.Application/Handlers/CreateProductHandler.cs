@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using MediatR;
-using OrderPaymentSystem.Application.Commands;
+using OrderPaymentSystem.Application.Commands.ProductCommands;
 using OrderPaymentSystem.Domain.Dto.Product;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.Application.Handlers;

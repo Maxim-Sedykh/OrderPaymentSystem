@@ -1,9 +1,9 @@
 ﻿using MockQueryable.Moq;
 using Moq;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 
-namespace OrderPaymentSystem.Tests.UnitTests.Configurations;
+namespace OrderPaymentSystem.UnitTests.Configurations;
 
 public static class MockRepositoriesGetter
 {
@@ -12,7 +12,7 @@ public static class MockRepositoriesGetter
         var mock = new Mock<IBaseRepository<Product>>();
 
         var products = GetProducts().CreateMockDbSet();
-        mock.Setup(x => x.GetAll()).Returns(() => products.Object);
+        mock.Setup(x => x.GetQueryable()).Returns(() => products.Object);
 
         return mock;
     }

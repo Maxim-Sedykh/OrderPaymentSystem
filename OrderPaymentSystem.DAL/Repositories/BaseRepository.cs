@@ -2,27 +2,36 @@
 
 namespace OrderPaymentSystem.DAL.Repositories;
 
+/// <summary>
+/// Generic репозиторий. Абстракции над DbContext
+/// </summary>
+/// <typeparam name="TEntity">Тип сущности</typeparam>
+/// <param name="dbContext"></param>
 public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepository<TEntity> where TEntity : class
 {
-    public IQueryable<TEntity> GetAll()
+    /// <inheritdoc/>
+    public IQueryable<TEntity> GetQueryable()
     {
         return dbContext.Set<TEntity>().AsQueryable();
     }
 
-    public async Task<int> SaveChangesAsync()
+    /// <inheritdoc/>
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.SaveChangesAsync();
+        return await dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<TEntity> CreateAsync(TEntity entity)
+    /// <inheritdoc/>
+    public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
     {
         ValidateEntityOnNull(entity);
 
-        await dbContext.AddAsync(entity);
+        await dbContext.AddAsync(entity, cancellationToken);
 
         return entity;
     }
 
+    /// <inheritdoc/>
     public void Remove(TEntity entity)
     {
         ValidateEntityOnNull(entity);
@@ -30,6 +39,7 @@ public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepo
         dbContext.Remove(entity);
     }
 
+    /// <inheritdoc/>
     public TEntity Update(TEntity entity)
     {
         ValidateEntityOnNull(entity);
@@ -39,6 +49,7 @@ public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepo
         return entity;
     }
 
+    /// <inheritdoc/>
     public void RemoveRange(IEnumerable<TEntity> entities)
     {
         ValidateEntitiesOnNull(entities);
@@ -46,6 +57,7 @@ public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepo
         dbContext.RemoveRange(entities);
     }
 
+    /// <inheritdoc/>
     public void UpdateRange(IEnumerable<TEntity> entities)
     {
         ValidateEntitiesOnNull(entities);
@@ -53,7 +65,12 @@ public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepo
         dbContext.UpdateRange(entities);
     }
 
-    private void ValidateEntityOnNull(TEntity entity)
+    /// <summary>
+    /// Валидация сущности на NULL
+    /// </summary>
+    /// <param name="entity">Сущность</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    private static void ValidateEntityOnNull(TEntity entity)
     {
         if (entity is null)
         {
@@ -61,9 +78,14 @@ public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepo
         }
     }
 
-    private void ValidateEntitiesOnNull(IEnumerable<TEntity> entities)
+    /// <summary>
+    /// Валидация коллекции сущностей на NULL
+    /// </summary>
+    /// <param name="entities"></param>
+    /// <exception cref="ArgumentNullException"></exception>
+    private static void ValidateEntitiesOnNull(IEnumerable<TEntity> entities)
     {
-        if (entities is null)
+        if (entities == null || !entities.Any())
         {
             throw new ArgumentNullException(nameof(entities), "Entities is null");
         }

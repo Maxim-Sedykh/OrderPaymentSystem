@@ -1,108 +1,66 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Role;
 using OrderPaymentSystem.Domain.Dto.UserRole;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
-using OrderPaymentSystem.Domain.Settings;
 
 namespace OrderPaymentSystem.Application.Services;
 
-public class RoleService : IRoleService
+public class RoleService(IBaseRepository<Role> roleRepository, IBaseRepository<User> userRepository,
+    IBaseRepository<UserRole> userRoleRepository, IMapper mapper, IUnitOfWork unitOfWork,
+    IRoleValidator roleValidator) : IRoleService
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IBaseRepository<Role> _roleRepository;
-    private readonly IBaseRepository<User> _userRepository;
-    private readonly IBaseRepository<UserRole> _userRoleRepository;
-    private readonly IMapper _mapper;
-    //private readonly ICacheService _cacheService;
-    private readonly IRoleValidator _roleValidator;
-
-    public RoleService(IBaseRepository<Role> roleRepository, IBaseRepository<User> userRepository,
-        IBaseRepository<UserRole> userRoleRepository, IMapper mapper, IUnitOfWork unitOfWork,
-        IRoleValidator roleValidator)
-    {
-        _roleRepository = roleRepository;
-        _userRepository = userRepository;
-        _userRoleRepository = userRoleRepository;
-        _mapper = mapper;
-        _unitOfWork = unitOfWork;
-        //_cacheService = cacheService;
-        _roleValidator = roleValidator;
-    }
-
     /// <inheritdoc/>
-    public async Task<BaseResult<UserRoleDto>> AddRoleForUserAsync(UserRoleDto dto)
+    public async Task<DataResult<UserRoleDto>> AddRoleForUserAsync(UserRoleDto dto, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetAll()
+        var user = await userRepository.GetQueryable()
             .Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.Login == dto.Login);
+            .FirstOrDefaultAsync(x => x.Login == dto.Login, cancellationToken);
 
         if (user == null)
         {
-            return new BaseResult<UserRoleDto>()
-            {
-                ErrorCode = (int)ErrorCodes.UserNotFound,
-                ErrorMessage = ErrorMessage.UserNotFound
-            };
+            return DataResult<UserRoleDto>.Failure((int)ErrorCodes.UserNotFound, ErrorMessage.UserNotFound);
         }
 
         var roles = user.Roles.Select(x => x.Name).ToArray();
         if (!roles.All(x => x == dto.RoleName))
         {
-            var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == dto.RoleName);
+            var role = await roleRepository.GetQueryable().FirstOrDefaultAsync(x => x.Name == dto.RoleName, cancellationToken);
             if (role == null)
             {
-                return new BaseResult<UserRoleDto>
-                {
-                    ErrorCode = (int)ErrorCodes.RoleNotFound,
-                    ErrorMessage = ErrorMessage.RoleNotFound,
-                };
+                return DataResult<UserRoleDto>.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
             }
 
-            UserRole userRole = new()
+            var userRole = new UserRole()
             {
                 RoleId = role.Id,
                 UserId = user.Id
             };
 
-            await _userRoleRepository.CreateAsync(userRole);
-            await _userRoleRepository.SaveChangesAsync();
+            await userRoleRepository.CreateAsync(userRole, cancellationToken);
+            await userRoleRepository.SaveChangesAsync(cancellationToken);
 
-            return new BaseResult<UserRoleDto>()
-            {
-                Data = new UserRoleDto(user.Login, role.Name)
-            };
+            return DataResult<UserRoleDto>.Success(new UserRoleDto(user.Login, role.Name));
         }
 
-        return new BaseResult<UserRoleDto>()
-        {
-            ErrorCode = (int)ErrorCodes.UserAlreadyExistThisRole,
-            ErrorMessage = ErrorMessage.UserAlreadyExistThisRole,
-        };
+        return DataResult<UserRoleDto>.Failure((int)ErrorCodes.UserAlreadyExistThisRole, ErrorMessage.UserAlreadyExistThisRole);
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<RoleDto>> CreateRoleAsync(CreateRoleDto dto)
+    public async Task<DataResult<RoleDto>> CreateRoleAsync(CreateRoleDto dto, CancellationToken cancellationToken = default)
     {
-        var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Name == dto.Name);
+        var role = await roleRepository.GetQueryable().FirstOrDefaultAsync(x => x.Name == dto.Name, cancellationToken);
 
         if (role != null)
         {
-            return new BaseResult<RoleDto>()
-            {
-                ErrorCode = (int)ErrorCodes.RoleAlreadyExist,
-                ErrorMessage = ErrorMessage.RoleAlreadyExist
-            };
+            return DataResult<RoleDto>.Failure((int)ErrorCodes.RoleAlreadyExist, ErrorMessage.RoleAlreadyExist);
         }
 
         role = new Role()
@@ -110,169 +68,130 @@ public class RoleService : IRoleService
             Name = dto.Name,
         };
 
-        await _roleRepository.CreateAsync(role);
-        await _roleRepository.SaveChangesAsync();
+        await roleRepository.CreateAsync(role, cancellationToken);
+        await roleRepository.SaveChangesAsync(cancellationToken);
 
-        return new BaseResult<RoleDto>
-        {
-            Data = _mapper.Map<RoleDto>(role),
-        };
+        return DataResult<RoleDto>.Success(mapper.Map<RoleDto>(role));
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<RoleDto>> DeleteRoleAsync(long id)
+    public async Task<DataResult<RoleDto>> DeleteRoleAsync(long id, CancellationToken cancellationToken = default)
     {
-        var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Id == id);
+        var role = await roleRepository.GetQueryable().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (role == null)
         {
-            return new BaseResult<RoleDto>()
-            {
-                ErrorCode = (int)ErrorCodes.RoleNotFound,
-                ErrorMessage = ErrorMessage.RoleNotFound
-            };
+            return DataResult<RoleDto>.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
         }
 
-        _roleRepository.Remove(role);
-        await _roleRepository.SaveChangesAsync();
+        roleRepository.Remove(role);
+        await roleRepository.SaveChangesAsync(cancellationToken);
 
-        return new BaseResult<RoleDto>()
-        {
-            Data = _mapper.Map<RoleDto>(role),
-        };
+        return DataResult<RoleDto>.Success(mapper.Map<RoleDto>(role));
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<RoleDto>> UpdateRoleAsync(RoleDto dto)
+    public async Task<DataResult<RoleDto>> UpdateRoleAsync(RoleDto dto, CancellationToken cancellationToken = default)
     {
-        var role = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.Id);
+        var role = await roleRepository.GetQueryable().FirstOrDefaultAsync(x => x.Id == dto.Id, cancellationToken);
 
         if (role == null)
         {
-            return new BaseResult<RoleDto>()
-            {
-                ErrorCode = (int)ErrorCodes.RoleNotFound,
-                ErrorMessage = ErrorMessage.RoleNotFound
-            };
+            return DataResult<RoleDto>.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
         }
 
         role.Name = dto.Name;
 
-        var updatedRole = _roleRepository.Update(role);
-        await _roleRepository.SaveChangesAsync();
+        var updatedRole = roleRepository.Update(role);
+        await roleRepository.SaveChangesAsync(cancellationToken);
 
-        return new BaseResult<RoleDto>()
-        {
-            Data = _mapper.Map<RoleDto>(updatedRole),
-        };
+        return DataResult<RoleDto>.Success(mapper.Map<RoleDto>(updatedRole));
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<UserRoleDto>> DeleteRoleForUserAsync(DeleteUserRoleDto dto)
+    public async Task<DataResult<UserRoleDto>> DeleteRoleForUserAsync(DeleteUserRoleDto dto, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetAll()
+        var user = await userRepository.GetQueryable()
             .Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.Login == dto.Login);
+            .FirstOrDefaultAsync(x => x.Login == dto.Login, cancellationToken);
 
         var role = user.Roles.FirstOrDefault(x => x.Id == dto.RoleId);
 
-        var validateRoleForUserResult = _roleValidator.ValidateRoleForUser(user, role);
+        var validateRoleForUserResult = roleValidator.ValidateRoleForUser(user, role);
         if (!validateRoleForUserResult.IsSuccess)
         {
-            return new BaseResult<UserRoleDto>()
-            {
-                ErrorMessage = validateRoleForUserResult.ErrorMessage,
-                ErrorCode = validateRoleForUserResult.ErrorCode
-            };
+            return DataResult<UserRoleDto>.Failure(validateRoleForUserResult.Error);
         }
 
-        var userRole = await _userRoleRepository.GetAll()
+        var userRole = await userRoleRepository.GetQueryable()
             .Where(x => x.RoleId == role.Id)
-            .FirstOrDefaultAsync(x => x.UserId == user.Id);
+            .FirstOrDefaultAsync(x => x.UserId == user.Id, cancellationToken);
 
-        _userRoleRepository.Remove(userRole);
-        await _userRoleRepository.SaveChangesAsync();
+        userRoleRepository.Remove(userRole);
+        await userRoleRepository.SaveChangesAsync(cancellationToken);
 
-        return new BaseResult<UserRoleDto>()
-        {
-            Data = new UserRoleDto(user.Login, role.Name)
-        };
+        return DataResult<UserRoleDto>.Success(new UserRoleDto(user.Login, role.Name));
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult<UserRoleDto>> UpdateRoleForUserAsync(UpdateUserRoleDto dto)
+    public async Task<DataResult<UserRoleDto>> UpdateRoleForUserAsync(UpdateUserRoleDto dto, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetAll()
+        var user = await userRepository.GetQueryable()
             .Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.Login == dto.Login);
+            .FirstOrDefaultAsync(x => x.Login == dto.Login, cancellationToken);
 
         var role = user.Roles.FirstOrDefault(x => x.Id == dto.FromRoleId);
 
-        var newRoleForUser = await _roleRepository.GetAll().FirstOrDefaultAsync(x => x.Id == dto.ToRoleId);
+        var newRoleForUser = await roleRepository.GetQueryable().FirstOrDefaultAsync(x => x.Id == dto.ToRoleId, cancellationToken);
 
-        var validateRoleForUserResult = _roleValidator.ValidateRoleForUser(user, role, newRoleForUser);
+        var validateRoleForUserResult = roleValidator.ValidateRoleForUser(user, role, newRoleForUser);
         if (!validateRoleForUserResult.IsSuccess)
         {
-            return new BaseResult<UserRoleDto>()
-            {
-                ErrorMessage = validateRoleForUserResult.ErrorMessage,
-                ErrorCode = validateRoleForUserResult.ErrorCode
-            };
+            return DataResult<UserRoleDto>.Failure(validateRoleForUserResult.Error);
         }
 
-        using (var transaction = await _unitOfWork.BeginTransactionAsync())
+        using (var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken))
         {
             try
             {
-                var userRole = await _unitOfWork.UserRoles
-                    .GetAll()
-                    .FirstAsync(x => x.UserId == user.Id && x.RoleId == role.Id);
+                var userRole = await userRoleRepository
+                    .GetQueryable()
+                    .FirstAsync(x => x.UserId == user.Id && x.RoleId == role.Id, cancellationToken);
 
-                _unitOfWork.UserRoles.Remove(userRole);
+                userRoleRepository.Remove(userRole);
 
                 var newUserRole = new UserRole()
                 {
                     UserId = user.Id,
                     RoleId = newRoleForUser.Id,
                 };
-                await _unitOfWork.UserRoles.CreateAsync(newUserRole);
-                await _unitOfWork.SaveChangesAsync();
+                await userRoleRepository.CreateAsync(newUserRole, cancellationToken);
+                await unitOfWork.SaveChangesAsync(cancellationToken);
 
-                await transaction.CommitAsync();
+                await transaction.CommitAsync(cancellationToken);
             }
             catch (Exception)
             {
-                await transaction.RollbackAsync();
+                await transaction.RollbackAsync(cancellationToken);
             }
         }
 
-        return new BaseResult<UserRoleDto>()
-        {
-            Data = new UserRoleDto(user.Login, newRoleForUser.Name)
-        };
+        return DataResult<UserRoleDto>.Success(new UserRoleDto(user.Login, newRoleForUser.Name));
     }
 
-    public async Task<CollectionResult<RoleDto>> GetAllRoles()
+    public async Task<CollectionResult<RoleDto>> GetAllRolesAsync(CancellationToken cancellationToken = default)
     {
-        var roles = await _roleRepository
-                    .GetAll()
+        var roles = await roleRepository
+                    .GetQueryable()
                     .Select(x => new RoleDto(x.Id, x.Name))
-                    .ToArrayAsync();
+                    .ToArrayAsync(cancellationToken);
 
 
         if (roles.Length == 0)
         {
-            return new CollectionResult<RoleDto>()
-            {
-                ErrorMessage = ErrorMessage.RolesNotFound,
-                ErrorCode = (int)ErrorCodes.RolesNotFound
-            };
+            return CollectionResult<RoleDto>.Failure((int)ErrorCodes.RolesNotFound, ErrorMessage.RolesNotFound);
         }
 
-        return new CollectionResult<RoleDto>()
-        {
-            Count = roles.Length,
-            Data = roles
-        };
+        return CollectionResult<RoleDto>.Success(roles);
     }
 }

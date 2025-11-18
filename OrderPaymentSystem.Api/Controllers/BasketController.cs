@@ -4,30 +4,29 @@ using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Interfaces.Services;
-using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Api.Controllers;
 
 /// <summary>
 /// Контроллер, предназначенный для работы с корзиной заказов пользователя
 /// </summary>
+/// <remarks>
+/// Конструктор контроллера для работы с корзиной заказов
+/// </remarks>
+/// <param name="basketService">Сервис для работы с корзиной заказов</param>
 [Authorize]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
-public class BasketController : ControllerBase
+public class BasketController(IBasketService basketService) : ControllerBase
 {
-    private readonly IBasketService _basketService;
-
-    public BasketController(IBasketService basketService)
-    {
-        _basketService = basketService;
-    }
+    private readonly IBasketService _basketService = basketService;
 
     /// <summary>
     /// Очищение корзины пользователя от всех заказов
     /// </summary>
     /// <param name="basketId"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for clear basket
     /// 
@@ -42,20 +41,21 @@ public class BasketController : ControllerBase
     [HttpDelete(RouteConstants.ClearUserBasketById)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<BaseResult<OrderDto>>> ClearUserBasket(long basketId)
+    public async Task<ActionResult<OrderDto>> ClearUserBasket(long basketId, CancellationToken cancellationToken)
     {
-        var response = await _basketService.ClearBasketAsync(basketId);
+        var response = await _basketService.ClearBasketAsync(basketId, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
     /// Получение всех заказов из корзины
     /// </summary>
     /// <param name="basketId"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for getting user basket orders
     /// 
@@ -70,20 +70,21 @@ public class BasketController : ControllerBase
     [HttpGet(RouteConstants.GetUserBasketOrdersByBasketId)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CollectionResult<OrderDto>>> GetUserBasketOrders(long basketId)
+    public async Task<ActionResult<OrderDto>> GetUserBasketOrders(long basketId, CancellationToken cancellationToken)
     {
-        var response = await _basketService.GetBasketOrdersAsync(basketId);
+        var response = await _basketService.GetBasketOrdersAsync(basketId, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 
     /// <summary>
     /// Получение информации о корзине пользователя
     /// </summary>
     /// <param name="basketId"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// Request for getting user basket info
     /// 
@@ -98,13 +99,13 @@ public class BasketController : ControllerBase
     [HttpGet(RouteConstants.GetBasketById)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CollectionResult<OrderDto>>> GetBasketById(long basketId)
+    public async Task<ActionResult<OrderDto>> GetBasketById(long basketId, CancellationToken cancellationToken)
     {
-        var response = await _basketService.GetBasketByIdAsync(basketId);
+        var response = await _basketService.GetBasketByIdAsync(basketId, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
     }
 }

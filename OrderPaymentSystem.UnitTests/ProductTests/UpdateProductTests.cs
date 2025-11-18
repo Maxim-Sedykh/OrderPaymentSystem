@@ -1,12 +1,12 @@
 ﻿using MockQueryable.Moq;
 using Moq;
 using OrderPaymentSystem.Domain.Dto.Product;
-using OrderPaymentSystem.Domain.Entity;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Tests.UnitTests.Configurations;
+using OrderPaymentSystem.UnitTests.Configurations;
 using Xunit;
 
-namespace OrderPaymentSystem.Tests.UnitTests.ProductTests;
+namespace OrderPaymentSystem.UnitTests.ProductTests;
 
 public class UpdateProductTests : IClassFixture<ProductServiceFixture>
 {
@@ -19,7 +19,7 @@ public class UpdateProductTests : IClassFixture<ProductServiceFixture>
         var dto = new UpdateProductDto { Id = 1, ProductName = "Product name to update", Description = "Product description", Cost = 1000 };
         var updatedProduct = new Product { Id = 1, ProductName = "Old name", Description = "Old description", Cost = 500 };
 
-        _fixture.ProductRepositoryMock.Setup(repo => repo.GetAll()).Returns(new List<Product> { updatedProduct }.AsQueryable().CreateMockDbSet().Object);
+        _fixture.ProductRepositoryMock.Setup(repo => repo.GetQueryable()).Returns(new List<Product> { updatedProduct }.AsQueryable().CreateMockDbSet().Object);
         _fixture.MapperMock.Setup(mapper => mapper.Map<ProductDto>(It.IsAny<Product>()))
             .Returns(new ProductDto { Id = dto.Id, ProductName = dto.ProductName, Description = dto.Description, Cost = dto.Cost });
 
@@ -43,7 +43,7 @@ public class UpdateProductTests : IClassFixture<ProductServiceFixture>
         var dto = new UpdateProductDto { Id = 2, ProductName = "Product name to update", Description = "Product description", Cost = 1000 };
         var updatedProduct = new Product { Id = 1, ProductName = "Old name", Description = "Old description", Cost = 500 };
 
-        _fixture.ProductRepositoryMock.Setup(repo => repo.GetAll()).Returns(new List<Product> { updatedProduct }.AsQueryable().CreateMockDbSet().Object);
+        _fixture.ProductRepositoryMock.Setup(repo => repo.GetQueryable()).Returns(new List<Product> { updatedProduct }.AsQueryable().CreateMockDbSet().Object);
 
         //Act
         var result = await _fixture.ProductService.UpdateProductAsync(dto);
@@ -51,7 +51,7 @@ public class UpdateProductTests : IClassFixture<ProductServiceFixture>
         // Assert
         Assert.NotNull(result);
         Assert.False(result.IsSuccess);
-        Assert.Equal(result.ErrorCode, (int)ErrorCodes.ProductNotFound);
+        Assert.Equal(result.Error.Code, (int)ErrorCodes.ProductNotFound);
     }
 
     [Fact]
@@ -61,7 +61,7 @@ public class UpdateProductTests : IClassFixture<ProductServiceFixture>
         var dto = new UpdateProductDto { Id = 1, ProductName = "Product name to update", Description = "Product description", Cost = 1000 };
         var updatedProduct = new Product { Id = dto.Id, ProductName = dto.ProductName, Description = dto.Description, Cost = dto.Cost };
 
-        _fixture.ProductRepositoryMock.Setup(repo => repo.GetAll()).Returns(new List<Product> { updatedProduct }.AsQueryable().CreateMockDbSet().Object);
+        _fixture.ProductRepositoryMock.Setup(repo => repo.GetQueryable()).Returns(new List<Product> { updatedProduct }.AsQueryable().CreateMockDbSet().Object);
 
         // Act
         var result = await _fixture.ProductService.UpdateProductAsync(dto);
@@ -69,6 +69,6 @@ public class UpdateProductTests : IClassFixture<ProductServiceFixture>
         // Assert
         Assert.NotNull(result);
         Assert.False(result.IsSuccess);
-        Assert.Equal(result.ErrorCode, (int)ErrorCodes.NoChangesFound);
+        Assert.Equal(result.Error.Code, (int)ErrorCodes.NoChangesFound);
     }
 }

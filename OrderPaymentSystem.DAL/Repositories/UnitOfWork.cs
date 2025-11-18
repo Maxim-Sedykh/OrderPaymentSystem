@@ -1,41 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
-using OrderPaymentSystem.Domain.Entity;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.DAL.Repositories;
 
-public class UnitOfWork : IUnitOfWork
+/// <summary>
+/// Unit of work. Сервис для работы с транзакциями EF Core
+/// </summary>
+/// <param name="context"></param>
+public class UnitOfWork(ApplicationDbContext context) : IUnitOfWork
 {
-    private readonly ApplicationDbContext _context;
-
-    public IBaseRepository<User> Users { get; set; }
-    public IBaseRepository<Role> Roles { get; set; }
-    public IBaseRepository<Basket> Baskets { get; set; }
-    public IBaseRepository<UserRole> UserRoles { get; set; }
-    public IBaseRepository<Payment> Payments { get; set; }
-    public IBaseRepository<Order> Orders { get; set; }
-
-    public UnitOfWork(ApplicationDbContext context, IBaseRepository<User> users, IBaseRepository<Role> roles,
-        IBaseRepository<UserRole> userRoles, IBaseRepository<Basket> baskets, IBaseRepository<Payment> payments,
-        IBaseRepository<Order> orders)
+    /// <inheritdoc/>
+    public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
-        _context = context;
-        Users = users;
-        Roles = roles;
-        UserRoles = userRoles;
-        Baskets = baskets;
-        Payments = payments;
-        Orders = orders;
+        return await context.Database.BeginTransactionAsync(cancellationToken);
     }
 
-    public async Task<IDbContextTransaction> BeginTransactionAsync()
+    /// <inheritdoc/>
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Database.BeginTransactionAsync();
-    }
-
-    public async Task<int> SaveChangesAsync()
-    {
-        return await _context.SaveChangesAsync();
+        return await context.SaveChangesAsync(cancellationToken);
     }
 }
