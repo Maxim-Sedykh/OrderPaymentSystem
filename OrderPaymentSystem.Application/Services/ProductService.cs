@@ -1,91 +1,124 @@
 ﻿using AutoMapper;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using OrderPaymentSystem.Application.Commands.ProductCommands;
-using OrderPaymentSystem.Application.Queries;
+using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Extensions;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
-using Serilog;
 
 namespace OrderPaymentSystem.Application.Services;
 
 /// <summary>
 /// Сервис отвечающий за работу с доменной части товаров (Product)
 /// </summary>
-/// <param name="productRepository">Репозиторий для работы с товарами</param>
-/// <param name="mapper">Маппер</param>
-/// <param name="mediator">Медиатр</param>
-/// <param name="logger">Логгер</param>
-public class ProductService(IBaseRepository<Product> productRepository,
-    IMapper mapper,
-    IMediator mediator,
-    ILogger logger) : IProductService
+public class ProductService : IProductService
 {
-    public async Task<DataResult<ProductDto>> CreateProductAsync(CreateProductDto dto, CancellationToken cancellationToken = default)
-    {
-        var product = await productRepository.GetQueryable().FirstOrDefaultAsync(x => x.ProductName == dto.ProductName, cancellationToken);
+    private readonly IBaseRepository<Product> _productRepository;
+    private readonly IMapper _mapper;
+    private readonly IMediator _mediator;
+    private readonly ILogger<ProductService> _logger;
 
-        if (product != null)
+    /// <summary>
+    /// Конструктор сервиса
+    /// </summary>
+    /// <param name="productRepository">Репозиторий для работы с товарами</param>
+    /// <param name="mapper">Маппер</param>
+    /// <param name="mediator">Посредник, медиатор</param>
+    /// <param name="logger">Логгер</param>
+    public ProductService(
+        IBaseRepository<Product> productRepository,
+        IMapper mapper,
+        IMediator mediator,
+        ILogger<ProductService> logger)
+    {
+        _productRepository = productRepository;
+        _mapper = mapper;
+        _mediator = mediator;
+        _logger = logger;
+    }
+
+    /// <inheritdoc/>
+    public async Task<DataResult<ProductDto>> CreateProductAsync(CreateProductDto dto,
+        CancellationToken cancellationToken = default)
+    {
+        var productExists = await _productRepository.GetQueryable()
+            .AsNoTracking()
+            .AnyAsync(x => x.ProductName == dto.ProductName, cancellationToken);
+
+        if (productExists)
         {
             return DataResult<ProductDto>.Failure((int)ErrorCodes.ProductAlreadyExist, ErrorMessage.ProductAlreadyExist);
         }
 
-        var createdProduct = await mediator.Send(new CreateProductCommand(dto.ProductName, dto.Description, dto.Cost), cancellationToken);
+        var product = new Product()
+        {
+            ProductName = dto.ProductName,
+            Description = dto.Description,
+            Cost = dto.Cost,
+        };
 
-        return DataResult<ProductDto>.Success(createdProduct);
+        await _productRepository.CreateAsync(product, cancellationToken);
+        await _productRepository.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Product created successfully: {ProductName} (ID: {ProductId})",
+            dto.ProductName, product.Id);
+
+        var createdProductDto = _mapper.Map<ProductDto>(product);
+
+        return DataResult<ProductDto>.Success(createdProductDto);
     }
 
     /// <inheritdoc/>
     public async Task<DataResult<ProductDto>> DeleteProductAsync(int id, CancellationToken cancellationToken = default)
     {
-        var product = await productRepository.GetQueryable().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        var product = await _productRepository.GetQueryable()
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (product == null)
         {
             return DataResult<ProductDto>.Failure((int)ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
         }
 
-        await mediator.Send(new DeleteProductCommand(product), cancellationToken);
+        _productRepository.Remove(product);
+        await _productRepository.SaveChangesAsync(cancellationToken);
 
-        return DataResult<ProductDto>.Success(mapper.Map<ProductDto>(product));
+        _logger.LogInformation("Product deleted successfully: {ProductName} (ID: {ProductId})",
+            product.ProductName, product.Id);
+
+        return DataResult<ProductDto>.Success(_mapper.Map<ProductDto>(product));
     }
 
     /// <inheritdoc/>
     public async Task<DataResult<ProductDto>> GetProductByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var product = await mediator.Send(new GetProductByIdQuery(id), cancellationToken);
-
-        if (product == null)
-        {
-            return DataResult<ProductDto>.Failure((int)ErrorCodes.InternalServerError, ErrorMessage.InternalServerError);
-        }
+        var product = await _productRepository.GetQueryable()
+            .Where(x => x.Id == id)
+            .AsProjected<Product, ProductDto>(_mapper)
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (product == null)
         {
             return DataResult<ProductDto>.Failure((int)ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
         }
 
-        return DataResult<ProductDto>.Success(mapper.Map<ProductDto>(product));
+        return DataResult<ProductDto>.Success(_mapper.Map<ProductDto>(product));
     }
 
     /// <inheritdoc/>
     public async Task<CollectionResult<ProductDto>> GetProductsAsync(CancellationToken cancellationToken = default)
     {
-        var products = await mediator.Send(new GetProductsQuery(), cancellationToken);
-
-        if (products == null)
-        {
-            return CollectionResult<ProductDto>.Failure((int)ErrorCodes.InternalServerError, ErrorMessage.InternalServerError);
-        }
+        var products = await _productRepository.GetQueryable()
+            .AsProjected<Product, ProductDto>(_mapper)
+            .ToArrayAsync(cancellationToken);
 
         if (products.Length == 0)
         {
-            logger.Error(ErrorMessage.ProductsNotFound);
+            _logger.LogError("No products found in database");
 
             return CollectionResult<ProductDto>.Failure((int)ErrorCodes.ProductsNotFound, ErrorMessage.ProductsNotFound);
         }
@@ -96,22 +129,50 @@ public class ProductService(IBaseRepository<Product> productRepository,
     /// <inheritdoc/>
     public async Task<DataResult<ProductDto>> UpdateProductAsync(UpdateProductDto dto, CancellationToken cancellationToken = default)
     {
-        var product = await productRepository.GetQueryable().FirstOrDefaultAsync(x => x.Id == dto.Id, cancellationToken);
+        var product = await _productRepository.GetQueryable()
+            .FirstOrDefaultAsync(x => x.Id == dto.Id, cancellationToken);
 
         if (product == null)
         {
             return DataResult<ProductDto>.Failure((int)ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
         }
 
-        if (product.ProductName != dto.ProductName
-            || product.Description != dto.Description
-            || product.Cost != dto.Cost)
+        if (!HasProductChanges(product, dto))
         {
-            await mediator.Send(new UpdateProductCommand(dto.ProductName, dto.Description, dto.Cost, product), cancellationToken);
-
-            return DataResult<ProductDto>.Success(mapper.Map<ProductDto>(product));
+            return DataResult<ProductDto>.Failure((int)ErrorCodes.NoChangesFound, ErrorMessage.NoChangesFound);
         }
 
-        return DataResult<ProductDto>.Failure((int)ErrorCodes.NoChangesFound, ErrorMessage.NoChangesFound);
+        UpdateProductProperties(product, dto);
+        _productRepository.Update(product);
+        await _productRepository.SaveChangesAsync(cancellationToken);
+
+        var updatedProduct = _mapper.Map<ProductDto>(product);
+
+        return DataResult<ProductDto>.Success(updatedProduct);
+    }
+
+    /// <summary>
+    /// Проверяет наличие изменений в данных продукта
+    /// </summary>
+    /// <param name="product">Текущий продукт</param>
+    /// <param name="dto">DTO с новыми данными</param>
+    /// <returns>True если есть изменения, иначе false</returns>
+    private static bool HasProductChanges(Product product, UpdateProductDto dto)
+    {
+        return product.ProductName != dto.ProductName ||
+               product.Description != dto.Description ||
+               product.Cost != dto.Cost;
+    }
+
+    /// <summary>
+    /// Обновляет свойства продукта на основе DTO
+    /// </summary>
+    /// <param name="product">Продукт для обновления</param>
+    /// <param name="dto">DTO с новыми значениями</param>
+    private static void UpdateProductProperties(Product product, UpdateProductDto dto)
+    {
+        product.ProductName = dto.ProductName;
+        product.Description = dto.Description;
+        product.Cost = dto.Cost;
     }
 }

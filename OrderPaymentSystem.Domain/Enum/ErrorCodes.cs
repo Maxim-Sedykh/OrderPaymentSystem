@@ -1,36 +1,145 @@
 ﻿namespace OrderPaymentSystem.Domain.Enum;
 
+/// <summary>
+/// Перечисление кодов ошибок приложения
+/// </summary>
 public enum ErrorCodes
 {
+    #region Product Domain (0-29)
+    /// <summary>
+    /// Не найдено ни одного товара
+    /// </summary>
     ProductsNotFound = 0,
+
+    /// <summary>
+    /// Товар не найден
+    /// </summary>
     ProductNotFound = 1,
+
+    /// <summary>
+    /// Товар с таким именем уже существует
+    /// </summary>
     ProductAlreadyExist = 2,
+    #endregion
 
-    UserNotFound = 31,
-    UserAlreadyExist = 32,
-    UserUnauthorizedAccess = 33,
-    UserAlreadyExistThisRole = 34,
+    #region User Domain (30-49)
+    /// <summary>
+    /// Пользователь не найден
+    /// </summary>
+    UserNotFound = 30,
 
-    PasswordNotEqualsPasswordConfirm = 41,
-    PasswordIsWrong = 42,
+    /// <summary>
+    /// Пользователь с таким логином уже существует
+    /// </summary>
+    UserAlreadyExist = 31,
 
-    RoleNotFound = 51,
-    RoleAlreadyExist = 52,
-    UserRolesNotFound = 53,
-    RolesNotFound = 54,
+    /// <summary>
+    /// Неавторизованный доступ
+    /// </summary>
+    UserUnauthorizedAccess = 32,
 
-    OrderNotFound = 61,
-    OrdersNotFound = 62,
+    /// <summary>
+    /// У пользователя уже есть эта роль
+    /// </summary>
+    UserAlreadyExistThisRole = 33,
+    #endregion
 
-    BasketNotFound = 71,
+    #region Authentication Domain (40-49)
+    /// <summary>
+    /// Пароль и подтверждение пароля не совпадают
+    /// </summary>
+    PasswordNotEqualsPasswordConfirm = 40,
 
-    PaymentNotFound = 81,
-    PaymentsNotFound = 82,
-    NotEnoughPayFunds = 83,
+    /// <summary>
+    /// Неверный пароль
+    /// </summary>
+    PasswordIsWrong = 41,
+    #endregion
 
-    NoChangesFound = 91,
+    #region Role Domain (50-59)
+    /// <summary>
+    /// Роль не найдена
+    /// </summary>
+    RoleNotFound = 50,
 
+    /// <summary>
+    /// Роль с таким именем уже существует
+    /// </summary>
+    RoleAlreadyExist = 51,
+
+    /// <summary>
+    /// У пользователя не найдены роли
+    /// </summary>
+    UserRolesNotFound = 52,
+
+    /// <summary>
+    /// Не найдено ни одной роли
+    /// </summary>
+    RolesNotFound = 53,
+    #endregion
+
+    #region Order Domain (60-69)
+    /// <summary>
+    /// Заказ не найден
+    /// </summary>
+    OrderNotFound = 60,
+
+    /// <summary>
+    /// Заказы не найдены
+    /// </summary>
+    OrdersNotFound = 61,
+    #endregion
+
+    #region Basket Domain (70-79)
+    /// <summary>
+    /// Корзина не найдена
+    /// </summary>
+    BasketNotFound = 70,
+    #endregion
+
+    #region Payment Domain (80-89)
+    /// <summary>
+    /// Платеж не найден
+    /// </summary>
+    PaymentNotFound = 80,
+
+    /// <summary>
+    /// Платежи не найдены
+    /// </summary>
+    PaymentsNotFound = 81,
+
+    /// <summary>
+    /// Недостаточно средств для оплаты
+    /// </summary>
+    NotEnoughPayFunds = 82,
+    #endregion
+
+    #region Common Domain (90-99)
+    /// <summary>
+    /// Изменения не обнаружены
+    /// </summary>
+    NoChangesFound = 90,
+
+    /// <summary>
+    /// Неверный запрос клиента
+    /// </summary>
     InvalidClientRequest = 95,
 
+    /// <summary>
+    /// Невалидный токен
+    /// </summary>
+    InvalidToken = 96,
+
+    /// <summary>
+    /// Срок действия refresh token истек
+    /// </summary>
+    RefreshTokenExpired = 97,
+    #endregion
+
+    #region System Errors (500+)
+    /// <summary>
+    /// Внутренняя ошибка сервера
+    /// </summary>
     InternalServerError = 500
+    #endregion
 }

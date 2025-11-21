@@ -1,16 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderPaymentSystem.DAL.Auth;
+using OrderPaymentSystem.DAL.Cache;
 using OrderPaymentSystem.DAL.Interceptors;
 using OrderPaymentSystem.DAL.Repositories;
+using OrderPaymentSystem.Domain.Entities;
+using OrderPaymentSystem.Domain.Interfaces.Auth;
+using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.DAL.Cache;
 using OrderPaymentSystem.Domain.Settings;
-using OrderPaymentSystem.Domain.Interfaces.Auth;
-using OrderPaymentSystem.DAL.Auth;
-using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.DAL.DependencyInjection;
 
@@ -73,8 +75,8 @@ public static class DependencyInjection
         var redisConfig = configuration.GetSection(nameof(RedisSettings));
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration = redisConfig["Url"];
-            options.InstanceName = redisConfig["InstanceName"];
+            options.Configuration = redisConfig[nameof(RedisSettings.Url)];
+            options.InstanceName = redisConfig[nameof(RedisSettings.InstanceName)];
         });
     }
 }

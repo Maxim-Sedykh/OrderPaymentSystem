@@ -10,6 +10,6 @@ public class DeleteProductHandler(IBaseRepository<Product> productRepository) : 
     public async Task Handle(DeleteProductCommand request, CancellationToken cancellationToken)
     {
         productRepository.Remove(request.Product);
-        await productRepository.SaveChangesAsync();
+        await productRepository.SaveChangesAsync(cancellationToken);
     }
 }

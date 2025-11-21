@@ -12,7 +12,9 @@ public class UpdateProductHandler(IBaseRepository<Product> productRepository) : 
         request.Product.ProductName = request.ProductName;
         request.Product.Description = request.Description;
         request.Product.Cost = request.Cost;
+
         productRepository.Update(request.Product);
-        await productRepository.SaveChangesAsync();
+
+        await productRepository.SaveChangesAsync(cancellationToken);
     }
 }

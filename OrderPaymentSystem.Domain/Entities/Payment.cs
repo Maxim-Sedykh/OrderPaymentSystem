@@ -1,6 +1,6 @@
-﻿using OrderPaymentSystem.Domain.ComplexTypes;
-using OrderPaymentSystem.Domain.Enum;
+﻿using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
+using OrderPaymentSystem.Domain.ValueObjects;
 
 namespace OrderPaymentSystem.Domain.Entities;
 

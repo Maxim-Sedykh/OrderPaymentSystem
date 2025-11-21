@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace OrderPaymentSystem.Domain.ComplexTypes;
+namespace OrderPaymentSystem.Domain.ValueObjects;
 
 [ComplexType]
 public class Address

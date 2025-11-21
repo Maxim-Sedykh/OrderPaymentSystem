@@ -162,6 +162,9 @@
   <data name="ProductsNotFound" xml:space="preserve">
     <value>Products is not found</value>
   </data>
+  <data name="RefreshTokenExpired" xml:space="preserve">
+    <value>Refresh token is expired</value>
+  </data>
   <data name="RoleAlreadyExist" xml:space="preserve">
     <value>Role with this name is already exist</value>
   </data>

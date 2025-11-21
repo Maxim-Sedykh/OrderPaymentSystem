@@ -17,8 +17,8 @@ public class CreateProductHandler(IBaseRepository<Product> productRepository, IM
             Description = request.Description,
             Cost = request.Cost,
         };
-        await productRepository.CreateAsync(product);
-        await productRepository.SaveChangesAsync();
+        await productRepository.CreateAsync(product, cancellationToken);
+        await productRepository.SaveChangesAsync(cancellationToken);
 
         return mapper.Map<ProductDto>(product);
     }

@@ -162,6 +162,9 @@
   <data name="ProductsNotFound" xml:space="preserve">
     <value>Товары не найдены</value>
   </data>
+  <data name="RefreshTokenExpired" xml:space="preserve">
+    <value>Время жизни токена истекло</value>
+  </data>
   <data name="RoleAlreadyExist" xml:space="preserve">
     <value>Роль с таким названием уже существует</value>
   </data>

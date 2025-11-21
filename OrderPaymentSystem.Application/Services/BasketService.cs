@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using OrderPaymentSystem.Application.Mapping;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Basket;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Extensions;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
@@ -14,29 +16,38 @@ namespace OrderPaymentSystem.Application.Services;
 /// <summary>
 /// Cервис для работы с корзиной пользователя
 /// </summary>
-/// <param name="orderRepository">Репозиторий заказов</param>
-/// <param name="mapper">Маппер</param>
-/// <param name="basketRepository">Репозиторий корзин</param>
-public class BasketService(IBaseRepository<Order> orderRepository, IMapper mapper, IBaseRepository<Basket> basketRepository) : IBasketService
+public class BasketService : IBasketService
 {
-    private readonly IBaseRepository<Order> _orderRepository = orderRepository;
-    private readonly IBaseRepository<Basket> _basketRepository = basketRepository;
-    private readonly IMapper _mapper = mapper;
+    private readonly IBaseRepository<Order> _orderRepository;
+    private readonly IBaseRepository<Basket> _basketRepository;
+    private readonly IMapper _mapper;
+
+    /// <summary>
+    /// Конструктор сервиса для работы с корзиной пользователя
+    /// </summary>
+    /// <param name="orderRepository">Репозиторий заказов</param>
+    /// <param name="mapper">Маппер</param>
+    /// <param name="basketRepository">Репозиторий корзин</param>
+    public BasketService(
+        IBaseRepository<Order> orderRepository,
+        IMapper mapper,
+        IBaseRepository<Basket> basketRepository)
+    {
+        _orderRepository = orderRepository;
+        _mapper = mapper;
+        _basketRepository = basketRepository;
+    }
 
     /// <inheritdoc/>
-    public async Task<CollectionResult<OrderDto>> ClearBasketAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<CollectionResult<OrderDto>> ClearBasketAsync(long basketId, CancellationToken cancellationToken = default)
     {
-        var basket = await _basketRepository.GetQueryable()
-            .Include(x => x.Orders)
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-
-        if (basket == null)
+        if (!await BasketExistsAsync(basketId, cancellationToken))
         {
             return CollectionResult<OrderDto>.Failure((int)ErrorCodes.BasketNotFound, ErrorMessage.BasketNotFound);
         }
 
         var basketOrders = await _orderRepository.GetQueryable()
-            .Where(x => x.BasketId == basket.Id)
+            .Where(x => x.BasketId == basketId)
             .ToListAsync(cancellationToken);
 
         if (basketOrders.Count == 0)
@@ -47,7 +58,8 @@ public class BasketService(IBaseRepository<Order> orderRepository, IMapper mappe
         _orderRepository.RemoveRange(basketOrders);
         await _orderRepository.SaveChangesAsync(cancellationToken);
 
-        return CollectionResult<OrderDto>.Success(basketOrders.Select(_mapper.Map<OrderDto>));
+        var resultDtos = basketOrders.Select(_mapper.Map<OrderDto>).ToArray();
+        return CollectionResult<OrderDto>.Success(resultDtos);
     }
 
     /// <inheritdoc/>
@@ -55,6 +67,7 @@ public class BasketService(IBaseRepository<Order> orderRepository, IMapper mappe
     {
         var basket = await _basketRepository.GetQueryable()
             .Include(x => x.Orders)
+            .AsProjected<Basket, BasketDto>(_mapper)
             .FirstOrDefaultAsync(x => x.Id == basketId, cancellationToken);
 
         if (basket == null)
@@ -62,17 +75,20 @@ public class BasketService(IBaseRepository<Order> orderRepository, IMapper mappe
             return DataResult<BasketDto>.Failure((int)ErrorCodes.BasketNotFound, ErrorMessage.BasketNotFound);
         }
 
-        return DataResult<BasketDto>.Success(_mapper.Map<BasketDto>(basket));
+        return DataResult<BasketDto>.Success(basket);
     }
 
     /// <inheritdoc/>
     public async Task<CollectionResult<OrderDto>> GetBasketOrdersAsync(long basketId, CancellationToken cancellationToken = default)
     {
-        OrderDto[] userBasketOrders;
+        if (!await BasketExistsAsync(basketId, cancellationToken))
+        {
+            return CollectionResult<OrderDto>.Failure((int)ErrorCodes.BasketNotFound, ErrorMessage.BasketNotFound);
+        }
 
-        userBasketOrders = await _orderRepository.GetQueryable()
+        var userBasketOrders = await _orderRepository.GetQueryable()
             .Where(x => x.BasketId == basketId)
-            .Select(x => _mapper.Map<OrderDto>(x))
+            .AsProjected<Order, OrderDto>(_mapper)
             .ToArrayAsync(cancellationToken);
 
         if (userBasketOrders.Length == 0)
@@ -81,5 +97,18 @@ public class BasketService(IBaseRepository<Order> orderRepository, IMapper mappe
         }
 
         return CollectionResult<OrderDto>.Success(userBasketOrders);
+    }
+
+    /// <summary>
+    /// Существует ли корзина в БД
+    /// </summary>
+    /// <param name="basketId">Id корзины</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns></returns>
+    private async Task<bool> BasketExistsAsync(long basketId, CancellationToken cancellationToken)
+    {
+        return await _basketRepository.GetQueryable()
+            .AsNoTracking()
+            .AnyAsync(x => x.Id == basketId, cancellationToken);
     }
 }

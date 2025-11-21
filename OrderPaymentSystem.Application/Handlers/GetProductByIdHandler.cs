@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Application.Queries;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entities;
+using OrderPaymentSystem.Domain.Extensions;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.Application.Handlers;
@@ -14,7 +15,7 @@ public class GetProductByIdHandler(IBaseRepository<Product> productRepository, I
     {
         return await productRepository.GetQueryable()
                     .Where(x => x.Id == request.ProductId)
-                    .Select(x => mapper.Map<ProductDto>(x))
-                    .FirstOrDefaultAsync();
+                    .AsProjected<Product, ProductDto>(mapper)
+                    .FirstOrDefaultAsync(cancellationToken);
     }
 }

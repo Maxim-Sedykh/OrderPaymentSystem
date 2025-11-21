@@ -17,25 +17,42 @@ using System.Text;
 namespace OrderPaymentSystem.Application.Services;
 
 /// <summary>
-/// Cервис для работы с JWT-токенами
+/// Сервис для работы с JWT-токенами
 /// </summary>
-/// <param name="options"></param>
-/// <param name="userRepository"></param>
-public class UserTokenService(IOptions<JwtSettings> options, IBaseRepository<User> userRepository) : IUserTokenService
+public class UserTokenService : IUserTokenService
 {
-    private readonly string _jwtKey = options.Value.JwtKey;
-    private readonly string _issuer = options.Value.Issuer;
-    private readonly string _audience = options.Value.Audience;
+    private readonly string _jwtKey;
+    private readonly string _issuer;
+    private readonly string _audience;
+    private readonly IBaseRepository<User> _userRepository;
+    private readonly TimeProvider _timeProvider;
+
+    public UserTokenService(
+        IOptions<JwtSettings> options,
+        IBaseRepository<User> userRepository,
+        TimeProvider timeProvider = null)
+    {
+        _jwtKey = options.Value.JwtKey;
+        _issuer = options.Value.Issuer;
+        _audience = options.Value.Audience;
+        _userRepository = userRepository;
+        _timeProvider = timeProvider ?? TimeProvider.System;
+    }
 
     /// <inheritdoc/>
     public string GenerateAccessToken(IEnumerable<Claim> claims)
     {
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-        var securityToken = new JwtSecurityToken(_issuer, _audience, claims, null, DateTime.UtcNow.AddMinutes(10), credentials);
-        var token = new JwtSecurityTokenHandler().WriteToken(securityToken);
 
-        return token;
+        var tokenDescriptor = new JwtSecurityToken(
+            issuer: _issuer,
+            audience: _audience,
+            claims: claims,
+            expires: _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(10),
+            signingCredentials: credentials);
+
+        return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
     }
 
     /// <inheritdoc/>
@@ -51,14 +68,11 @@ public class UserTokenService(IOptions<JwtSettings> options, IBaseRepository<Use
     /// <inheritdoc/>
     public IReadOnlyCollection<Claim> GetClaimsFromUser(User user)
     {
-        if (user == null)
-        {
-            throw new ArgumentNullException(nameof(user), ErrorMessage.UserNotFound);
-        }
+        ArgumentNullException.ThrowIfNull(user, nameof(user));
 
-        if (user.Roles == null)
+        if (user.Roles == null || !user.Roles.Any())
         {
-            throw new ArgumentNullException(nameof(user.Roles), ErrorMessage.UserRolesNotFound);
+            throw new InvalidOperationException(ErrorMessage.UserRolesNotFound);
         }
 
         var claims = new List<Claim>
@@ -67,74 +81,137 @@ public class UserTokenService(IOptions<JwtSettings> options, IBaseRepository<Use
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
         };
 
-        claims.AddRange(user.Roles.Select(x => new Claim(ClaimTypes.Role, x.Name)));
+        claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role.Name)));
 
-        return claims;
+        return claims.AsReadOnly();
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<TokenDto>> RefreshTokenAsync(TokenDto dto, CancellationToken cancellationToken = default)
+    public async Task<DataResult<TokenDto>> RefreshTokenAsync(
+        TokenDto dto,
+        CancellationToken cancellationToken = default)
     {
-        string accessToken = dto.AccessToken;
-        string refreshToken = dto.RefreshToken;
-
-        var claimsPrincipal = GetPrincipalFromExpiredToken(accessToken);
-        var userName = claimsPrincipal.Identity?.Name;
-
-        var user = await userRepository.GetQueryable()
-            .Include(x => x.UserToken)
-            .FirstOrDefaultAsync(x => x.Login == userName, cancellationToken);
-
-        if (user == null || user.UserToken.RefreshToken != refreshToken ||
-            user.UserToken.RefreshTokenExpireTime <= DateTime.UtcNow)
+        var userResult = await GetValidUserForRefreshAsync(dto, cancellationToken);
+        if (!userResult.IsSuccess)
         {
-            return DataResult<TokenDto>.Failure((int)ErrorCodes.InvalidClientRequest, ErrorMessage.InvalidClientRequest);
+            return DataResult<TokenDto>.Failure(userResult.Error);
         }
 
+        var user = userResult.Data!;
         var newClaims = GetClaimsFromUser(user);
-
         var newAccessToken = GenerateAccessToken(newClaims);
         var newRefreshToken = GenerateRefreshToken();
 
-        user.UserToken.RefreshToken = newRefreshToken;
+        await UpdateUserRefreshTokenAsync(user, newRefreshToken, cancellationToken);
 
-        userRepository.Update(user);
-        await userRepository.SaveChangesAsync(cancellationToken);
-
-        var token = new TokenDto()
+        var tokenDto = new TokenDto
         {
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,
         };
 
-        return DataResult<TokenDto>.Success(token);
+        return DataResult<TokenDto>.Success(tokenDto);
     }
 
     /// <summary>
-    /// Получение ClaimsPrincipal из исчезающего токена
+    /// Получает и валидирует пользователя для обновления токена
     /// </summary>
-    /// <param name="accessToken"></param>
-    /// <returns></returns>
+    /// <param name="dto">DTO с токенами</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    /// <returns>Валидный пользователь или ошибка</returns>
+    private async Task<DataResult<User>> GetValidUserForRefreshAsync(
+        TokenDto dto,
+        CancellationToken cancellationToken)
+    {
+        ClaimsPrincipal claimsPrincipal;
+        try
+        {
+            claimsPrincipal = GetPrincipalFromExpiredToken(dto.AccessToken);
+        }
+        catch (SecurityTokenException)
+        {
+            return DataResult<User>.Failure((int)ErrorCodes.InvalidToken, ErrorMessage.InvalidToken);
+        }
+
+        var userName = claimsPrincipal.Identity?.Name;
+        if (string.IsNullOrEmpty(userName))
+        {
+            return DataResult<User>.Failure((int)ErrorCodes.InvalidToken, ErrorMessage.InvalidToken);
+        }
+
+        var user = await _userRepository.GetQueryable()
+            .Include(x => x.UserToken)
+            .Include(x => x.Roles)
+            .FirstOrDefaultAsync(x => x.Login == userName, cancellationToken);
+
+        if (user?.UserToken == null)
+        {
+            return DataResult<User>.Failure((int)ErrorCodes.UserNotFound, ErrorMessage.UserNotFound);
+        }
+
+        if (user.UserToken.RefreshToken != dto.RefreshToken)
+        {
+            return DataResult<User>.Failure((int)ErrorCodes.InvalidClientRequest, ErrorMessage.InvalidClientRequest);
+        }
+
+        if (user.UserToken.RefreshTokenExpireTime <= _timeProvider.GetUtcNow().UtcDateTime)
+        {
+            return DataResult<User>.Failure((int)ErrorCodes.RefreshTokenExpired, ErrorMessage.RefreshTokenExpired);
+        }
+
+        return DataResult<User>.Success(user);
+    }
+
+    /// <summary>
+    /// Обновляет refresh token пользователя
+    /// </summary>
+    /// <param name="user">Пользователь</param>
+    /// <param name="newRefreshToken">Новый refresh token</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    private async Task UpdateUserRefreshTokenAsync(
+        User user,
+        string newRefreshToken,
+        CancellationToken cancellationToken)
+    {
+        user.UserToken.RefreshToken = newRefreshToken;
+        user.UserToken.RefreshTokenExpireTime = _timeProvider.GetUtcNow().UtcDateTime.AddDays(7);
+
+        _userRepository.Update(user);
+        await _userRepository.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Получение ClaimsPrincipal из истекшего токена
+    /// </summary>
+    /// <param name="accessToken">Access token</param>
+    /// <returns>ClaimsPrincipal</returns>
+    /// <exception cref="SecurityTokenException">Когда токен невалидный</exception>
     private ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken)
     {
-        var tokenValidationParameters = new TokenValidationParameters()
+        var tokenValidationParameters = new TokenValidationParameters
         {
             ValidateAudience = true,
             ValidateIssuer = true,
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey)),
-            ValidateLifetime = true,
+            ValidateLifetime = false,
             ValidAudience = _audience,
-            ValidIssuer = _issuer
+            ValidIssuer = _issuer,
+            ClockSkew = TimeSpan.Zero
         };
+
         var tokenHandler = new JwtSecurityTokenHandler();
-        var claimsPrincipal = tokenHandler.ValidateToken(accessToken, tokenValidationParameters, out var securityToken);
+        var claimsPrincipal = tokenHandler.ValidateToken(
+            accessToken,
+            tokenValidationParameters,
+            out var securityToken);
+
         if (securityToken is not JwtSecurityToken jwtSecurityToken ||
-            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.CurrentCultureIgnoreCase))
+            !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.OrdinalIgnoreCase))
         {
             throw new SecurityTokenException(ErrorMessage.InvalidToken);
         }
+
         return claimsPrincipal;
     }
-
 }
