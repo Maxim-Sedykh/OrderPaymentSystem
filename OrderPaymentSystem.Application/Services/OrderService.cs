@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Extensions;
+using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
@@ -22,6 +24,7 @@ public class OrderService : IOrderService
     private readonly IBaseRepository<Product> _productRepository;
     private readonly IMapper _mapper;
     private readonly IOrderValidator _orderValidator;
+    private readonly ICacheService _cacheService;
 
     /// <summary>
     /// Конструктор сервиса для работы с заказами
@@ -31,18 +34,21 @@ public class OrderService : IOrderService
     /// <param name="productRepository">Репозиторий для работы с товарами</param>
     /// <param name="mapper">Маппер</param>
     /// <param name="orderValidator">Валидатор заказов</param>
+    /// <param name="cacheService">Сервис для кэширования</param>
     public OrderService(
         IBaseRepository<Order> orderRepository,
         IBaseRepository<User> userRepository,
         IBaseRepository<Product> productRepository,
         IMapper mapper,
-        IOrderValidator orderValidator)
+        IOrderValidator orderValidator,
+        ICacheService cacheService)
     {
         _orderRepository = orderRepository;
         _userRepository = userRepository;
         _productRepository = productRepository;
         _mapper = mapper;
         _orderValidator = orderValidator;
+        _cacheService = cacheService;
     }
 
     /// <inheritdoc/>
@@ -93,9 +99,9 @@ public class OrderService : IOrderService
     public async Task<DataResult<OrderDto>> GetOrderByIdAsync(long id, CancellationToken cancellationToken = default)
     {
         var order = await _orderRepository.GetQueryable()
-            .Where(x => x.Id == id)
-            .AsProjected<Order, OrderDto>(_mapper)
-            .FirstOrDefaultAsync(cancellationToken);
+                    .Where(x => x.Id == id)
+                    .AsProjected<Order, OrderDto>(_mapper)
+                    .FirstOrDefaultAsync(cancellationToken); ;
 
         if (order == null)
         {

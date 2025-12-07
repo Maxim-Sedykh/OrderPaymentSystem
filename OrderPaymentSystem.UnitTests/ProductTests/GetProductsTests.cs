@@ -23,7 +23,7 @@ public class GetProductsTests : IClassFixture<ProductServiceFixture>
     {
         var products = _fixture.GetProductDtos();
 
-        _fixture.CacheServiceMock.Setup(x => x.GetObjectAsync<ProductDto[]>(It.IsAny<string>()))
+        _fixture.CacheServiceMock.Setup(x => x.GetAsync<ProductDto[]>(It.IsAny<string>()))
             .ReturnsAsync(products);
 
         // Act
@@ -41,7 +41,7 @@ public class GetProductsTests : IClassFixture<ProductServiceFixture>
         // Arrange
         var products = _fixture.GetProductDtos();
 
-        _fixture.CacheServiceMock.Setup(x => x.GetObjectAsync<ProductDto[]>(It.IsAny<string>()))
+        _fixture.CacheServiceMock.Setup(x => x.GetAsync<ProductDto[]>(It.IsAny<string>()))
             .ReturnsAsync((ProductDto[])null);
         _fixture.MediatorMock.Setup(x => x.Send(It.IsAny<GetProductsQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(products);
@@ -61,7 +61,7 @@ public class GetProductsTests : IClassFixture<ProductServiceFixture>
     public async Task GetProducts_ProductsNotFound_ReturnsErrorResult()
     {
         //Arrange
-        _fixture.CacheServiceMock.Setup(x => x.GetObjectAsync<ProductDto[]>(It.IsAny<string>()))
+        _fixture.CacheServiceMock.Setup(x => x.GetAsync<ProductDto[]>(It.IsAny<string>()))
             .ReturnsAsync((ProductDto[])null);
 
         // Act

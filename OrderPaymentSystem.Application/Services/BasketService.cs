@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using OrderPaymentSystem.Application.Mapping;
 using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Basket;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Extensions;
+using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
@@ -21,6 +22,7 @@ public class BasketService : IBasketService
     private readonly IBaseRepository<Order> _orderRepository;
     private readonly IBaseRepository<Basket> _basketRepository;
     private readonly IMapper _mapper;
+    private readonly ICacheService _cacheService;
 
     /// <summary>
     /// Конструктор сервиса для работы с корзиной пользователя
@@ -28,14 +30,17 @@ public class BasketService : IBasketService
     /// <param name="orderRepository">Репозиторий заказов</param>
     /// <param name="mapper">Маппер</param>
     /// <param name="basketRepository">Репозиторий корзин</param>
+    /// <param name="cacheService">Сервис для работы с кэшем</param>
     public BasketService(
         IBaseRepository<Order> orderRepository,
         IMapper mapper,
-        IBaseRepository<Basket> basketRepository)
+        IBaseRepository<Basket> basketRepository,
+        ICacheService cacheService)
     {
         _orderRepository = orderRepository;
         _mapper = mapper;
         _basketRepository = basketRepository;
+        _cacheService = cacheService;
     }
 
     /// <inheritdoc/>
@@ -65,10 +70,13 @@ public class BasketService : IBasketService
     /// <inheritdoc/>
     public async Task<DataResult<BasketDto>> GetBasketByIdAsync(long basketId, CancellationToken cancellationToken = default)
     {
-        var basket = await _basketRepository.GetQueryable()
-            .Include(x => x.Orders)
-            .AsProjected<Basket, BasketDto>(_mapper)
-            .FirstOrDefaultAsync(x => x.Id == basketId, cancellationToken);
+        var basket = await _cacheService.GetOrCreateAsync(CacheKeys.Basket(basketId), async (cancellationToken) =>
+        {
+            return await _basketRepository.GetQueryable()
+                .Include(x => x.Orders)
+                .AsProjected<Basket, BasketDto>(_mapper)
+                .FirstOrDefaultAsync(x => x.Id == basketId, cancellationToken);
+        }, cancellationToken: cancellationToken);
 
         if (basket == null)
         {
@@ -81,6 +89,23 @@ public class BasketService : IBasketService
     /// <inheritdoc/>
     public async Task<CollectionResult<OrderDto>> GetBasketOrdersAsync(long basketId, CancellationToken cancellationToken = default)
     {
+        var userBasketOrders = _cacheService.GetOrCreateAsync(CacheKeys.Order(basketId)
+            , async (cancellationToken) =>
+            {
+                return await _orderRepository.GetQueryable()
+                    .Where(x => x.BasketId == basketId)
+                    .AsProjected<Order, OrderDto>(_mapper)
+                    .ToArrayAsync(cancellationToken);
+            }
+            );
+
+        var cacheKey = ;
+        var cachedOrders = await _cacheService.GetAsync<OrderDto[]>(cacheKey, cancellationToken);
+        if (cachedOrders is not null)
+        {
+            return CollectionResult<OrderDto>.Success(cachedOrders);
+        }
+
         if (!await BasketExistsAsync(basketId, cancellationToken))
         {
             return CollectionResult<OrderDto>.Failure((int)ErrorCodes.BasketNotFound, ErrorMessage.BasketNotFound);

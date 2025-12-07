@@ -3,7 +3,7 @@
 namespace OrderPaymentSystem.Domain.Interfaces.Cache;
 
 /// <summary>
-/// Интерфейс сервиса для работы с кэшем
+/// Интерфейс сервиса для работы с распределенным кэшем
 /// </summary>
 public interface ICacheService
 {
@@ -12,18 +12,22 @@ public interface ICacheService
     /// </summary>
     /// <typeparam name="T">Тип объекта который получаем из кэша</typeparam>
     /// <param name="key">Ключ кэширования</param>
-    /// <returns>Объект</returns>
-    Task<T> GetObjectAsync<T>(string key) where T: class;
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <returns>Десериализованный объект или null, если не найден</returns>
+    Task<T> GetAsync<T>(string key, CancellationToken cancellationToken = default) where T: class;
 
     /// <summary>
-    /// Получить объект из кэша по ключу
-    /// Если объекта нет в кэше - то получаем его из базы данных и добавляем его в кэш
+    /// Получает объект из кэша или получает его из БД, если отсутствует
     /// </summary>
     /// <typeparam name="T">Тип объекта который получаем из кэша</typeparam>
     /// <param name="key">Ключ кэширования</param>
-    /// <param name="factory">Делегат, для получения объекта из другого источника, если его нет в кэше</param>
-    /// <returns>Объект</returns>
-    Task<T> GetObjectAsync<T>(string key, Func<Task<T>> factory) where T : class;
+    /// <param name="factory">Фабрика для создания объекта при его отсутствии в кэше</param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <returns>Кэшированный или созданный объект</returns>
+    Task<T> GetOrCreateAsync<T>(string key,
+        Func<CancellationToken, Task<T>> factory,
+        DistributedCacheEntryOptions options = null,
+        CancellationToken cancellationToken = default) where T : class;
 
     /// <summary>
     /// Добавление объекта в кэш
@@ -32,5 +36,13 @@ public interface ICacheService
     /// <param name="key">Ключ кэширования</param>
     /// <param name="obj">Объект, который будет кэшироваться</param>
     /// <param name="options">Опции кэширования</param>
-    Task SetObjectAsync<T>(string key, T obj, DistributedCacheEntryOptions options = null) where T: class;
+    /// <param name="cancellationToken">Токен отмены операции</param>
+    Task SetAsync<T>(string key, T obj, DistributedCacheEntryOptions options = null, CancellationToken cancellationToken = default) where T : class;
+
+    /// <summary>
+    /// Убрать объект из кэша по ключу
+    /// </summary>
+    /// <param name="key">Ключ</param>
+    /// <param name="cancellationToken">Токен отмены</param>
+    Task RemoveAsync(string key, CancellationToken cancellationToken = default);
 }

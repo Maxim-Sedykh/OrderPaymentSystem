@@ -1,32 +1,27 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Auth;
 using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Auth;
+using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
-using Serilog.Core;
+using System.Security.Claims;
 
 namespace OrderPaymentSystem.Application.Services;
 
 /// <summary>
 /// Сервис авторизации и аутентификации
 /// </summary>
-/// <param name="userRepository">Репозиторий для работы с сущностью Пользователь</param>
-/// <param name="mapper">Маппер объектов</param>
-/// <param name="userTokenService">Сервис для работы с JWT-токенами</param>
-/// <param name="userTokenRepository"></param>
-/// <param name="roleRepository">Репозиторий для работы с сущностью Роль</param>
-/// <param name="unitOfWork">Сервис для работы с транзакциями</param>
-/// <param name="authValidator">Валидатор</param>
-/// <param name="passwordHasher">Сервис для хэширования паролей</param>
 public class AuthService : IAuthService
 {
     private const int TokenLifeTimeInDays = 7;
@@ -42,6 +37,7 @@ public class AuthService : IAuthService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuthValidator _authValidator;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly ICacheService _cacheService;
 
     /// <summary>
     /// Конструктор сервиса авторизации и аутентификации
@@ -54,6 +50,7 @@ public class AuthService : IAuthService
     /// <param name="unitOfWork">Сервис для работы с транзакциями</param>
     /// <param name="authValidator">Валидатор</param>
     /// <param name="passwordHasher">Сервис для хэширования паролей</param>
+    /// <param name="cacheService">Сервис для работы с кэшем</param>
     public AuthService(
         IBaseRepository<User> userRepository,
         IMapper mapper,
@@ -65,7 +62,8 @@ public class AuthService : IAuthService
         IBaseRepository<UserRole> userRoleRepository,
         IUnitOfWork unitOfWork,
         IAuthValidator authValidator,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        ICacheService cacheService)
     {
         _userRepository = userRepository;
         _mapper = mapper;
@@ -78,6 +76,7 @@ public class AuthService : IAuthService
         _unitOfWork = unitOfWork;
         _authValidator = authValidator;
         _passwordHasher = passwordHasher;
+        _cacheService = cacheService;
     }
 
     /// <inheritdoc/>
@@ -93,6 +92,17 @@ public class AuthService : IAuthService
             return DataResult<TokenDto>.Failure(validateLoginResult.Error);
 
         var claims = _userTokenService.GetClaimsFromUser(user);
+
+        var userRoles = claims.Where(c => c.Type == ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToArray();
+
+        await _cacheService.SetAsync(
+            CacheKeys.UserRoles(user.Id),
+            userRoles,
+            new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) },
+            cancellationToken);
+
         var accessToken = _userTokenService.GenerateAccessToken(claims);
         var refreshToken = _userTokenService.GenerateRefreshToken();
         var refreshTokenExpire = DateTime.UtcNow.AddDays(TokenLifeTimeInDays);
@@ -191,6 +201,18 @@ public class AuthService : IAuthService
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
+
+            await _cacheService.SetAsync(
+                CacheKeys.UserRoles(user.Id),
+                new[] 
+                { 
+                    nameof(Roles.User) 
+                },
+                new DistributedCacheEntryOptions 
+                { 
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10) 
+                },
+                cancellationToken);
 
             var resultDto = _mapper.Map<UserDto>(user);
 

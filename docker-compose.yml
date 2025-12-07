@@ -12,7 +12,7 @@ services:
       - orderpaymentsystem.db
       - elasticsearch
     networks:
-      - mynw
+      - opsnw
 
   orderpaymentsystem.db:
     image: postgres:15
@@ -27,7 +27,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - mynw
+      - opsnw
 
   pgadmin:
     image: dpage/pgadmin4
@@ -38,7 +38,7 @@ services:
     ports:
       - "5050:80"
     networks:
-      - mynw
+      - opsnw
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
@@ -52,7 +52,7 @@ services:
     ports:
       - "9200:9200"
     networks:
-      - mynw
+      - opsnw
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.11.0
@@ -64,7 +64,7 @@ services:
     depends_on:
       - elasticsearch
     networks:
-      - mynw
+      - opsnw
 
   prometheus:
     image: prom/prometheus
@@ -75,7 +75,7 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     networks:
-      - mynw
+      - opsnw
     
   grafana:
     image: grafana/grafana
@@ -88,12 +88,21 @@ services:
     depends_on:
       - prometheus
     networks:
-      - mynw
+      - opsnw
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - opsnw
 
 volumes:
   postgres_data:
   elasticsearch_data:
 
 networks:
-  mynw:
+  opsnw:
     driver: bridge

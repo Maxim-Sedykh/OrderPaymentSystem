@@ -10,8 +10,6 @@ using OrderPaymentSystem.Domain.Interfaces.Auth;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
-using OrderPaymentSystem.Domain.Interfaces.Cache;
-using OrderPaymentSystem.DAL.Cache;
 using OrderPaymentSystem.Domain.Settings;
 
 namespace OrderPaymentSystem.DAL.DependencyInjection;
@@ -28,9 +26,9 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("PostgresSQL");
 
         services.AddSingleton<AuditInterceptor>();
-        services.AddDbContext<ApplicationDbContext>(options => 
-        { 
-            options.UseNpgsql(connectionString); 
+        services.AddDbContext<ApplicationDbContext>(options =>
+        {
+            options.UseNpgsql(connectionString);
         });
 
         services.AddSingleton<IPasswordHasher, PasswordHasher>();
@@ -38,7 +36,7 @@ public static class DependencyInjection
         services.InitRepositories();
         services.InitUnitOfWork();
 
-        //services.InitCaching(configuration);
+        services.InitCaching(configuration);
     }
 
     private static void InitRepositories(this IServiceCollection services)
@@ -70,7 +68,7 @@ public static class DependencyInjection
 
     private static void InitCaching(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<ICacheService, CacheService>();
+        services.AddScoped<ICacheService, DistributedCacheService>();
 
         var redisConfig = configuration.GetSection(nameof(RedisSettings));
         services.AddStackExchangeRedisCache(options =>
