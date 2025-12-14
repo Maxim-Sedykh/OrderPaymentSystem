@@ -33,19 +33,19 @@ public interface IPaymentService
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<PaymentDto>> CreatePaymentAsync(CreatePaymentDto dto, CancellationToken cancellationToken = default);
+    Task<BaseResult> CreatePaymentAsync(CreatePaymentDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Удаление платеэа по идентификатору
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<PaymentDto>> DeletePaymentAsync(long id, CancellationToken cancellationToken = default);
+    Task<BaseResult> DeletePaymentAsync(long id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Обновление платежа
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<PaymentDto>> UpdatePaymentAsync(UpdatePaymentDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<PaymentDto>> UpdatePaymentAsync(long id, UpdatePaymentDto dto, CancellationToken cancellationToken = default);
 }

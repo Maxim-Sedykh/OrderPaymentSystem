@@ -27,7 +27,6 @@ public class AuthService : IAuthService
     private const int TokenLifeTimeInDays = 7;
 
     private readonly IBaseRepository<User> _userRepository;
-    private readonly IMapper _mapper;
     private readonly ILogger<AuthService> _logger;
     private readonly IUserTokenService _userTokenService;
     private readonly IBaseRepository<UserToken> _userTokenRepository;
@@ -43,7 +42,6 @@ public class AuthService : IAuthService
     /// Конструктор сервиса авторизации и аутентификации
     /// </summary>
     /// <param name="userRepository">Репозиторий для работы с сущностью Пользователь</param>
-    /// <param name="mapper">Маппер объектов</param>
     /// <param name="userTokenService">Сервис для работы с JWT-токенами</param>
     /// <param name="userTokenRepository"></param>
     /// <param name="roleRepository">Репозиторий для работы с сущностью Роль</param>
@@ -53,7 +51,6 @@ public class AuthService : IAuthService
     /// <param name="cacheService">Сервис для работы с кэшем</param>
     public AuthService(
         IBaseRepository<User> userRepository,
-        IMapper mapper,
         ILogger<AuthService> logger,
         IUserTokenService userTokenService,
         IBaseRepository<UserToken> userTokenRepository,
@@ -66,7 +63,6 @@ public class AuthService : IAuthService
         ICacheService cacheService)
     {
         _userRepository = userRepository;
-        _mapper = mapper;
         _logger = logger;
         _userTokenService = userTokenService;
         _userTokenRepository = userTokenRepository;
@@ -141,11 +137,11 @@ public class AuthService : IAuthService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<UserDto>> RegisterAsync(RegisterUserDto dto, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> RegisterAsync(RegisterUserDto dto, CancellationToken cancellationToken = default)
     {
         if (dto.Password != dto.PasswordConfirm)
         {
-            return DataResult<UserDto>.Failure((int)ErrorCodes.PasswordNotEqualsPasswordConfirm,
+            return BaseResult.Failure((int)ErrorCodes.PasswordNotEqualsPasswordConfirm,
                 ErrorMessage.PasswordNotEqualsPasswordConfirm);
         }
 
@@ -155,7 +151,7 @@ public class AuthService : IAuthService
 
         if (exists)
         {
-            return DataResult<UserDto>.Failure((int)ErrorCodes.UserAlreadyExist, ErrorMessage.UserAlreadyExist);
+            return BaseResult.Failure((int)ErrorCodes.UserAlreadyExist, ErrorMessage.UserAlreadyExist);
         }
 
         User user = null;
@@ -188,7 +184,7 @@ public class AuthService : IAuthService
             {
                 await transaction.RollbackAsync(cancellationToken);
 
-                return DataResult<UserDto>.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
+                return BaseResult.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
             }
 
             var userRole = new UserRole()
@@ -214,9 +210,7 @@ public class AuthService : IAuthService
                 },
                 cancellationToken);
 
-            var resultDto = _mapper.Map<UserDto>(user);
-
-            return DataResult<UserDto>.Success(resultDto);
+            return BaseResult.Success();
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

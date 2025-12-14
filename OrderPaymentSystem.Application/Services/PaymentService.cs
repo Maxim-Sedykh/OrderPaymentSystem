@@ -46,7 +46,7 @@ public class PaymentService : IPaymentService
 
 
     /// <inheritdoc/>
-    public async Task<DataResult<PaymentDto>> CreatePaymentAsync(CreatePaymentDto dto, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> CreatePaymentAsync(CreatePaymentDto dto, CancellationToken cancellationToken = default)
     {
         var basket = await _basketRepository.GetQueryable()
             .AsNoTracking()
@@ -80,7 +80,7 @@ public class PaymentService : IPaymentService
             var payment = await CreatePaymentWithOrdersAsync(dto, basket.Id, costOfBasketOrders, basketOrders, cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
-            return DataResult<PaymentDto>.Success(_mapper.Map<PaymentDto>(payment));
+            return BaseResult.Success();
         }
         catch (Exception ex)
         {
@@ -92,20 +92,20 @@ public class PaymentService : IPaymentService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<PaymentDto>> DeletePaymentAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> DeletePaymentAsync(long id, CancellationToken cancellationToken = default)
     {
         var payment = await _paymentRepository.GetQueryable()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (payment == null)
         {
-            return DataResult<PaymentDto>.Failure((int)ErrorCodes.PaymentNotFound, ErrorMessage.PaymentNotFound);
+            return BaseResult.Failure((int)ErrorCodes.PaymentNotFound, ErrorMessage.PaymentNotFound);
         }
 
         _paymentRepository.Remove(payment);
         await _paymentRepository.SaveChangesAsync(cancellationToken);
 
-        return DataResult<PaymentDto>.Success(_mapper.Map<PaymentDto>(payment));
+        return BaseResult.Success();
     }
 
     public async Task<DataResult<PaymentDto>> GetPaymentByIdAsync(long id, CancellationToken cancellationToken = default)
@@ -166,11 +166,11 @@ public class PaymentService : IPaymentService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<PaymentDto>> UpdatePaymentAsync(UpdatePaymentDto dto, CancellationToken cancellationToken = default)
+    public async Task<DataResult<PaymentDto>> UpdatePaymentAsync(long id, UpdatePaymentDto dto, CancellationToken cancellationToken = default)
     {
         var payment = await _paymentRepository.GetQueryable()
             .Include(x => x.Basket.Orders)
-            .FirstOrDefaultAsync(x => x.Id == dto.Id, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (payment == null)
         {

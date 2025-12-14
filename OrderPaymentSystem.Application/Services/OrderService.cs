@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Application.Resources;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
@@ -52,14 +51,14 @@ public class OrderService : IOrderService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<OrderDto>> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken = default)
     {
         var (user, product) = await GetUserAndProductAsync(dto.UserId, dto.ProductId, cancellationToken);
 
         var validateCreatingOrderResult = _orderValidator.ValidateCreatingOrder(user, product);
         if (!validateCreatingOrderResult.IsSuccess)
         {
-            return DataResult<OrderDto>.Failure(validateCreatingOrderResult.Error);
+            return BaseResult.Failure(validateCreatingOrderResult.Error);
         }
 
         Order order = new()
@@ -75,24 +74,24 @@ public class OrderService : IOrderService
         await _orderRepository.CreateAsync(order, cancellationToken);
         await _orderRepository.SaveChangesAsync(cancellationToken);
 
-        return DataResult<OrderDto>.Success(_mapper.Map<OrderDto>(order));
+        return BaseResult.Success();
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<OrderDto>> DeleteOrderByIdAsync(long id, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> DeleteOrderByIdAsync(long id, CancellationToken cancellationToken = default)
     {
         var order = await _orderRepository.GetQueryable()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (order == null)
         {
-            return DataResult<OrderDto>.Failure((int)ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
+            return BaseResult.Failure((int)ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
         }
 
         _orderRepository.Remove(order);
         await _orderRepository.SaveChangesAsync(cancellationToken);
 
-        return DataResult<OrderDto>.Success(_mapper.Map<OrderDto>(order));
+        return BaseResult.Success();
     }
 
     /// <inheritdoc/>
@@ -127,9 +126,9 @@ public class OrderService : IOrderService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<OrderDto>> UpdateOrderAsync(UpdateOrderDto dto, CancellationToken cancellationToken = default)
+    public async Task<DataResult<OrderDto>> UpdateOrderAsync(long id, UpdateOrderDto dto, CancellationToken cancellationToken = default)
     {
-        var (order, product) = await GetOrderAndProductAsync(dto.Id, dto.ProductId, cancellationToken);
+        var (order, product) = await GetOrderAndProductAsync(id, dto.ProductId, cancellationToken);
 
         var validateUpdatingOrderResult = _orderValidator.ValidateUpdatingOrder(order, product);
         if (!validateUpdatingOrderResult.IsSuccess)

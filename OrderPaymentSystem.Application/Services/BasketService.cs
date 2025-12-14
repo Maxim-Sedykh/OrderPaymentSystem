@@ -44,11 +44,11 @@ public class BasketService : IBasketService
     }
 
     /// <inheritdoc/>
-    public async Task<CollectionResult<OrderDto>> ClearBasketAsync(long basketId, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> ClearBasketAsync(long basketId, CancellationToken cancellationToken = default)
     {
         if (!await BasketExistsAsync(basketId, cancellationToken))
         {
-            return CollectionResult<OrderDto>.Failure((int)ErrorCodes.BasketNotFound, ErrorMessage.BasketNotFound);
+            return BaseResult.Failure((int)ErrorCodes.BasketNotFound, ErrorMessage.BasketNotFound);
         }
 
         var basketOrders = await _orderRepository.GetQueryable()
@@ -57,14 +57,13 @@ public class BasketService : IBasketService
 
         if (basketOrders.Count == 0)
         {
-            return CollectionResult<OrderDto>.Failure((int)ErrorCodes.OrdersNotFound, ErrorMessage.OrdersNotFound);
+            return BaseResult.Failure((int)ErrorCodes.OrdersNotFound, ErrorMessage.OrdersNotFound);
         }
 
         _orderRepository.RemoveRange(basketOrders);
         await _orderRepository.SaveChangesAsync(cancellationToken);
 
-        var resultDtos = basketOrders.Select(_mapper.Map<OrderDto>).ToArray();
-        return CollectionResult<OrderDto>.Success(resultDtos);
+        return BaseResult.Success();
     }
 
     /// <inheritdoc/>
@@ -89,39 +88,38 @@ public class BasketService : IBasketService
     /// <inheritdoc/>
     public async Task<CollectionResult<OrderDto>> GetBasketOrdersAsync(long basketId, CancellationToken cancellationToken = default)
     {
-        var userBasketOrders = _cacheService.GetOrCreateAsync(CacheKeys.Order(basketId)
-            , async (cancellationToken) =>
-            {
-                return await _orderRepository.GetQueryable()
-                    .Where(x => x.BasketId == basketId)
-                    .AsProjected<Order, OrderDto>(_mapper)
-                    .ToArrayAsync(cancellationToken);
-            }
-            );
+        //var userBasketOrders = _cacheService.GetOrCreateAsync(CacheKeys.Order(basketId)
+        //    , async (cancellationToken) =>
+        //    {
+        //        return await _orderRepository.GetQueryable()
+        //            .Where(x => x.BasketId == basketId)
+        //            .AsProjected<Order, OrderDto>(_mapper)
+        //            .ToArrayAsync(cancellationToken);
+        //    }
+        //    );
 
-        var cacheKey = ;
-        var cachedOrders = await _cacheService.GetAsync<OrderDto[]>(cacheKey, cancellationToken);
-        if (cachedOrders is not null)
-        {
-            return CollectionResult<OrderDto>.Success(cachedOrders);
-        }
+        //var cachedOrders = await _cacheService.GetAsync<OrderDto[]>(cacheKey, cancellationToken);
+        //if (cachedOrders is not null)
+        //{
+        //    return CollectionResult<OrderDto>.Success(cachedOrders);
+        //}
 
-        if (!await BasketExistsAsync(basketId, cancellationToken))
-        {
-            return CollectionResult<OrderDto>.Failure((int)ErrorCodes.BasketNotFound, ErrorMessage.BasketNotFound);
-        }
+        //if (!await BasketExistsAsync(basketId, cancellationToken))
+        //{
+        //    return CollectionResult<OrderDto>.Failure((int)ErrorCodes.BasketNotFound, ErrorMessage.BasketNotFound);
+        //}
 
-        var userBasketOrders = await _orderRepository.GetQueryable()
-            .Where(x => x.BasketId == basketId)
-            .AsProjected<Order, OrderDto>(_mapper)
-            .ToArrayAsync(cancellationToken);
+        //var userBasketOrders = await _orderRepository.GetQueryable()
+        //    .Where(x => x.BasketId == basketId)
+        //    .AsProjected<Order, OrderDto>(_mapper)
+        //    .ToArrayAsync(cancellationToken);
 
-        if (userBasketOrders.Length == 0)
-        {
-            return CollectionResult<OrderDto>.Failure((int)ErrorCodes.OrdersNotFound, ErrorMessage.OrdersNotFound);
-        }
+        //if (userBasketOrders.Length == 0)
+        //{
+        //    return CollectionResult<OrderDto>.Failure((int)ErrorCodes.OrdersNotFound, ErrorMessage.OrdersNotFound);
+        //}
 
-        return CollectionResult<OrderDto>.Success(userBasketOrders);
+        return CollectionResult<OrderDto>.Success(null);
     }
 
     /// <summary>

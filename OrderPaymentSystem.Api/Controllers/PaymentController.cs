@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.Payment;
 using OrderPaymentSystem.Domain.Dto.Product;
+using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 
 namespace OrderPaymentSystem.Api.Controllers;
@@ -15,12 +15,12 @@ namespace OrderPaymentSystem.Api.Controllers;
 /// </summary>
 [Authorize]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/v{version:apiVersion}/payments")]
 [ApiController]
 public class PaymentController : ControllerBase
 {
     private readonly IPaymentService _paymentService;
-    private readonly UpdatePaymentValidation _updatePaymentValidator;
+    private readonly UpdatePaymentValidator _updatePaymentValidator;
     private readonly CreatePaymentValidator _createPaymentValidator;
 
     /// <summary>
@@ -29,7 +29,7 @@ public class PaymentController : ControllerBase
     /// <param name="paymentService"></param>
     /// <param name="updatePaymentValidator"></param>
     /// <param name="createPaymentValidator"></param>
-    public PaymentController(IPaymentService paymentService, UpdatePaymentValidation updatePaymentValidator,
+    public PaymentController(IPaymentService paymentService, UpdatePaymentValidator updatePaymentValidator,
         CreatePaymentValidator createPaymentValidator)
     {
         _paymentService = paymentService;
@@ -40,10 +40,9 @@ public class PaymentController : ControllerBase
     /// <summary>
     /// Получение платежа по ID
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="paymentId"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
-    /// Request for getting payment
     /// 
     ///     GET
     ///     {
@@ -53,12 +52,12 @@ public class PaymentController : ControllerBase
     /// </remarks>
     /// <response code="200">Если платеж был получен</response>
     /// <response code="400">Если платеж не был получен</response>
-    [HttpGet(RouteConstants.GetPaymentById)]
+    [HttpGet("{paymentId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaymentDto>> GetPayment(long id, CancellationToken cancellationToken)
+    public async Task<ActionResult<PaymentDto>> GetPayment(long paymentId, CancellationToken cancellationToken)
     {
-        var response = await _paymentService.GetPaymentByIdAsync(id, cancellationToken);
+        var response = await _paymentService.GetPaymentByIdAsync(paymentId, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);
@@ -71,26 +70,17 @@ public class PaymentController : ControllerBase
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
-    ///<remarks>
-    /// Request for getting user payments
-    /// 
-    ///     DELETE
-    ///     {
-    ///         "userid": 1
-    ///     }
-    ///     
-    /// </remarks>
     /// <response code="200">Если платежи пользователя были получены</response>
     /// <response code="400">Если платежи пользователя не были получены</response>
-    [HttpGet(RouteConstants.GetUserPaymentsByUserId)]
+    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<PaymentDto>> GetUserPayments(Guid userId, CancellationToken cancellationToken)
+    public async Task<ActionResult<PaymentDto[]>> GetUserPayments(Guid userId, CancellationToken cancellationToken)
     {
         var response = await _paymentService.GetUserPaymentsAsync(userId, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
         return BadRequest(response);
     }
@@ -111,7 +101,7 @@ public class PaymentController : ControllerBase
     /// </remarks>
     /// <response code="200">Если платёж удалился</response>
     /// <response code="400">Если платёж не был удалён</response>
-    [HttpDelete(RouteConstants.DeletePaymentById)]
+    [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaymentDto>> DeletePayment(long id, CancellationToken cancellationToken)
@@ -119,7 +109,11 @@ public class PaymentController : ControllerBase
         var response = await _paymentService.DeletePaymentAsync(id, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response.Data);
+            return NoContent();
+        }
+        if (response.Error.Code == (int)ErrorCodes.PaymentNotFound)
+        {
+            return NotFound(ErrorCodes.PaymentNotFound.ToString());
         }
         return BadRequest(response.Error);
     }
@@ -146,7 +140,7 @@ public class PaymentController : ControllerBase
     /// </remarks>
     /// <response code="200">Если платеж создался</response>
     /// <response code="400">Если платеж не был создан</response>
-    [HttpPost(RouteConstants.CreatePayment)]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PaymentDto>> CreatePayment(CreatePaymentDto dto, CancellationToken cancellationToken)
@@ -155,13 +149,13 @@ public class PaymentController : ControllerBase
 
         if (!validationResult.IsValid)
         {
-            return BadRequest(validationResult.Errors);
+            return UnprocessableEntity(validationResult.Errors);
         }
 
         var response = await _paymentService.CreatePaymentAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response.Data);
+            return Created();
         }
         return BadRequest(response.Error);
     }
@@ -169,6 +163,7 @@ public class PaymentController : ControllerBase
     /// <summary>
     /// Обновление платежа
     /// </summary>
+    /// <param name="id"></param>
     /// <param name="dto"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
@@ -184,22 +179,26 @@ public class PaymentController : ControllerBase
     /// </remarks>
     /// <response code="200">Если платёж обновился</response>
     /// <response code="400">Если платёж не был обновлён</response>
-    [HttpPut(RouteConstants.UpdatePayment)]
+    [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProductDto>> UpdatePayment(UpdatePaymentDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult<PaymentDto>> UpdatePayment(long id, UpdatePaymentDto dto, CancellationToken cancellationToken)
     {
         var validationResult = await _updatePaymentValidator.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
-            return BadRequest(validationResult.Errors);
+            return UnprocessableEntity(validationResult.Errors);
         }
 
-        var response = await _paymentService.UpdatePaymentAsync(dto, cancellationToken);
+        var response = await _paymentService.UpdatePaymentAsync(id, dto, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);
+        }
+        if (response.Error.Code == (int)ErrorCodes.PaymentNotFound)
+        {
+            return NotFound(ErrorCodes.PaymentNotFound.ToString());
         }
         return BadRequest(response.Error);
     }
@@ -210,7 +209,6 @@ public class PaymentController : ControllerBase
     /// <param name="id"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
-    /// Request for getting payment orders
     /// 
     ///     PUT
     ///     {
@@ -220,10 +218,10 @@ public class PaymentController : ControllerBase
     /// </remarks>
     /// <response code="200">Если заказы платежа были получены</response>
     /// <response code="400">Если заказы платежа не были получены</response>
-    [HttpGet(RouteConstants.GetPaymentOrdersByPaymentId)]
+    [HttpGet("{id}/orders")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OrderDto>> GetPaymentOrders(long id, CancellationToken cancellationToken)
+    public async Task<ActionResult<OrderDto[]>> GetPaymentOrders(long id, CancellationToken cancellationToken)
     {
         var response = await _paymentService.GetPaymentOrdersAsync(id, cancellationToken);
         if (response.IsSuccess)

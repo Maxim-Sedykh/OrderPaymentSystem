@@ -1,10 +1,9 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Auth;
+using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Interfaces.Services;
-using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Api.Controllers;
 
@@ -13,13 +12,20 @@ namespace OrderPaymentSystem.Api.Controllers;
 /// </summary>
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/v{version:apiVersion}/auth")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IUserTokenService _userTokenService;
     private readonly LoginUserValidator _loginUserValidator;
     private readonly RegisterUserValidation _registerUserValidator;
 
+    /// <summary>
+    /// Конструктор контроллера
+    /// </summary>
+    /// <param name="authService">Сервис аутентификации</param>
+    /// <param name="loginUserValidator">Валидатор для модели аутентификации</param>
+    /// <param name="registerUserValidator">Валидатор для модели регистрации</param>
     public AuthController(IAuthService authService, LoginUserValidator loginUserValidator,
         RegisterUserValidation registerUserValidator)
     {
@@ -34,20 +40,20 @@ public class AuthController : ControllerBase
     /// <param name="dto"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <returns></returns>
-    [HttpPost(RouteConstants.Register)]
-    public async Task<ActionResult<BaseResult>> Register(RegisterUserDto dto, CancellationToken cancellationToken)
+    [HttpPost("register")]
+    public async Task<ActionResult<UserDto>> Register(RegisterUserDto dto, CancellationToken cancellationToken)
     {
         var validationResult = await _registerUserValidator.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
-            return BadRequest(validationResult.Errors);
+            return UnprocessableEntity(validationResult.Errors);
         }
 
         var response = await _authService.RegisterAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Created();
         }
         return BadRequest(response);
     }
@@ -58,21 +64,38 @@ public class AuthController : ControllerBase
     /// <param name="dto"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <returns></returns>
-    [HttpPost(RouteConstants.Login)]
-    public async Task<ActionResult<BaseResult>> Login(LoginUserDto dto, CancellationToken cancellationToken)
+    [HttpPost("login")]
+    public async Task<ActionResult<TokenDto>> Login(LoginUserDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _loginUserValidator.ValidateAsync(dto);
+        var validationResult = await _loginUserValidator.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
-            return BadRequest(validationResult.Errors);
+            return UnprocessableEntity(validationResult.Errors);
         }
 
         var response = await _authService.LoginAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response);
+            return Ok(response.Data);
         }
-        return BadRequest(response);
+        return BadRequest(response.Error);
+    }
+
+    /// <summary>
+    /// Обновление токена пользователя
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
+    /// <returns></returns>
+    [HttpPost("refresh")]
+    public async Task<ActionResult<TokenDto>> RefreshToken(TokenDto dto, CancellationToken cancellationToken)
+    {
+        var response = await _userTokenService.RefreshTokenAsync(dto, cancellationToken);
+        if (response.IsSuccess)
+        {
+            return Ok(response.Data);
+        }
+        return BadRequest(response.Error);
     }
 }

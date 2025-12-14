@@ -14,7 +14,7 @@ public interface IAuthService
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<UserDto>> RegisterAsync(RegisterUserDto dto, CancellationToken cancellationToken = default);
+    Task<BaseResult> RegisterAsync(RegisterUserDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Авторизация пользователя

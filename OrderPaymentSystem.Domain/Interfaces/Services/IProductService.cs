@@ -26,19 +26,19 @@ public interface IProductService
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<ProductDto>> CreateProductAsync(CreateProductDto dto, CancellationToken cancellationToken = default);
+    Task<BaseResult> CreateProductAsync(CreateProductDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Удаление товара по идентификатору
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<ProductDto>> DeleteProductAsync(int id, CancellationToken cancellationToken = default);
+    Task<BaseResult> DeleteProductAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Обновление товара
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<ProductDto>> UpdateProductAsync(UpdateProductDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<ProductDto>> UpdateProductAsync(int id, UpdateProductDto dto, CancellationToken cancellationToken = default);
 }

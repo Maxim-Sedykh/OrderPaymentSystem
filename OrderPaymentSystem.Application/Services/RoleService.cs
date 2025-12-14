@@ -112,7 +112,7 @@ public class RoleService : IRoleService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<RoleDto>> DeleteRoleAsync(
+    public async Task<BaseResult> DeleteRoleAsync(
         long id,
         CancellationToken cancellationToken = default)
     {
@@ -121,22 +121,23 @@ public class RoleService : IRoleService
 
         if (role == null)
         {
-            return DataResult<RoleDto>.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
+            return BaseResult.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
         }
 
         _roleRepository.Remove(role);
         await _roleRepository.SaveChangesAsync(cancellationToken);
 
-        return DataResult<RoleDto>.Success(_mapper.Map<RoleDto>(role));
+        return BaseResult.Success();
     }
 
     /// <inheritdoc/>
     public async Task<DataResult<RoleDto>> UpdateRoleAsync(
-        RoleDto dto,
+        int id,
+        UpdateRoleDto dto,
         CancellationToken cancellationToken = default)
     {
         var role = await _roleRepository.GetQueryable()
-            .FirstOrDefaultAsync(x => x.Id == dto.Id, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (role == null)
         {
@@ -157,14 +158,15 @@ public class RoleService : IRoleService
 
     /// <inheritdoc/>
     public async Task<DataResult<UserRoleDto>> DeleteRoleForUserAsync(
-        DeleteUserRoleDto dto,
+        Guid userId,
+        int roleId,
         CancellationToken cancellationToken = default)
     {
         var user = await _userRepository.GetQueryable()
             .Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.Login == dto.Login, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
 
-        var role = user?.Roles.FirstOrDefault(x => x.Id == dto.RoleId);
+        var role = user?.Roles.FirstOrDefault(x => x.Id == roleId);
 
         var validationResult = _roleValidator.ValidateRoleForUser(user, role);
         if (!validationResult.IsSuccess)
@@ -183,12 +185,13 @@ public class RoleService : IRoleService
 
     /// <inheritdoc/>
     public async Task<DataResult<UserRoleDto>> UpdateRoleForUserAsync(
+        Guid userId,
         UpdateUserRoleDto dto,
         CancellationToken cancellationToken = default)
     {
         var user = await _userRepository.GetQueryable()
             .Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.Login == dto.Login, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
 
         var currentRole = user?.Roles.FirstOrDefault(x => x.Id == dto.FromRoleId);
         var newRole = await _roleRepository.GetQueryable()

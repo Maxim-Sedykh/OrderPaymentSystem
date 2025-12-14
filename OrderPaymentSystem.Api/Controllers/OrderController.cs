@@ -2,9 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Order;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Order;
-using OrderPaymentSystem.Domain.Dto.Product;
+using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 
 namespace OrderPaymentSystem.Api.Controllers;
@@ -14,7 +13,7 @@ namespace OrderPaymentSystem.Api.Controllers;
 /// </summary>
 [Authorize]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/v{version:apiVersion}/orders")]
 [ApiController]
 public class OrderController : ControllerBase
 {
@@ -42,7 +41,6 @@ public class OrderController : ControllerBase
     /// <param name="id"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
-    /// Request for getting order
     /// 
     ///     GET
     ///     {
@@ -52,7 +50,7 @@ public class OrderController : ControllerBase
     /// </remarks>
     /// <response code="200">Если заказ был получен</response>
     /// <response code="400">Если заказ не был получен</response>
-    [HttpGet(RouteConstants.GetOrderById)]
+    [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OrderDto>> GetOrderById(long id, CancellationToken cancellationToken)
@@ -62,6 +60,10 @@ public class OrderController : ControllerBase
         {
             return Ok(response.Data);
         }
+        if (response.Error.Code == (int)ErrorCodes.OrderNotFound)
+        {
+            return NotFound(ErrorCodes.OrderNotFound.ToString());
+        }
         return BadRequest(response.Error);
     }
 
@@ -69,15 +71,12 @@ public class OrderController : ControllerBase
     /// Получение всех заказов
     /// </summary>
     /// <param name="cancellationToken">Токен отмены запроса</param>
-    /// <remarks>
-    /// Request for getting all orders
-    /// </remarks>
     /// <response code="200">Если заказы были получены</response>
     /// <response code="400">Если заказы не были получены</response>
-    [HttpGet(RouteConstants.GetOrders)]
+    [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<OrderDto>> GetAllOrders(CancellationToken cancellationToken)
+    public async Task<ActionResult<OrderDto[]>> GetAllOrders(CancellationToken cancellationToken)
     {
         var response = await _orderService.GetAllOrdersAsync(cancellationToken);
         if (response.IsSuccess)
@@ -93,7 +92,6 @@ public class OrderController : ControllerBase
     /// <param name="id"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
-    /// Request for delete order
     /// 
     ///     DELETE
     ///     {
@@ -103,15 +101,19 @@ public class OrderController : ControllerBase
     /// </remarks>
     /// <response code="200">Если заказ удалился</response>
     /// <response code="400">Если заказ не был удалён</response>
-    [HttpDelete(RouteConstants.DeleteOrderById)]
+    [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProductDto>> DeleteOrder(long id, CancellationToken cancellationToken)
+    public async Task<ActionResult<OrderDto>> DeleteOrder(long id, CancellationToken cancellationToken)
     {
         var response = await _orderService.DeleteOrderByIdAsync(id, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response.Data);
+            return NoContent();
+        }
+        if (response.Error.Code == (int)ErrorCodes.OrderNotFound)
+        {
+            return NotFound(ErrorCodes.OrderNotFound.ToString());
         }
         return BadRequest(response.Error);
     }
@@ -134,22 +136,22 @@ public class OrderController : ControllerBase
     /// </remarks>
     /// <response code="200">Если заказ создался</response>
     /// <response code="400">Если заказ не был создан</response>
-    [HttpPost(RouteConstants.CreateOrder)]
+    [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProductDto>> CreateOrder(CreateOrderDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult<OrderDto>> CreateOrder(CreateOrderDto dto, CancellationToken cancellationToken)
     {
         var validationResult = await _createOrderValidator.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
-            return BadRequest(validationResult.Errors);
+            return UnprocessableEntity(validationResult.Errors);
         }
 
         var response = await _orderService.CreateOrderAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response.Data);
+            return Created();
         }
         return BadRequest(response.Error);
     }
@@ -157,6 +159,7 @@ public class OrderController : ControllerBase
     /// <summary>
     /// Обновление заказа
     /// </summary>
+    /// <param name="id"></param>
     /// <param name="dto"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
@@ -164,7 +167,6 @@ public class OrderController : ControllerBase
     /// 
     ///     PUT
     ///     {
-    ///         "id": 1
     ///         "productid": 1,
     ///         "ProductCount": 3
     ///     }
@@ -172,19 +174,19 @@ public class OrderController : ControllerBase
     /// </remarks>
     /// <response code="200">Если заказ обновился</response>
     /// <response code="400">Если заказ не был обновлён</response>
-    [HttpPut(RouteConstants.UpdateOrder)]
+    [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProductDto>> UpdateOrder(UpdateOrderDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult<OrderDto>> UpdateOrder(long id, UpdateOrderDto dto, CancellationToken cancellationToken)
     {
         var validationResult = await _updateOrderValidator.ValidateAsync(dto, cancellationToken);
 
         if (!validationResult.IsValid)
         {
-            return BadRequest(validationResult.Errors);
+            return UnprocessableEntity(validationResult.Errors);
         }
 
-        var response = await _orderService.UpdateOrderAsync(dto, cancellationToken);
+        var response = await _orderService.UpdateOrderAsync(id, dto, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);

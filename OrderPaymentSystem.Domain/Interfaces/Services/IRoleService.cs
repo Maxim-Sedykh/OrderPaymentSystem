@@ -12,6 +12,7 @@ public interface IRoleService
     /// <summary>
     /// Получение всех ролей
     /// </summary>
+    /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns></returns>
     Task<CollectionResult<RoleDto>> GetAllRolesAsync(CancellationToken cancellationToken = default);
 
@@ -19,6 +20,7 @@ public interface IRoleService
     /// Добавление роли
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns></returns>
     Task<DataResult<RoleDto>> CreateRoleAsync(CreateRoleDto dto, CancellationToken cancellationToken = default);
 
@@ -26,34 +28,41 @@ public interface IRoleService
     /// Удаление роли по идентификатору
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns></returns>
-    Task<DataResult<RoleDto>> DeleteRoleAsync(long id, CancellationToken cancellationToken = default);
+    Task<BaseResult> DeleteRoleAsync(long id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Обновление роли
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns></returns>
-    Task<DataResult<RoleDto>> UpdateRoleAsync(RoleDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<RoleDto>> UpdateRoleAsync(int id, UpdateRoleDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Добавление роли для пользователя
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns></returns>
     Task<DataResult<UserRoleDto>> AddRoleForUserAsync(UserRoleDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Удаление роли у пользователя
     /// </summary>
-    /// <param name="dto"></param>
+    /// <param name="userId"></param>
+    /// <param name="roleId"></param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns></returns>
-    Task<DataResult<UserRoleDto>> DeleteRoleForUserAsync(DeleteUserRoleDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<UserRoleDto>> DeleteRoleForUserAsync(Guid userId, int roleId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Обновление роли у пользователя
     /// </summary>
+    /// <param name="userId"></param>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns></returns>
-    Task<DataResult<UserRoleDto>> UpdateRoleForUserAsync(UpdateUserRoleDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<UserRoleDto>> UpdateRoleForUserAsync(Guid userId, UpdateUserRoleDto dto, CancellationToken cancellationToken = default);
 }

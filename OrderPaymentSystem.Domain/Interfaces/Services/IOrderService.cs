@@ -27,19 +27,19 @@ public interface IOrderService
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<OrderDto>> DeleteOrderByIdAsync(long id, CancellationToken cancellationToken = default);
+    Task<BaseResult> DeleteOrderByIdAsync(long id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Обновление заказа
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<OrderDto>> UpdateOrderAsync(UpdateOrderDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<OrderDto>> UpdateOrderAsync(long id, UpdateOrderDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Создание заказа и добавление его в корзину
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<OrderDto>> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken = default);
+    Task<BaseResult> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken = default);
 }

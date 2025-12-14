@@ -63,7 +63,7 @@ public static class DependencyInjection
             typeof(CreateProductValidator),
             typeof(UpdateProductValidator),
             typeof(CreatePaymentValidator),
-            typeof(UpdatePaymentValidation),
+            typeof(UpdatePaymentValidator),
             typeof(UpdateOrderValidation),
             typeof(CreateOrderValidation),
             typeof(LoginUserValidator),
@@ -72,7 +72,7 @@ public static class DependencyInjection
             typeof(DeleteUserRoleValidation),
             typeof(UpdateUserRoleValidation),
             typeof(UserRoleValidation),
-            typeof(RoleValidation)
+            typeof(UpdateRoleValidator)
         };
 
         foreach (var validatorType in validatorsTypes)

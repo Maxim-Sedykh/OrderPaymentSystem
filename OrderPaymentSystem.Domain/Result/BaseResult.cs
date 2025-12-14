@@ -19,5 +19,8 @@
 
         public static BaseResult Failure(int errorCode, string errorMessage) =>
             new(new Error(errorMessage, errorCode));
+
+        public static BaseResult Failure(Error error) =>
+            new(error);
     }
 }

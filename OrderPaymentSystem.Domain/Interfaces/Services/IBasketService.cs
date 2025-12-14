@@ -19,7 +19,7 @@ public interface IBasketService
     /// Получение всех заказов из корзины пользователя
     /// </summary>
     /// <returns></returns>
-    Task<CollectionResult<OrderDto>> ClearBasketAsync(long basketId, CancellationToken cancellationToken = default);
+    Task<BaseResult> ClearBasketAsync(long basketId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получение информации о корзине пользователя

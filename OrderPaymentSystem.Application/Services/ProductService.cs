@@ -43,7 +43,7 @@ public class ProductService : IProductService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<ProductDto>> CreateProductAsync(CreateProductDto dto,
+    public async Task<BaseResult> CreateProductAsync(CreateProductDto dto,
         CancellationToken cancellationToken = default)
     {
         var productExists = await _productRepository.GetQueryable()
@@ -52,7 +52,7 @@ public class ProductService : IProductService
 
         if (productExists)
         {
-            return DataResult<ProductDto>.Failure((int)ErrorCodes.ProductAlreadyExist, ErrorMessage.ProductAlreadyExist);
+            return BaseResult.Failure((int)ErrorCodes.ProductAlreadyExist, ErrorMessage.ProductAlreadyExist);
         }
 
         var product = new Product()
@@ -68,20 +68,18 @@ public class ProductService : IProductService
         _logger.LogInformation("Product created successfully: {ProductName} (ID: {ProductId})",
             dto.ProductName, product.Id);
 
-        var createdProductDto = _mapper.Map<ProductDto>(product);
-
-        return DataResult<ProductDto>.Success(createdProductDto);
+        return BaseResult.Success();
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<ProductDto>> DeleteProductAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> DeleteProductAsync(int id, CancellationToken cancellationToken = default)
     {
         var product = await _productRepository.GetQueryable()
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (product == null)
         {
-            return DataResult<ProductDto>.Failure((int)ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
+            return BaseResult.Failure((int)ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
         }
 
         _productRepository.Remove(product);
@@ -90,7 +88,7 @@ public class ProductService : IProductService
         _logger.LogInformation("Product deleted successfully: {ProductName} (ID: {ProductId})",
             product.ProductName, product.Id);
 
-        return DataResult<ProductDto>.Success(_mapper.Map<ProductDto>(product));
+        return BaseResult.Success();
     }
 
     /// <inheritdoc/>
@@ -127,10 +125,10 @@ public class ProductService : IProductService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<ProductDto>> UpdateProductAsync(UpdateProductDto dto, CancellationToken cancellationToken = default)
+    public async Task<DataResult<ProductDto>> UpdateProductAsync(int id, UpdateProductDto dto, CancellationToken cancellationToken = default)
     {
         var product = await _productRepository.GetQueryable()
-            .FirstOrDefaultAsync(x => x.Id == dto.Id, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
         if (product == null)
         {
