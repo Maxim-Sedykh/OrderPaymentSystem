@@ -12,7 +12,7 @@ namespace OrderPaymentSystem.Application.Validations.Validators;
 public class OrderValidator : IOrderValidator
 {
     /// <inheritdoc/>
-    public BaseResult ValidateUpdatingOrder(Order order, Product product)
+    public BaseResult ValidateUpdatingOrder(OrderItem order, Product product)
     {
         if (order == null)
         {

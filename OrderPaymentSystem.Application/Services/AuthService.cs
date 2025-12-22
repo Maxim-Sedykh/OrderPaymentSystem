@@ -30,7 +30,7 @@ public class AuthService : IAuthService
     private readonly ILogger<AuthService> _logger;
     private readonly IUserTokenService _userTokenService;
     private readonly IBaseRepository<UserToken> _userTokenRepository;
-    private readonly IBaseRepository<Basket> _basketRepository;
+    private readonly IBaseRepository<BasketItem> _basketRepository;
     private readonly IBaseRepository<Role> _roleRepository;
     private readonly IBaseRepository<UserRole> _userRoleRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -54,7 +54,7 @@ public class AuthService : IAuthService
         ILogger<AuthService> logger,
         IUserTokenService userTokenService,
         IBaseRepository<UserToken> userTokenRepository,
-        IBaseRepository<Basket> basketRepository,
+        IBaseRepository<BasketItem> basketRepository,
         IBaseRepository<Role> roleRepository,
         IBaseRepository<UserRole> userRoleRepository,
         IUnitOfWork unitOfWork,
@@ -108,6 +108,8 @@ public class AuthService : IAuthService
 
         if (userToken == null)
         {
+            userToken = UserToken.Create(user.Id, refreshToken, refreshTokenExpire);
+
             userToken = new UserToken()
             {
                 UserId = user.Id,
@@ -169,7 +171,7 @@ public class AuthService : IAuthService
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            var userBasket = new Basket()
+            var userBasket = new BasketItem()
             {
                 UserId = user.Id,
             };

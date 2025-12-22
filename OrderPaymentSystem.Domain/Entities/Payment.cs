@@ -1,34 +1,84 @@
 ﻿using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
-using OrderPaymentSystem.Domain.ValueObjects;
+using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Domain.Entities;
 
+/// <summary>
+/// Платёж заказа
+/// </summary>
 public class Payment : IEntityId<long>, IAuditable
 {
-    public long Id { get; set; }
+    /// <summary>
+    /// Id платежа
+    /// </summary>
+    public long Id { get; protected set; }
 
-    public long BasketId { get; set; }
+    /// <summary>
+    /// Id заказа
+    /// </summary>
+    public long OrderId { get; protected set; }
 
-    public Basket Basket { get; set; }
+    /// <summary>
+    /// Сколько нужно заплатить за заказ
+    /// </summary>
+    public decimal AmountToPay { get; protected set; }
 
-    public decimal CostOfOrders { get; set; }
+    /// <summary>
+    /// Сколько заплатили
+    /// </summary>
+    public decimal? AmountPayed { get; protected set; }
 
-    public decimal AmountOfPayment { get; set; }
+    /// <summary>
+    /// Сдача
+    /// </summary>
+    public decimal? CashChange { get; protected set; }
 
-    public Address DeliveryAddress { get; set; }
+    /// <summary>
+    /// Способ оплаты
+    /// </summary>
+    public PaymentMethod PaymentMethod { get; protected set; }
 
-    public decimal CashChange { get; set; }
+    /// <summary>
+    /// Текущий статус платежа
+    /// </summary>
+    public PaymentStatus Status { get; protected set; }
 
-    public PaymentMethod PaymentMethod { get; set; }
+    /// <inheritdoc/>
+    public DateTime CreatedAt { get; protected set; }
 
-    public DateTime CreatedAt { get; set; }
+    /// <inheritdoc/>
+    public DateTime? UpdatedAt { get; protected set; }
 
-    public long CreatedBy { get; set; }
+    /// <summary>
+    /// Заказ
+    /// </summary>
+    public Order Order { get; protected set; }
 
-    public DateTime? UpdatedAt { get; set; }
+    protected Payment() { }
 
-    public long? UpdatedBy { get; set; }
+    /// <summary>
+    /// Создать платёж
+    /// </summary>
+    /// <param name="orderId">Id заказа</param>
+    /// <param name="amountToPay">Количество денег которое нужно заплатить</param>
+    /// <param name="amountPayed">Фактическое количество денег которое было заплачено</param>
+    /// <param name="cashChange">Сдача</param>
+    /// <param name="method">Метод платежа</param>
+    /// <returns>Результат создания платежа</returns>
+    public static DataResult<Payment> Create(long orderId, decimal amountToPay, decimal amountPayed, decimal cashChange, PaymentMethod method)
+    {
+        if (amountToPay <= 0) return DataResult<Payment>.Failure(8001, "Amount to pay must be positive.");
 
-    public ICollection<Order> Orders { get; set; }
+        return DataResult<Payment>.Success(new Payment
+        {
+            Id = default,
+            OrderId = orderId,
+            AmountToPay = amountToPay,
+            AmountPayed = amountPayed,
+            CashChange = cashChange,
+            PaymentMethod = method,
+            Status = PaymentStatus.Pending
+        });
+    }
 }

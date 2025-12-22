@@ -14,7 +14,7 @@ public interface IOrderValidator
     /// <param name="order">Заказ</param>
     /// <param name="product">Товар</param>
     /// <returns>Результат валидации</returns>
-    BaseResult ValidateUpdatingOrder(Order order, Product product);
+    BaseResult ValidateUpdatingOrder(OrderItem order, Product product);
 
     /// <summary>
     /// Валидировать создание заказа

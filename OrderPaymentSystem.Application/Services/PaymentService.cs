@@ -23,17 +23,17 @@ public class PaymentService : IPaymentService
 {
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IBaseRepository<Basket> _basketRepository;
+    private readonly IBaseRepository<BasketItem> _basketRepository;
     private readonly IBaseRepository<Payment> _paymentRepository;
-    private readonly IBaseRepository<Order> _orderRepository;
+    private readonly IBaseRepository<OrderItem> _orderRepository;
     private readonly ILogger<PaymentService> _logger;
 
     public PaymentService(
         IMapper mapper,
         IUnitOfWork unitOfWork,
-        IBaseRepository<Basket> basketRepository,
+        IBaseRepository<BasketItem> basketRepository,
         IBaseRepository<Payment> paymentRepository,
-        IBaseRepository<Order> orderRepository,
+        IBaseRepository<OrderItem> orderRepository,
         ILogger<PaymentService> logger)
     {
         _mapper = mapper;
@@ -137,7 +137,7 @@ public class PaymentService : IPaymentService
 
         var paymentOrders = await _orderRepository.GetQueryable()
             .Where(x => x.PaymentId == id)
-            .AsProjected<Order, OrderDto>(_mapper)
+            .AsProjected<OrderItem, OrderDto>(_mapper)
             .ToArrayAsync(cancellationToken);
 
         if (paymentOrders.Length == 0)
@@ -209,7 +209,7 @@ public class PaymentService : IPaymentService
         CreatePaymentDto dto,
         long basketId,
         decimal totalCost,
-        Order[] basketOrders,
+        OrderItem[] basketOrders,
         CancellationToken cancellationToken)
     {
         var payment = new Payment
@@ -243,7 +243,7 @@ public class PaymentService : IPaymentService
     /// <param name="orders">Заказы для привязки</param>
     /// <param name="paymentId">ID платежа</param>
     /// <param name="cancellationToken">Токен отмены</param>
-    private async Task LinkOrdersToPaymentAsync(Order[] orders, long paymentId, CancellationToken cancellationToken)
+    private async Task LinkOrdersToPaymentAsync(OrderItem[] orders, long paymentId, CancellationToken cancellationToken)
     {
         foreach (var order in orders)
         {

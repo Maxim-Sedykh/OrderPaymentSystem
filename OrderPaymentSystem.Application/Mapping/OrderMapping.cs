@@ -8,7 +8,7 @@ public class OrderMapping : Profile
 {
     public OrderMapping()
     {
-        CreateMap<Order, OrderDto>()
+        CreateMap<OrderItem, OrderDto>()
             .ReverseMap();
     }
 }

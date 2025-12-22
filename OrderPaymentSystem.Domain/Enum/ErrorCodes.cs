@@ -91,13 +91,16 @@ public enum ErrorCodes
     #endregion
 
     #region Basket Domain (70-79)
+
     /// <summary>
     /// Корзина не найдена
     /// </summary>
     BasketNotFound = 70,
+
     #endregion
 
     #region Payment Domain (80-89)
+
     /// <summary>
     /// Платеж не найден
     /// </summary>
@@ -112,9 +115,11 @@ public enum ErrorCodes
     /// Недостаточно средств для оплаты
     /// </summary>
     NotEnoughPayFunds = 82,
+
     #endregion
 
     #region Common Domain (90-99)
+
     /// <summary>
     /// Изменения не обнаружены
     /// </summary>
@@ -134,12 +139,60 @@ public enum ErrorCodes
     /// Срок действия refresh token истек
     /// </summary>
     RefreshTokenExpired = 97,
+
     #endregion
 
     #region System Errors (500+)
+
     /// <summary>
     /// Внутренняя ошибка сервера
     /// </summary>
-    InternalServerError = 500
+    InternalServerError = 500,
+
     #endregion
+
+        None = 0, // No error
+    ValidationError = 1000, // General validation error
+
+    // Address related errors (1100-1199)
+    AddressStreetEmpty = 1101,
+    AddressCityEmpty = 1102,
+    AddressPostalCodeEmpty = 1103,
+    AddressCountryEmpty = 1104,
+
+    // Product related errors (1200-1299)
+    ProductNameEmpty = 1201,
+    ProductPriceInvalid = 1202,
+
+    // BasketItem related errors (1300-1399)
+    BasketItemQuantityInvalid = 1301,
+    BasketItemProductNotFound = 1302, // E.g., when updating quantity of non-existent item
+
+    // User related errors (1400-1499)
+    UserLoginEmpty = 1401,
+    UserPasswordHashEmpty = 1402,
+    UserBasketEmpty = 1404,
+
+    // UserToken related errors (1500-1599)
+    RefreshTokenEmpty = 1501,
+
+    // Order related errors (1600-1699)
+    OrderDeliveryAddressNull = 1601,
+    OrderNoItems = 1602,
+    OrderTotalAmountInvalid = 1603,
+    OrderProductPriceInvalid = 1604,
+    OrderPaymentAlreadyAssigned = 1605,
+    OrderCannotChangeDeliveredStatus = 1606,
+    OrderCannotChangeCancelledStatus = 1607,
+    OrderAlreadyCancelled = 1608,
+    OrderCannotCancelShippedOrDelivered = 1609,
+
+    // Payment related errors (1700-1799)
+    PaymentAmountDueInvalid = 1701,
+    PaymentNotInPendingState = 1702,
+    PaymentAmountPaidInvalid = 1703,
+    PaymentAmountPaidLessThanDue = 1704,
+    PaymentCannotRefundNotSuccessful = 1705,
+    PaymentAmountToRefundInvalid = 1706,
+    PaymentAmountToRefundGreaterThanPaid = 1707,
 }

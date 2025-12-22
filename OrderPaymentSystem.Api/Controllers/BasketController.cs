@@ -1,5 +1,6 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Dto.Basket;
@@ -39,7 +40,7 @@ public class BasketController(IBasketService basketService) : ControllerBase
     /// </remarks>
     /// <response code="200">Если корзина была очищена</response>
     /// <response code="400">Если корзина не была очищена</response>
-    [HttpDelete("{basketId}/orders")]
+    [HttpDelete("{basketId}/")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<OrderDto>> ClearUserBasket(long basketId, CancellationToken cancellationToken)

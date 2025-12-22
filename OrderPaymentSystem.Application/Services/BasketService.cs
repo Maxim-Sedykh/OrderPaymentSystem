@@ -19,8 +19,8 @@ namespace OrderPaymentSystem.Application.Services;
 /// </summary>
 public class BasketService : IBasketService
 {
-    private readonly IBaseRepository<Order> _orderRepository;
-    private readonly IBaseRepository<Basket> _basketRepository;
+    private readonly IBaseRepository<OrderItem> _orderRepository;
+    private readonly IBaseRepository<BasketItem> _basketRepository;
     private readonly IMapper _mapper;
     private readonly ICacheService _cacheService;
 
@@ -32,9 +32,9 @@ public class BasketService : IBasketService
     /// <param name="basketRepository">Репозиторий корзин</param>
     /// <param name="cacheService">Сервис для работы с кэшем</param>
     public BasketService(
-        IBaseRepository<Order> orderRepository,
+        IBaseRepository<OrderItem> orderRepository,
         IMapper mapper,
-        IBaseRepository<Basket> basketRepository,
+        IBaseRepository<BasketItem> basketRepository,
         ICacheService cacheService)
     {
         _orderRepository = orderRepository;
@@ -73,7 +73,7 @@ public class BasketService : IBasketService
         {
             return await _basketRepository.GetQueryable()
                 .Include(x => x.Orders)
-                .AsProjected<Basket, BasketDto>(_mapper)
+                .AsProjected<BasketItem, BasketDto>(_mapper)
                 .FirstOrDefaultAsync(x => x.Id == basketId, cancellationToken);
         }, cancellationToken: cancellationToken);
 

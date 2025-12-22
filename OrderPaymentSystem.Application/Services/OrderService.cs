@@ -18,7 +18,7 @@ namespace OrderPaymentSystem.Application.Services;
 /// </summary>
 public class OrderService : IOrderService
 {
-    private readonly IBaseRepository<Order> _orderRepository;
+    private readonly IBaseRepository<OrderItem> _orderRepository;
     private readonly IBaseRepository<User> _userRepository;
     private readonly IBaseRepository<Product> _productRepository;
     private readonly IMapper _mapper;
@@ -35,7 +35,7 @@ public class OrderService : IOrderService
     /// <param name="orderValidator">Валидатор заказов</param>
     /// <param name="cacheService">Сервис для кэширования</param>
     public OrderService(
-        IBaseRepository<Order> orderRepository,
+        IBaseRepository<OrderItem> orderRepository,
         IBaseRepository<User> userRepository,
         IBaseRepository<Product> productRepository,
         IMapper mapper,
@@ -61,7 +61,7 @@ public class OrderService : IOrderService
             return BaseResult.Failure(validateCreatingOrderResult.Error);
         }
 
-        Order order = new()
+        OrderItem order = new()
         {
             UserId = user.Id,
             ProductId = dto.ProductId,
@@ -99,7 +99,7 @@ public class OrderService : IOrderService
     {
         var order = await _orderRepository.GetQueryable()
                     .Where(x => x.Id == id)
-                    .AsProjected<Order, OrderDto>(_mapper)
+                    .AsProjected<OrderItem, OrderDto>(_mapper)
                     .FirstOrDefaultAsync(cancellationToken); ;
 
         if (order == null)
@@ -114,7 +114,7 @@ public class OrderService : IOrderService
     public async Task<CollectionResult<OrderDto>> GetAllOrdersAsync(CancellationToken cancellationToken = default)
     {
         var orders = await _orderRepository.GetQueryable()
-            .AsProjected<Order, OrderDto>(_mapper)
+            .AsProjected<OrderItem, OrderDto>(_mapper)
             .ToArrayAsync(cancellationToken);
 
         if (orders.Length == 0)
@@ -179,7 +179,7 @@ public class OrderService : IOrderService
     /// <param name="productId">Id товара</param>
     /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns>Заказ и товар</returns>
-    private async Task<(Order order, Product product)> GetOrderAndProductAsync(long orderId, long productId, CancellationToken cancellationToken)
+    private async Task<(OrderItem order, Product product)> GetOrderAndProductAsync(long orderId, long productId, CancellationToken cancellationToken)
     {
         var orderTask = _orderRepository.GetQueryable()
             .FirstOrDefaultAsync(x => x.Id == orderId, cancellationToken);
@@ -199,7 +199,7 @@ public class OrderService : IOrderService
     /// <param name="order">Сущность существующего заказа</param>
     /// <param name="dto">DTO с обновлёнными данными заказа</param>
     /// <returns>True если изменения были</returns>
-    private static bool HasOrderChanges(Order order, UpdateOrderDto dto)
+    private static bool HasOrderChanges(OrderItem order, UpdateOrderDto dto)
     {
         return order.ProductId != dto.ProductId || order.ProductCount != dto.ProductCount;
     }
@@ -210,7 +210,7 @@ public class OrderService : IOrderService
     /// <param name="order">Существующий заказ</param>
     /// <param name="product">Товар</param>
     /// <param name="productCount">Количество товара в заказе</param>
-    private static void UpdateOrderProperties(Order order, Product product, int productCount)
+    private static void UpdateOrderProperties(OrderItem order, Product product, int productCount)
     {
         order.ProductId = product.Id;
         order.ProductCount = productCount;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OrderPaymentSystem.Domain.Enum;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -9,23 +10,38 @@ namespace OrderPaymentSystem.Domain.Result
     /// Абстракция, которая представляет собой результат выполнения операции
     /// Имеет свойство Data
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">Тип данных в результате</typeparam>
     public class DataResult<T> : BaseResult
     {
+        /// <summary>
+        /// Конструктор создания результата с данными
+        /// </summary>
+        /// <param name="data">Данные</param>
+        /// <param name="error">Ошибка, необязательный параметр</param>
         protected DataResult(T data, Error error = null)
             : base(error)
         {
             Data = data;
         }
 
+        /// <summary>
+        /// Данные
+        /// </summary>
         public T Data { get; }
 
+        /// <summary>
+        /// Создать успешный результат с данными
+        /// </summary>
+        /// <param name="data">Данные</param>
         public static DataResult<T> Success(T data) =>
             new(data);
 
         public static new DataResult<T> Failure(int errorCode, string errorMessage) =>
             new(default, new Error(errorMessage, errorCode));
 
-        public static DataResult<T> Failure(Error error) => new(default, error);
+        public static DataResult<T> Failure(ErrorCodes errorCode, string errorMessage) =>
+            new(default, new Error(errorMessage, (int)errorCode));
+
+        public static new DataResult<T> Failure(Error error) => new(default, error);
     }
 }

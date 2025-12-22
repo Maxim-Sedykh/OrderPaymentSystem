@@ -4,37 +4,40 @@ using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.DAL.Configurations;
 
-public class ProductConfigurations : IEntityTypeConfiguration<Product>
+public class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
-    public void Configure(EntityTypeBuilder<Product> builder)
-    {
-        builder.HasData(new Product
-        {
-            Id = 1,
-            ProductName = "Алмазная мозаика",
-            Description = "Очень красивая мозаика",
-            Cost = 1500,
-            CreatedAt = DateTime.UtcNow,
-            CreatedBy = 1
-        },
-        new Product
-        {
-            Id = 2,
-            ProductName = "Ночник",
-            Description = "Красивый ночник в виде панды",
-            Cost = 600,
-            CreatedAt = DateTime.UtcNow,
-            CreatedBy = 1
-        });
+	public void Configure(EntityTypeBuilder<Product> builder)
+	{
+		builder.HasKey(p => p.Id);
 
-        builder.Property(x => x.Id).ValueGeneratedOnAdd();
+		builder.Property(p => p.Name)
+			.IsRequired()
+			.HasMaxLength(100);
 
-        builder.Property(x => x.ProductName).IsRequired().HasMaxLength(50);
-        builder.Property(x => x.Description).IsRequired().HasMaxLength(2000);
+		builder.Property(p => p.Description)
+			.HasMaxLength(1000)
+			.IsRequired(false); // Описание может быть опциональным
 
-        builder.HasMany(x => x.Orders)
-            .WithOne(x => x.Product)
-            .HasForeignKey(x => x.ProductId)
-            .HasPrincipalKey(x => x.Id);
-    }
+		builder.Property(p => p.Price)
+			.IsRequired()
+			.HasColumnType("decimal(18,2)"); // Важно для decimal, чтобы указать точность и масштаб
+
+		// Связь один-ко-многим с OrderItem
+		builder.HasMany(p => p.OrderItems)
+			.WithOne(oi => oi.Product)
+			.HasForeignKey(oi => oi.ProductId)
+			.OnDelete(DeleteBehavior.Restrict); // Продукт не должен удаляться, если он является частью заказа
+
+		// Связь один-ко-многим с BasketItem
+		builder.HasMany(p => p.BasketItems)
+			.WithOne(bi => bi.Product)
+			.HasForeignKey(bi => bi.ProductId)
+			.OnDelete(DeleteBehavior.Restrict); // Продукт не должен удаляться, если он находится в корзине
+
+		// Аудит-поля
+		builder.Property(p => p.CreatedAt).IsRequired();
+		builder.Property(p => p.CreatedBy).IsRequired();
+		builder.Property(p => p.UpdatedAt).IsRequired(false);
+		builder.Property(p => p.UpdatedBy).IsRequired(false);
+	}
 }

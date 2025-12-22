@@ -44,13 +44,13 @@ public static class DependencyInjection
         var types = new List<Type>()
         {
             typeof(User),
-            typeof(Order),
+            typeof(OrderItem),
             typeof(Payment),
             typeof(Product),
             typeof(UserToken),
             typeof(UserRole),
             typeof(Role),
-            typeof(Basket)
+            typeof(BasketItem)
         };
 
         foreach (var type in types)

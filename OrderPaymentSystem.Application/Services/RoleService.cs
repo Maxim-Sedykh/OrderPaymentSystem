@@ -56,14 +56,14 @@ public class RoleService : IRoleService
 
         if (user == null)
         {
-            return DataResult<UserRoleDto>.Failure((int)ErrorCodes.UserNotFound, ErrorMessage.UserNotFound);
+            return DataResult<UserRoleDto>.Failure(ErrorCodes.UserNotFound, ErrorMessage.UserNotFound);
         }
 
         var userRoles = await GetUserRoleNamesAsync(user.Id, cancellationToken);
 
         if (userRoles.Contains(dto.RoleName))
         {
-            return DataResult<UserRoleDto>.Failure((int)ErrorCodes.UserAlreadyExistThisRole, ErrorMessage.UserAlreadyExistThisRole);
+            return DataResult<UserRoleDto>.Failure(ErrorCodes.UserAlreadyExistThisRole, ErrorMessage.UserAlreadyExistThisRole);
         }
 
         var role = await _roleRepository.GetQueryable()
@@ -74,13 +74,9 @@ public class RoleService : IRoleService
             return DataResult<UserRoleDto>.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
         }
 
-        var userRole = new UserRole
-        {
-            RoleId = role.Id,
-            UserId = user.Id
-        };
+        var userRole = UserRole.Create(user.Id, role.Id);
 
-        await _userRoleRepository.CreateAsync(userRole, cancellationToken);
+        await _userRoleRepository.CreateAsync(userRole.Data, cancellationToken);
         await _userRoleRepository.SaveChangesAsync(cancellationToken);
 
         return DataResult<UserRoleDto>.Success(new UserRoleDto(user.Login, role.Name));
@@ -100,15 +96,22 @@ public class RoleService : IRoleService
             return DataResult<RoleDto>.Failure((int)ErrorCodes.RoleAlreadyExist, ErrorMessage.RoleAlreadyExist);
         }
 
+        var roleCreateResult = Role.Create(dto.Name);
+        if (roleCreateResult.Data)
+        {
+
+        }
+
+
         var role = new Role
         {
             Name = dto.Name,
         };
 
-        await _roleRepository.CreateAsync(role, cancellationToken);
+        await _roleRepository.CreateAsync(roleCreateResult, cancellationToken);
         await _roleRepository.SaveChangesAsync(cancellationToken);
 
-        return DataResult<RoleDto>.Success(_mapper.Map<RoleDto>(role));
+        return DataResult<RoleDto>.Success(_mapper.Map<RoleDto>(roleCreateResult));
     }
 
     /// <inheritdoc/>

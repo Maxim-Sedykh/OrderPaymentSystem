@@ -3,15 +3,23 @@
     /// <summary>
     /// Ошибка операции
     /// </summary>
-    /// <param name="Message">Сообщение об ошибке</param>
-    /// <param name="Code">Статус код ошибки</param>
     public record Error
     {
+        /// <summary>
+        /// Сообщение об ошибке
+        /// </summary>
         public string Message { get; }
+
+        /// <summary>
+        /// Числовой код ошибки
+        /// </summary>
         public int Code { get; }
 
-        public Error() { }
-
+        /// <summary>
+        /// Конструктор создания ошибки
+        /// </summary>
+        /// <param name="message">Сообщение об ошибке</param>
+        /// <param name="code">Числовой код создания ошибки</param>
         public Error(string message, int code) 
         {
             Message = message;
