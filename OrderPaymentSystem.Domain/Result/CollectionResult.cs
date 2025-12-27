@@ -1,4 +1,6 @@
-﻿namespace OrderPaymentSystem.Domain.Result
+﻿using OrderPaymentSystem.Domain.Enum;
+
+namespace OrderPaymentSystem.Domain.Result
 {
     /// <summary>
     /// Реализация паттерна Result Pattern для работы с коллекциями данных.
@@ -29,9 +31,10 @@
         /// </summary>
         /// <param name="data">Массив данных</param>
         /// <returns>Успешный результат с коллекцией данных</returns>
-        public static CollectionResult<T> Success(T[] data)
+        public static new CollectionResult<T> Success(IReadOnlyCollection<T> data)
         {
             ArgumentNullException.ThrowIfNull(data, nameof(data));
+
             return new CollectionResult<T>(data);
         }
 
@@ -50,6 +53,16 @@
             return new CollectionResult<T>(
                 Array.Empty<T>(),
                 new Error(errorMessage, errorCode));
+        }
+
+        public static new CollectionResult<T> Failure(ErrorCodes errorCode, string errorMessage)
+        {
+            if (string.IsNullOrWhiteSpace(errorMessage))
+                throw new ArgumentException("Error message cannot be null or empty", nameof(errorMessage));
+
+            return new CollectionResult<T>(
+                Array.Empty<T>(),
+                new Error(errorMessage, (int)errorCode));
         }
 
         /// <summary>

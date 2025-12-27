@@ -16,12 +16,12 @@ public class UpdateProductTests : IClassFixture<ProductServiceFixture>
     public async Task UpdateProductAsync_ValidInput_ReturnsSuccessResultWithData()
     {
         // Arrange
-        var dto = new UpdateProductDto { Id = 1, ProductName = "Product name to update", Description = "Product description", Cost = 1000 };
+        var dto = new UpdateProductDto { Id = 1, Name = "Product name to update", Description = "Product description", Price = 1000 };
         var updatedProduct = new Product { Id = 1, ProductName = "Old name", Description = "Old description", Cost = 500 };
 
         _fixture.ProductRepositoryMock.Setup(repo => repo.GetQueryable()).Returns(new List<Product> { updatedProduct }.AsQueryable().CreateMockDbSet().Object);
         _fixture.MapperMock.Setup(mapper => mapper.Map<ProductDto>(It.IsAny<Product>()))
-            .Returns(new ProductDto { Id = dto.Id, ProductName = dto.ProductName, Description = dto.Description, Cost = dto.Cost });
+            .Returns(new ProductDto { Id = dto.Id, ProductName = dto.Name, Description = dto.Description, Cost = dto.Price });
 
         // Act
         var result = await _fixture.ProductService.UpdateProductAsync(dto);
@@ -31,16 +31,16 @@ public class UpdateProductTests : IClassFixture<ProductServiceFixture>
         Assert.True(result.IsSuccess);
         Assert.NotNull(result.Data);
         Assert.IsType<ProductDto>(result.Data);
-        Assert.Equal(dto.ProductName, result.Data.ProductName);
+        Assert.Equal(dto.Name, result.Data.ProductName);
         Assert.Equal(dto.Description, result.Data.Description);
-        Assert.Equal(dto.Cost, result.Data.Cost);
+        Assert.Equal(dto.Price, result.Data.Cost);
     }
 
     [Fact]
     public async Task UpdateProductAsync_NonExistingProduct_ReturnsErrorResultProductNotFound()
     {
         //Arrange
-        var dto = new UpdateProductDto { Id = 2, ProductName = "Product name to update", Description = "Product description", Cost = 1000 };
+        var dto = new UpdateProductDto { Id = 2, Name = "Product name to update", Description = "Product description", Price = 1000 };
         var updatedProduct = new Product { Id = 1, ProductName = "Old name", Description = "Old description", Cost = 500 };
 
         _fixture.ProductRepositoryMock.Setup(repo => repo.GetQueryable()).Returns(new List<Product> { updatedProduct }.AsQueryable().CreateMockDbSet().Object);
@@ -58,8 +58,8 @@ public class UpdateProductTests : IClassFixture<ProductServiceFixture>
     public async Task UpdateProductAsync_NoChangesToUpdateInput_ReturnsErrorResultNoChangesFound()
     {
         // Arrange
-        var dto = new UpdateProductDto { Id = 1, ProductName = "Product name to update", Description = "Product description", Cost = 1000 };
-        var updatedProduct = new Product { Id = dto.Id, ProductName = dto.ProductName, Description = dto.Description, Cost = dto.Cost };
+        var dto = new UpdateProductDto { Id = 1, Name = "Product name to update", Description = "Product description", Price = 1000 };
+        var updatedProduct = new Product { Id = dto.Id, ProductName = dto.Name, Description = dto.Description, Cost = dto.Price };
 
         _fixture.ProductRepositoryMock.Setup(repo => repo.GetQueryable()).Returns(new List<Product> { updatedProduct }.AsQueryable().CreateMockDbSet().Object);
 

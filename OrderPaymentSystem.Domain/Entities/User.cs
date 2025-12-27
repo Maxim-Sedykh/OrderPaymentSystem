@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Exceptions;
+using OrderPaymentSystem.Domain.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -32,17 +33,17 @@ public class User : IEntityId<Guid>, IAuditable
     /// <summary>
     /// Роли
     /// </summary>
-    public ICollection<Role> Roles { get; protected set; }
+    public ICollection<Role> Roles { get; protected set; } = [];
 
     /// <summary>
     /// Заказы
     /// </summary>
-    public ICollection<Order> Orders { get; protected set; }
+    public ICollection<Order> Orders { get; protected set; } = [];
 
     /// <summary>
     /// Элементы корзины
     /// </summary>
-    public ICollection<BasketItem> BasketItems { get; protected set; }
+    public ICollection<BasketItem> BasketItems { get; protected set; } = [];
 
     /// <summary>
     /// Токен аутентификации
@@ -57,17 +58,20 @@ public class User : IEntityId<Guid>, IAuditable
     /// <param name="login">Логин</param>
     /// <param name="passwordHash">Хэш пароля</param>
     /// <returns>Результат создания пользователя</returns>
-    public static DataResult<User> Create(string login, string passwordHash)
+    public static User Create(string login, string passwordHash)
     {
-        if (string.IsNullOrWhiteSpace(login)) return DataResult<User>.Failure(4001, "Login cannot be empty.");
-        if (string.IsNullOrWhiteSpace(passwordHash)) return DataResult<User>.Failure(4002, "Password hash cannot be empty.");
+        if (string.IsNullOrWhiteSpace(login)) 
+            throw new BusinessException(4001, "Login cannot be empty.");
 
-        return DataResult<User>.Success(new User
+        if (string.IsNullOrWhiteSpace(passwordHash)) 
+            throw new BusinessException(4002, "Password hash cannot be empty.");
+
+        return new User
         {
             Id = Guid.NewGuid(),
             Login = login,
             PasswordHash = passwordHash
-        });
+        };
     }
 
     /// <summary>
@@ -75,11 +79,11 @@ public class User : IEntityId<Guid>, IAuditable
     /// </summary>
     /// <param name="newPasswordHash">Хэш нового пароля</param>
     /// <returns>Результат замены пароля у пользователя</returns>
-    public BaseResult ChangePassword(string newPasswordHash)
+    public void ChangePassword(string newPasswordHash)
     {
-        if (string.IsNullOrWhiteSpace(newPasswordHash)) return BaseResult.Failure(4003, "New password hash cannot be empty.");
-        PasswordHash = newPasswordHash;
+        if (string.IsNullOrWhiteSpace(newPasswordHash)) 
+            throw new BusinessException(4003, "New password hash cannot be empty.");
 
-        return BaseResult.Success();
+        PasswordHash = newPasswordHash;
     }
 }

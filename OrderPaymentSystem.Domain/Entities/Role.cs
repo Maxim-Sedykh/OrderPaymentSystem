@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Exceptions;
+using OrderPaymentSystem.Domain.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -21,7 +22,7 @@ public class Role : IEntityId<long>
     /// <summary>
     /// Пользователи у которых есть эта роль
     /// </summary>
-    public ICollection<User> Users { get; protected set; }
+    public ICollection<User> Users { get; protected set; } = [];
 
     protected Role() { }
 
@@ -29,12 +30,13 @@ public class Role : IEntityId<long>
     /// Создать роль
     /// </summary>
     /// <param name="name">Название</param>
-    /// <returns>Результат создания</returns>
-    public static DataResult<Role> Create(string name)
+    /// <returns>Созданная роль</returns>
+    public static Role Create(string name)
     {
-        if (string.IsNullOrWhiteSpace(name)) return DataResult<Role>.Failure(6001, "Role name cannot be empty.");
+        if (string.IsNullOrWhiteSpace(name))
+            throw new BusinessException(6001, "Role name cannot be empty.");
 
-        return DataResult<Role>.Success(new Role { Id = default, Name = name });
+        return new Role { Id = default, Name = name };
     }
 
     /// <summary>
@@ -42,11 +44,11 @@ public class Role : IEntityId<long>
     /// </summary>
     /// <param name="newName">Новое название</param>
     /// <returns>Результат обновления</returns>
-    public BaseResult UpdateName(string newName)
+    public void UpdateName(string newName)
     {
-        if (string.IsNullOrWhiteSpace(newName)) return BaseResult.Failure(6002, "Role name cannot be empty.");
-        Name = newName;
+        if (string.IsNullOrWhiteSpace(newName))
+            throw new BusinessException(6002, "Role name cannot be empty.");
 
-        return BaseResult.Success();
+        Name = newName;
     }
 }

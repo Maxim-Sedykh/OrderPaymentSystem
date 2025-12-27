@@ -1,5 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
-using OrderPaymentSystem.Domain.Result;
+﻿using OrderPaymentSystem.Domain.Exceptions;
+using OrderPaymentSystem.Domain.Interfaces.Entities;
 
 namespace OrderPaymentSystem.Domain.Entities;
 
@@ -56,18 +56,31 @@ public class OrderItem : IEntityId<long>
     /// <param name="productId">Id товара</param>
     /// <param name="quantity">Количество товара</param>
     /// <param name="productPrice">Стоимость товара</param>
-    /// <returns>Результат операции создания</returns>
-    public static DataResult<OrderItem> Create(int productId, int quantity, int productPrice)
+    /// <returns>Созданный элемент заказа</returns>
+    public static OrderItem Create(int productId, int quantity, decimal productPrice)
     {
-        if (quantity <= 0) return DataResult<OrderItem>.Failure(7001, "Quantity must be positive.");
+        if (quantity <= 0)
+            throw new BusinessException(7001, "Quantity must be positive.");
 
-        return DataResult<OrderItem>.Success(new OrderItem
+        return new OrderItem
         {
             Id = default,
             ProductId = productId,
             Quantity = quantity,
             ProductPrice = productPrice,
             ItemTotalSum = productPrice * quantity
-        });
+        };
+    }
+
+    /// <summary>
+    /// Обновить количество товара
+    /// </summary>
+    /// <param name="newQuantity">Новое количество товара</param>
+    public void UpdateQuantity(int newQuantity)
+    {
+        if (newQuantity <= 0)
+            throw new BusinessException(3001, "Quantity must be positive.");
+
+        Quantity = newQuantity;
     }
 }

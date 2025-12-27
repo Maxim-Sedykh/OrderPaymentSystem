@@ -91,7 +91,7 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<ActionResult<TokenDto>> RefreshToken(TokenDto dto, CancellationToken cancellationToken)
     {
-        var response = await _userTokenService.RefreshTokenAsync(dto, cancellationToken);
+        var response = await _userTokenService.RefreshAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);

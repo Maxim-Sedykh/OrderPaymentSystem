@@ -18,7 +18,7 @@ public enum OrderStatus
     /// <summary>
     /// Размещен
     /// </summary>
-    Placed,
+    Confirmed,
 
     /// <summary>
     /// В обработке

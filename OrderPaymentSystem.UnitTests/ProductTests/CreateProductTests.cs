@@ -25,7 +25,7 @@ public class CreateProductTests : IClassFixture<ProductServiceFixture>
             .ReturnsAsync(new ProductDto());
 
         // Act
-        var result = await _fixture.ProductService.CreateProductAsync(dto);
+        var result = await _fixture.ProductService.CreateAsync(dto);
 
         // Assert
         Assert.NotNull(result);
@@ -44,7 +44,7 @@ public class CreateProductTests : IClassFixture<ProductServiceFixture>
         _fixture.MapperMock.Setup(mapper => mapper.Map<Product>(dto)).Returns(new Product());
 
         // Act
-        var result = await _fixture.ProductService.CreateProductAsync(dto);
+        var result = await _fixture.ProductService.CreateAsync(dto);
 
         // Assert
         Assert.False(result.IsSuccess);

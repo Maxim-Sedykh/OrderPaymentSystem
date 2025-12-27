@@ -1,5 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
-using OrderPaymentSystem.Domain.Result;
+﻿using OrderPaymentSystem.Domain.Exceptions;
+using OrderPaymentSystem.Domain.Interfaces.Entities;
 
 namespace OrderPaymentSystem.Domain.Entities;
 
@@ -42,18 +42,21 @@ public class UserToken : IEntityId<long>
     /// <param name="refreshToken">Refresh токен</param>
     /// <param name="expireTime">Время истечения жизни токена</param>
     /// <returns>Результат создания</returns>
-    public static DataResult<UserToken> Create(Guid userId, string refreshToken, DateTime expireTime)
+    public static UserToken Create(Guid userId, string refreshToken, DateTime expireTime)
     {
-        if (string.IsNullOrWhiteSpace(refreshToken)) return DataResult<UserToken>.Failure(5001, "Refresh token cannot be empty.");
-        if (expireTime <= DateTime.UtcNow) return DataResult<UserToken>.Failure(5002, "Refresh token expiration must be in the future.");
+        if (string.IsNullOrWhiteSpace(refreshToken))
+            throw new BusinessException(5001, "Refresh token cannot be empty.");
 
-        return DataResult<UserToken>.Success(new UserToken
+        if (expireTime <= DateTime.UtcNow)
+            throw new BusinessException(5002, "Refresh token expiration must be in the future.");
+
+        return new UserToken
         {
             Id = default,
             UserId = userId,
             RefreshToken = refreshToken,
             RefreshTokenExpireTime = expireTime
-        });
+        };
     }
 
     /// <summary>
@@ -62,14 +65,16 @@ public class UserToken : IEntityId<long>
     /// <param name="newRefreshToken">Новый Refresh токен</param>
     /// <param name="newExpireTime">Новый срок истечения Refresh токена</param>
     /// <returns>Результат обновления токена</returns>
-    public BaseResult UpdateToken(string newRefreshToken, DateTime newExpireTime)
+    public void UpdateRefreshTokenData(string newRefreshToken, DateTime newExpireTime)
     {
-        if (string.IsNullOrWhiteSpace(newRefreshToken)) return BaseResult.Failure(5003, "Refresh token cannot be empty.");
-        if (newExpireTime <= DateTime.UtcNow) return BaseResult.Failure(5004, "Refresh token expiration must be in the future.");
+        if (string.IsNullOrWhiteSpace(newRefreshToken))
+            throw new BusinessException(5003, "Refresh token cannot be empty.");
+
+        if (newExpireTime <= DateTime.UtcNow)
+            throw new BusinessException(5004, "Refresh token expiration must be in the future.");
 
         RefreshToken = newRefreshToken;
         RefreshTokenExpireTime = newExpireTime;
-        return BaseResult.Success();
     }
 
     /// <summary>

@@ -1,14 +1,11 @@
-﻿namespace OrderPaymentSystem.Domain.Dto.Order;
+﻿using OrderPaymentSystem.Domain.Dto.OrderItem;
+using OrderPaymentSystem.Domain.ValueObjects;
 
-/// <summary>
-/// Модель, предназначенная для методов действий с заказами (создание, удаление)
-/// </summary>
-/// <param name="UserId"></param>
-/// <param name="ProductId"></param>
-/// <param name="ProductCount"></param>
-public record CreateOrderDto
-(
-    Guid UserId,
-    int ProductId,
-    int ProductCount
-);
+namespace OrderPaymentSystem.Domain.Dto.Order
+{
+    public record CreateOrderDto
+    {
+        public IEnumerable<OrderItemDto> OrderItems { get; set; }
+        public Address DeliveryAddress { get; set; }
+    }
+}

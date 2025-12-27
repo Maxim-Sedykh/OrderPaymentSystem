@@ -1,6 +1,6 @@
 ﻿using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Exceptions;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
-using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Domain.Entities;
 
@@ -65,12 +65,18 @@ public class Payment : IEntityId<long>, IAuditable
     /// <param name="amountPayed">Фактическое количество денег которое было заплачено</param>
     /// <param name="cashChange">Сдача</param>
     /// <param name="method">Метод платежа</param>
-    /// <returns>Результат создания платежа</returns>
-    public static DataResult<Payment> Create(long orderId, decimal amountToPay, decimal amountPayed, decimal cashChange, PaymentMethod method)
+    /// <returns>Созданный платёж</returns>
+    public static Payment Create(
+        long orderId,
+        decimal amountToPay,
+        decimal amountPayed,
+        decimal cashChange,
+        PaymentMethod method)
     {
-        if (amountToPay <= 0) return DataResult<Payment>.Failure(8001, "Amount to pay must be positive.");
+        if (amountToPay <= 0)
+            throw new BusinessException(8001, "Amount to pay must be positive.");
 
-        return DataResult<Payment>.Success(new Payment
+        return new Payment
         {
             Id = default,
             OrderId = orderId,
@@ -79,6 +85,27 @@ public class Payment : IEntityId<long>, IAuditable
             CashChange = cashChange,
             PaymentMethod = method,
             Status = PaymentStatus.Pending
-        });
+        };
+    }
+
+    /// <summary>
+    /// Обработать платеж.
+    /// </summary>
+    /// <param name="amountPaid">Фактическая сумма, которую оплатил клиент.</param>
+    /// <param name="cashChange">Сдача, если платеж наличными.</param>
+    public void ProcessPayment(decimal amountPaid, decimal cashChange)
+    {
+        if (Status != PaymentStatus.Pending)
+            throw new BusinessException(666, $"Payment is already in {Status} status.");
+        if (amountPaid <= 0)
+            throw new BusinessException(666, "Amount paid must be positive.");
+        if (amountPaid < AmountToPay)
+            throw new BusinessException(666, $"Amount paid {amountPaid} is less than amount to pay {AmountToPay}.");
+        if (amountPaid - AmountToPay != cashChange)
+            throw new BusinessException(666, "Cash change does not match calculation.");
+
+        AmountPayed = amountPaid;
+        CashChange = cashChange;
+        Status = PaymentStatus.Succeeded;
     }
 }

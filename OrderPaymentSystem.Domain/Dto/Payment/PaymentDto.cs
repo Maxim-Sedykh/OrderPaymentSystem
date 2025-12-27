@@ -1,26 +1,18 @@
 ﻿using OrderPaymentSystem.Domain.Enum;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
-namespace OrderPaymentSystem.Domain.Dto.Payment;
-
-public class PaymentDto
+namespace OrderPaymentSystem.Domain.Dto.Payment
 {
-    public long Id { get; set; }    
-
-    public long BasketId { get; set; }    
-
-    public decimal AmountOfPayment { get; set; }    
-
-    public PaymentMethod PaymentMethod { get; set; }  
-
-    public decimal CashChange { get; set; }  
-
-    public string Street { get; set; }    
-
-    public string City { get; set; }    
-
-    public string Country { get; set; }   
-
-    public string Zipcode { get; set; }   
-
-    public string CreatedAt { get; set; }    
+    public class PaymentDto
+    {
+        public long Id { get; set; }
+        public long OrderId { get; set; }
+        public decimal AmountToPay { get; set; }
+        public decimal? AmountPayed { get; set; }
+        public decimal? CashChange { get; set; }
+        public PaymentMethod PaymentMethod { get; set; }
+        public PaymentStatus Status { get; set; }
+    }
 }

@@ -87,7 +87,7 @@ public class UserTokenService : IUserTokenService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<TokenDto>> RefreshTokenAsync(
+    public async Task<DataResult<TokenDto>> RefreshAsync(
         TokenDto dto,
         CancellationToken cancellationToken = default)
     {
@@ -102,7 +102,13 @@ public class UserTokenService : IUserTokenService
         var newAccessToken = GenerateAccessToken(newClaims);
         var newRefreshToken = GenerateRefreshToken();
 
-        await UpdateUserRefreshTokenAsync(user, newRefreshToken, cancellationToken);
+        user.UserToken.UpdateRefreshTokenData(
+            newRefreshToken,
+            _timeProvider.GetUtcNow().UtcDateTime.AddDays(7)
+        );
+
+        _userRepository.Update(user);
+        await _userRepository.SaveChangesAsync(cancellationToken);
 
         var tokenDto = new TokenDto
         {
@@ -160,24 +166,6 @@ public class UserTokenService : IUserTokenService
         }
 
         return DataResult<User>.Success(user);
-    }
-
-    /// <summary>
-    /// Обновляет refresh token пользователя
-    /// </summary>
-    /// <param name="user">Пользователь</param>
-    /// <param name="newRefreshToken">Новый refresh token</param>
-    /// <param name="cancellationToken">Токен отмены</param>
-    private async Task UpdateUserRefreshTokenAsync(
-        User user,
-        string newRefreshToken,
-        CancellationToken cancellationToken)
-    {
-        user.UserToken.RefreshToken = newRefreshToken;
-        user.UserToken.RefreshTokenExpireTime = _timeProvider.GetUtcNow().UtcDateTime.AddDays(7);
-
-        _userRepository.Update(user);
-        await _userRepository.SaveChangesAsync(cancellationToken);
     }
 
     /// <summary>

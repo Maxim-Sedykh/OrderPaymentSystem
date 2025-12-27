@@ -25,7 +25,7 @@ public class DeleteProductTests : IClassFixture<ProductServiceFixture>
         _fixture.MapperMock.Setup(x => x.Map<ProductDto>(product)).Returns(productDto);
 
         // Act
-        var result = await _fixture.ProductService.DeleteProductAsync(productId);
+        var result = await _fixture.ProductService.DeleteByIdAsync(productId);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -40,7 +40,7 @@ public class DeleteProductTests : IClassFixture<ProductServiceFixture>
         var productId = 0; // Товара с таким идентификатором не должно существовать
 
         // Act
-        var result = await _fixture.ProductService.DeleteProductAsync(productId);
+        var result = await _fixture.ProductService.DeleteByIdAsync(productId);
 
         // Assert
         Assert.False(result.IsSuccess);

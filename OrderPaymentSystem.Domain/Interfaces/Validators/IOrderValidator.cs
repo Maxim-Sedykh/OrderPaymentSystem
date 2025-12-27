@@ -6,7 +6,7 @@ namespace OrderPaymentSystem.Domain.Interfaces.Validators;
 /// <summary>
 /// Валидатор по взаимодействию с заказами
 /// </summary>
-public interface IOrderValidator
+public interface IOrderItemValidator
 {
     /// <summary>
     /// Валидировать обновление заказа
@@ -14,7 +14,7 @@ public interface IOrderValidator
     /// <param name="order">Заказ</param>
     /// <param name="product">Товар</param>
     /// <returns>Результат валидации</returns>
-    BaseResult ValidateUpdatingOrder(OrderItem order, Product product);
+    BaseResult ValidateUpdatingOrder(Order order, Product product);
 
     /// <summary>
     /// Валидировать создание заказа

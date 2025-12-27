@@ -1,4 +1,5 @@
 ﻿using OrderPaymentSystem.Domain.Dto.Order;
+using OrderPaymentSystem.Domain.Dto.OrderItem;
 using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Domain.Interfaces.Services;
@@ -9,37 +10,41 @@ namespace OrderPaymentSystem.Domain.Interfaces.Services;
 public interface IOrderService
 {
     /// <summary>
-    /// Получение всех заказов всех пользователей
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    Task<CollectionResult<OrderDto>> GetAllOrdersAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Получение заказа по идентификатору
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    Task<DataResult<OrderDto>> GetOrderByIdAsync(long id, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Удаление заказа по идентификатору
+    /// Создать заказ
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<BaseResult> DeleteOrderByIdAsync(long id, CancellationToken cancellationToken = default);
+    Task<DataResult<OrderDto>> CreateAsync(Guid userId, CreateOrderDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Обновление заказа
+    /// Получить заказ по Id
     /// </summary>
-    /// <param name="dto"></param>
+    /// <param name="orderId"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<DataResult<OrderDto>> UpdateOrderAsync(long id, UpdateOrderDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<OrderDto>> GetByIdAsync(long orderId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Создание заказа и добавление его в корзину
+    /// Обновить статус заказа
     /// </summary>
+    /// <param name="orderId"></param>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<BaseResult> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken = default);
+    Task<BaseResult> UpdateStatusAsync(long orderId, UpdateOrderStatusDto dto, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Получить заказы пользователя
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<CollectionResult<OrderDto>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+
+    Task<BaseResult> CompleteProcessingAsync(long orderId, long paymentId, CancellationToken cancellationToken = default);
+
+    Task<BaseResult> UpdateBulkOrderItemsAsync(long orderId, List<UpdateOrderItemDto> adjustments, CancellationToken cancellationToken = default);
+
+    Task<BaseResult> ShipOrderAsync(long orderId, CancellationToken cancellationToken = default);
 }

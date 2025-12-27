@@ -54,7 +54,7 @@ public class ProductController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ProductDto>> GetProduct(int productId, CancellationToken cancellationToken)
     {
-        var response = await _productService.GetProductByIdAsync(productId, cancellationToken);
+        var response = await _productService.GetByIdAsync(productId, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);
@@ -73,7 +73,7 @@ public class ProductController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ProductDto[]>> GetAllProducts(CancellationToken cancellationToken)
     {
-        var response = await _productService.GetProductsAsync(cancellationToken);
+        var response = await _productService.GetAllAsync(cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);
@@ -102,7 +102,7 @@ public class ProductController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ProductDto>> DeleteProduct(int id, CancellationToken cancellationToken)
     {
-        var response = await _productService.DeleteProductAsync(id, cancellationToken);
+        var response = await _productService.DeleteByIdAsync(id, cancellationToken);
         if (response.IsSuccess)
         {
             return NoContent();
@@ -144,7 +144,7 @@ public class ProductController : ControllerBase
             return UnprocessableEntity(validationResult.Errors);
         }
 
-        var response = await _productService.CreateProductAsync(dto, cancellationToken);
+        var response = await _productService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
             return Created();
@@ -185,7 +185,7 @@ public class ProductController : ControllerBase
             return UnprocessableEntity(validationResult.Errors);
         }
 
-        var response = await _productService.UpdateProductAsync(id, dto, cancellationToken);
+        var response = await _productService.UpdateAsync(id, dto, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);

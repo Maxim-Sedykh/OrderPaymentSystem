@@ -30,7 +30,6 @@ public class AuthService : IAuthService
     private readonly ILogger<AuthService> _logger;
     private readonly IUserTokenService _userTokenService;
     private readonly IBaseRepository<UserToken> _userTokenRepository;
-    private readonly IBaseRepository<BasketItem> _basketRepository;
     private readonly IBaseRepository<Role> _roleRepository;
     private readonly IBaseRepository<UserRole> _userRoleRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -54,7 +53,6 @@ public class AuthService : IAuthService
         ILogger<AuthService> logger,
         IUserTokenService userTokenService,
         IBaseRepository<UserToken> userTokenRepository,
-        IBaseRepository<BasketItem> basketRepository,
         IBaseRepository<Role> roleRepository,
         IBaseRepository<UserRole> userRoleRepository,
         IUnitOfWork unitOfWork,
@@ -66,7 +64,6 @@ public class AuthService : IAuthService
         _logger = logger;
         _userTokenService = userTokenService;
         _userTokenRepository = userTokenRepository;
-        _basketRepository = basketRepository;
         _roleRepository = roleRepository;
         _userRoleRepository = userRoleRepository;
         _unitOfWork = unitOfWork;
@@ -108,21 +105,17 @@ public class AuthService : IAuthService
 
         if (userToken == null)
         {
-            userToken = UserToken.Create(user.Id, refreshToken, refreshTokenExpire);
-
-            userToken = new UserToken()
-            {
-                UserId = user.Id,
-                RefreshToken = refreshToken,
-                RefreshTokenExpireTime = refreshTokenExpire
-            };
+            userToken = UserToken.Create(
+                user.Id,
+                refreshToken,
+                refreshTokenExpire
+            );
 
             await _userTokenRepository.CreateAsync(userToken, cancellationToken);
         }
         else
         {
-            userToken.RefreshToken = refreshToken;
-            userToken.RefreshTokenExpireTime = refreshTokenExpire;
+            userToken.UpdateRefreshTokenData(refreshToken, refreshTokenExpire);
 
             _userTokenRepository.Update(userToken);
         }
@@ -148,7 +141,6 @@ public class AuthService : IAuthService
         }
 
         var exists = await _userRepository.GetQueryable()
-            .AsNoTracking()
             .AnyAsync(x => x.Login == dto.Login, cancellationToken);
 
         if (exists)
@@ -162,20 +154,14 @@ public class AuthService : IAuthService
 
         try
         {
-            user = new User()
-            {
-                Login = dto.Login,
-                Password = _passwordHasher.Hash(dto.Password),
-            };
+            user = User.Create(
+                dto.Login,
+                _passwordHasher.Hash(dto.Password)
+            );
+
             await _userRepository.CreateAsync(user, cancellationToken);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            var userBasket = new BasketItem()
-            {
-                UserId = user.Id,
-            };
-            await _basketRepository.CreateAsync(userBasket, cancellationToken);
 
             var roleId = await _roleRepository.GetQueryable()
                 .Where(x => x.Name == nameof(Roles.User))
@@ -189,11 +175,7 @@ public class AuthService : IAuthService
                 return BaseResult.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
             }
 
-            var userRole = new UserRole()
-            {
-                UserId = user.Id,
-                RoleId = roleId
-            };
+            var userRole = UserRole.Create(user.Id, roleId);
 
             await _userRoleRepository.CreateAsync(userRole, cancellationToken);
 
@@ -214,7 +196,7 @@ public class AuthService : IAuthService
 
             return BaseResult.Success();
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex)
         {
             await transaction.RollbackAsync(cancellationToken);
             _logger.LogError(ex, "Error during registration for user: {Login}", dto.Login);

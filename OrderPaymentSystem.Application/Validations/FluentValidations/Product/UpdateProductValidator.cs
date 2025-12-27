@@ -8,7 +8,7 @@ public class UpdateProductValidator : AbstractValidator<UpdateProductDto>
     public UpdateProductValidator()
     {
         RuleFor(x => x.Id).NotEmpty().WithMessage("Идентификатор товара не должен быть пустым");
-        RuleFor(x => x.ProductName)
+        RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Имя товара не может быть пустым")
             .MaximumLength(100).WithMessage("Имя товара должно быть не длиннее 100 символов");
 

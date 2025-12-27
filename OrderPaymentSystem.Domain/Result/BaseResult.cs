@@ -1,4 +1,6 @@
-﻿namespace OrderPaymentSystem.Domain.Result
+﻿using OrderPaymentSystem.Domain.Enum;
+
+namespace OrderPaymentSystem.Domain.Result
 {
     /// <summary>
     /// Класс для реализации паттерна Result Pattern.
@@ -12,7 +14,7 @@
         /// <param name="error"></param>
         protected BaseResult(Error error = null)
         {
-            Error = error ?? new Error();
+            Error = error ?? new Error("Internal server error", 500);
         }
 
         /// <summary>
@@ -37,6 +39,9 @@
         /// <param name="errorMessage">Сообщение об ошибке</param>
         public static BaseResult Failure(int errorCode, string errorMessage) =>
             new(new Error(errorMessage, errorCode));
+
+        public static BaseResult Failure(ErrorCodes errorCode, string errorMessage) =>
+            new(new Error(errorMessage, (int)errorCode));
 
         /// <summary>
         /// Создание ошибочного результата

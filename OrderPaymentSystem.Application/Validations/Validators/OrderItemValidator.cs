@@ -9,19 +9,19 @@ namespace OrderPaymentSystem.Application.Validations.Validators;
 /// <summary>
 /// Валидатор для процесса работы с заказами
 /// </summary>
-public class OrderValidator : IOrderValidator
+public class OrderItemValidator : IOrderItemValidator
 {
     /// <inheritdoc/>
-    public BaseResult ValidateUpdatingOrder(OrderItem order, Product product)
+    public BaseResult ValidateUpdatingOrder(Order order, Product product)
     {
         if (order == null)
         {
-            return BaseResult.Failure((int)ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
+            return BaseResult.Failure(ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
         }
 
         if (product == null)
         {
-            return BaseResult.Failure((int)ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
+            return BaseResult.Failure(ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
         }
 
         return BaseResult.Success();

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
 using OrderPaymentSystem.Domain.Dto.UserRole;
+using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using System.Net.Mime;
 
@@ -14,27 +15,27 @@ namespace OrderPaymentSystem.Api.Controllers;
 [Authorize(Roles = "Admin")]
 [Consumes(MediaTypeNames.Application.Json)]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/roles/users")]
+[Route("api/v{version:apiVersion}/users")]
 [ApiController]
 public class UserRoleController : ControllerBase
 {
-    private readonly IRoleService _roleService;
+    private readonly IUserRoleService _userRoleService;
     private readonly UpdateUserRoleValidation _updateUserRoleValidation;
-    private readonly UserRoleValidation _userRoleValidation;
+    private readonly CreateUserRoleValidation _createUserRoleValidation;
 
     /// <summary>
     /// Конструктор контроллера для работы с ролями пользователя
     /// </summary>
-    /// <param name="roleService"></param>
-    /// <param name="updateUserRoleValidation">Обновление роли для пользователя</param>
-    /// <param name="userRoleValidation">Валидатор роли для пользователя</param>
-    public UserRoleController(IRoleService roleService,
+    /// <param name="userRoleService">Сервис для работы с ролями и пользователями</param>
+    /// <param name="updateUserRoleValidation">Валидатор для обновления роли для пользователя</param>
+    /// <param name="createUserRoleValidation">Валидатор для добавления роли к пользователю</param>
+    public UserRoleController(IUserRoleService userRoleService,
         UpdateUserRoleValidation updateUserRoleValidation,
-        UserRoleValidation userRoleValidation)
+        CreateUserRoleValidation createUserRoleValidation)
     {
-        _roleService = roleService;
+        _userRoleService = userRoleService;
         _updateUserRoleValidation = updateUserRoleValidation;
-        _userRoleValidation = userRoleValidation;
+        _createUserRoleValidation = createUserRoleValidation;
     }
 
     /// <summary>
@@ -43,7 +44,6 @@ public class UserRoleController : ControllerBase
     /// <param name="dto"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
-    /// Request for add role for user
     /// 
     ///     POST
     ///     {
@@ -54,22 +54,21 @@ public class UserRoleController : ControllerBase
     /// </remarks>
     /// <response code="200">Если роль для пользователя создалась</response>
     /// <response code="400">Если роль для пользователя не была создана</response>
-    [HttpPost("/users")]
+    [HttpPost("{userId}/roles")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<UserRoleDto>> AddRoleForUser(UserRoleDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult<UserRoleDto>> AddRoleForUser(CreateUserRoleDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _userRoleValidation.ValidateAsync(dto, cancellationToken);
-
+        var validationResult = await _createUserRoleValidation.ValidateAsync(dto, cancellationToken);
         if (!validationResult.IsValid)
         {
             return UnprocessableEntity(validationResult.Errors);
         }
 
-        var response = await _roleService.AddRoleForUserAsync(dto, cancellationToken);
+        var response = await _userRoleService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response.Data);
+            return CreatedAtAction(nameof(AddRoleForUser), response.Data);
         }
         return BadRequest(response.Error);
     }
@@ -92,12 +91,12 @@ public class UserRoleController : ControllerBase
     /// </remarks>
     /// <response code="200">Если роль для пользователя удалилась</response>
     /// <response code="400">Если роль для пользователя не была удалена</response>
-    [HttpDelete("{roleId}/users/{userId}")]
+    [HttpDelete("{userId}/roles/{roleId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<UserRoleDto>> DeleteRoleForUser(int roleId, Guid userId, CancellationToken cancellationToken)
+    public async Task<ActionResult<UserRoleDto>> DeleteRoleForUser(Guid userId, int roleId, CancellationToken cancellationToken)
     {
-        var response = await _roleService.DeleteRoleForUserAsync(userId, roleId, cancellationToken);
+        var response = await _userRoleService.DeleteAsync(userId, roleId, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);
@@ -111,35 +110,45 @@ public class UserRoleController : ControllerBase
     /// <param name="userId"></param>
     /// <param name="dto"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
-    /// <remarks>
-    /// Request for update role for user
-    /// 
-    ///     POST
-    ///     {
-    ///         "login": "User first",
-    ///         "fromRoleId": 7,
-    ///         "ToRoleId": 1,
-    ///     }
-    ///     
-    /// </remarks>
     /// <response code="200">Если роль для пользователя обновилась</response>
     /// <response code="400">Если роль для пользователя не была удалена</response>
-    [HttpPut("/users/{userId}")]
+    [HttpPut("{userId}/roles")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserRoleDto>> UpdateRoleForUser(Guid userId, UpdateUserRoleDto dto, CancellationToken cancellationToken)
     {
         var validationResult = await _updateUserRoleValidation.ValidateAsync(dto, cancellationToken);
-
         if (!validationResult.IsValid)
         {
             return UnprocessableEntity(validationResult.Errors);
         }
 
-        var response = await _roleService.UpdateRoleForUserAsync(userId, dto, cancellationToken);
+        var response = await _userRoleService.UpdateAsync(userId, dto, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);
+        }
+        return BadRequest(response.Error);
+    }
+
+    /// <summary>
+    /// Получить роли пользователя
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
+    [HttpGet("{userId}/roles")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<UserRoleDto>> GetUserRoles(Guid userId, CancellationToken cancellationToken)
+    {
+        var response = await _userRoleService.GetByUserIdAsync(userId, cancellationToken);
+        if (response.IsSuccess)
+        {
+            return Ok(response.Data);
+        }
+        if (response.Error.Code == (int)ErrorCodes.UserNotFound)
+        {
+            return NotFound(ErrorCodes.UserNotFound.ToString());
         }
         return BadRequest(response.Error);
     }

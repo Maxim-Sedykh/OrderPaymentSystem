@@ -2,218 +2,188 @@
 using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Order;
+using OrderPaymentSystem.Domain.Dto.OrderItem;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Extensions;
-using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
-using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
 
-namespace OrderPaymentSystem.Application.Services;
-
-/// <summary>
-/// Сервис для работы с заказами
-/// </summary>
-public class OrderService : IOrderService
+namespace OrderPaymentSystem.Application.Services
 {
-    private readonly IBaseRepository<OrderItem> _orderRepository;
-    private readonly IBaseRepository<User> _userRepository;
-    private readonly IBaseRepository<Product> _productRepository;
-    private readonly IMapper _mapper;
-    private readonly IOrderValidator _orderValidator;
-    private readonly ICacheService _cacheService;
-
-    /// <summary>
-    /// Конструктор сервиса для работы с заказами
-    /// </summary>
-    /// <param name="orderRepository">Репозиторий для работы с заказами</param>
-    /// <param name="userRepository">Репозиторий для работы с пользователями</param>
-    /// <param name="productRepository">Репозиторий для работы с товарами</param>
-    /// <param name="mapper">Маппер</param>
-    /// <param name="orderValidator">Валидатор заказов</param>
-    /// <param name="cacheService">Сервис для кэширования</param>
-    public OrderService(
-        IBaseRepository<OrderItem> orderRepository,
-        IBaseRepository<User> userRepository,
-        IBaseRepository<Product> productRepository,
-        IMapper mapper,
-        IOrderValidator orderValidator,
-        ICacheService cacheService)
+    public class OrderService : IOrderService
     {
-        _orderRepository = orderRepository;
-        _userRepository = userRepository;
-        _productRepository = productRepository;
-        _mapper = mapper;
-        _orderValidator = orderValidator;
-        _cacheService = cacheService;
-    }
+        private readonly IMapper _mapper;
+        private readonly IBaseRepository<Order> _orderRepository;
+        private readonly IBaseRepository<Payment> _paymentRepository;
+        private readonly IBaseRepository<Product> _productRepository;
 
-    /// <inheritdoc/>
-    public async Task<BaseResult> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken = default)
-    {
-        var (user, product) = await GetUserAndProductAsync(dto.UserId, dto.ProductId, cancellationToken);
-
-        var validateCreatingOrderResult = _orderValidator.ValidateCreatingOrder(user, product);
-        if (!validateCreatingOrderResult.IsSuccess)
+        public OrderService(IMapper mapper, IBaseRepository<Order> orderRepository)
         {
-            return BaseResult.Failure(validateCreatingOrderResult.Error);
+            _mapper = mapper;
+            _orderRepository = orderRepository;
         }
 
-        OrderItem order = new()
+        public async Task<BaseResult> CompleteProcessingAsync(long orderId, long paymentId, CancellationToken cancellationToken = default)
         {
-            UserId = user.Id,
-            ProductId = dto.ProductId,
-            BasketId = user.Basket.Id,
-            PaymentId = null,
-            ProductCount = dto.ProductCount,
-            OrderCost = product.Cost * dto.ProductCount
-        };
+            var order = await _orderRepository.GetQueryable()
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(x => x.Id == orderId, cancellationToken);
+            if (order == null)
+            {
+                return BaseResult.Failure(1001, $"Order with ID '{orderId}' not found.");
+            }
 
-        await _orderRepository.CreateAsync(order, cancellationToken);
-        await _orderRepository.SaveChangesAsync(cancellationToken);
+            var payment = await _paymentRepository.GetQueryable()
+                .FirstOrDefaultAsync(x => x.Id == paymentId, cancellationToken);
+            if (payment == null)
+            {
+                return BaseResult.Failure(1001, $"Payment with ID '{paymentId}' not found.");
+            }
 
-        return BaseResult.Success();
-    }
+            if (payment.OrderId != orderId)
+            {
+                return BaseResult.Failure(1001, $"Payment {paymentId} is not associated with order {orderId}.");
+            }
 
-    /// <inheritdoc/>
-    public async Task<BaseResult> DeleteOrderByIdAsync(long id, CancellationToken cancellationToken = default)
-    {
-        var order = await _orderRepository.GetQueryable()
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+            order.AssignPayment(paymentId);
+            order.ConfirmOrder();
 
-        if (order == null)
-        {
-            return BaseResult.Failure((int)ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
+            _orderRepository.Update(order);
+
+            await _orderRepository.SaveChangesAsync(cancellationToken);
+
+            return BaseResult.Success();
         }
 
-        _orderRepository.Remove(order);
-        await _orderRepository.SaveChangesAsync(cancellationToken);
-
-        return BaseResult.Success();
-    }
-
-    /// <inheritdoc/>
-    public async Task<DataResult<OrderDto>> GetOrderByIdAsync(long id, CancellationToken cancellationToken = default)
-    {
-        var order = await _orderRepository.GetQueryable()
-                    .Where(x => x.Id == id)
-                    .AsProjected<OrderItem, OrderDto>(_mapper)
-                    .FirstOrDefaultAsync(cancellationToken); ;
-
-        if (order == null)
+        public async Task<DataResult<OrderDto>> CreateAsync(Guid userId, CreateOrderDto dto, CancellationToken cancellationToken = default)
         {
-            return DataResult<OrderDto>.Failure((int)ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
+            var orderItemEntities = dto.OrderItems
+                .Select(x => OrderItem.Create(x.ProductId, x.Quantity, x.ProductPrice)).ToArray();
+
+            var totalAmount = orderItemEntities.Sum(item => item.ItemTotalSum);
+            var order = Order.Create(userId, dto.DeliveryAddress, orderItemEntities, totalAmount);
+
+            await _orderRepository.CreateAsync(order, cancellationToken);
+            await _orderRepository.SaveChangesAsync(cancellationToken);
+
+            return DataResult<OrderDto>.Success(_mapper.Map<OrderDto>(order));
         }
 
-        return DataResult<OrderDto>.Success(order);
-    }
-
-    /// <inheritdoc/>
-    public async Task<CollectionResult<OrderDto>> GetAllOrdersAsync(CancellationToken cancellationToken = default)
-    {
-        var orders = await _orderRepository.GetQueryable()
-            .AsProjected<OrderItem, OrderDto>(_mapper)
-            .ToArrayAsync(cancellationToken);
-
-        if (orders.Length == 0)
+        public async Task<DataResult<OrderDto>> GetByIdAsync(long orderId, CancellationToken cancellationToken = default)
         {
-            return CollectionResult<OrderDto>.Failure((int)ErrorCodes.ProductsNotFound, ErrorMessage.ProductsNotFound);
+            var order = await _orderRepository.GetQueryable()
+                .Where(x => x.Id == orderId)
+                .AsProjected<Order, OrderDto>(_mapper)
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (order == null)
+            {
+                return DataResult<OrderDto>.Failure(ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
+            }
+
+            return DataResult<OrderDto>.Success(order);
         }
 
-        return CollectionResult<OrderDto>.Success(orders);
-    }
-
-    /// <inheritdoc/>
-    public async Task<DataResult<OrderDto>> UpdateOrderAsync(long id, UpdateOrderDto dto, CancellationToken cancellationToken = default)
-    {
-        var (order, product) = await GetOrderAndProductAsync(id, dto.ProductId, cancellationToken);
-
-        var validateUpdatingOrderResult = _orderValidator.ValidateUpdatingOrder(order, product);
-        if (!validateUpdatingOrderResult.IsSuccess)
+        public async Task<CollectionResult<OrderDto>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            return DataResult<OrderDto>.Failure(validateUpdatingOrderResult.Error);
+            var orders = await _orderRepository.GetQueryable()
+                .Where(x => x.UserId == userId)
+                .AsProjected<Order, OrderDto>(_mapper)
+                .ToArrayAsync(cancellationToken);
+
+            if (orders == null)
+            {
+                return CollectionResult<OrderDto>.Failure(ErrorCodes.OrdersNotFound, ErrorMessage.OrdersNotFound);
+            }
+
+            return CollectionResult<OrderDto>.Success(orders);
         }
 
-        if (!HasOrderChanges(order, dto))
+        public async Task<BaseResult> ShipOrderAsync(long orderId, CancellationToken cancellationToken = default)
         {
-            return DataResult<OrderDto>.Failure((int)ErrorCodes.NoChangesFound, ErrorMessage.NoChangesFound);
+            var order = await _orderRepository.GetQueryable()
+                .Include(o => o.Items)
+                .Include(o => o.Payment)
+                .FirstOrDefaultAsync(x => x.Id == orderId, cancellationToken);
+            if (order == null)
+            {
+                return BaseResult.Failure(666, $"Order with ID '{orderId}' not found.");
+            }
+
+            foreach (var item in order.Items)
+            {
+                var product = await _productRepository.GetQueryable()
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken);
+
+                if (product == null)
+                {
+                    return BaseResult.Failure(666, $"Product with ID '{item.ProductId}' for order '{orderId}' not found.");
+                }
+                if (product.StockQuantity < item.Quantity)
+                {
+                    return BaseResult.Failure(666, $"Not enough stock for product '{product.Id}' to ship order '{orderId}'. Available: {product.StockQuantity}, Required: {item.Quantity}.");
+                }
+            }
+
+            order.ShipOrder();
+
+            _orderRepository.Update(order);
+            await _orderRepository.SaveChangesAsync(cancellationToken);
+
+            return BaseResult.Success();
         }
 
-        UpdateOrderProperties(order, product, dto.ProductCount);
+        public async Task<BaseResult> UpdateBulkOrderItemsAsync(long orderId, List<UpdateOrderItemDto> updateDtos, CancellationToken cancellationToken = default)
+        {
+            var order = await _orderRepository.GetQueryable()
+                .Include(o => o.Items)
+                .FirstOrDefaultAsync(x => x.Id == orderId, cancellationToken);
+            if (order == null)
+            {
+                return BaseResult.Failure(666, $"Order with ID '{orderId}' not found.");
+            }
 
-        var updatedOrder = _orderRepository.Update(order);
-        await _orderRepository.SaveChangesAsync(cancellationToken);
+            var productIds = updateDtos.Select(a => a.ProductId).Distinct().ToList();
+            var products = await _productRepository.GetQueryable()
+                .Where(p => productIds.Contains(p.Id))
+                .AsNoTracking()
+                .ToDictionaryAsync(p => p.Id, p => p, cancellationToken);
 
-        return DataResult<OrderDto>.Success(_mapper.Map<OrderDto>(updatedOrder));
-    }
+            foreach (var update in updateDtos)
+            {
+                if (!products.TryGetValue(update.ProductId, out var product))
+                {
+                    return BaseResult.Failure(666, $"Product with ID '{update.ProductId}' not found.");
+                }
+                if (update.NewQuantity != 0)
+                {
+                    order.UpdateOrderItems(update.ProductId, update.NewQuantity, product.Price);
+                }
+            }
 
-    /// <summary>
-    /// Получить ассинхронно пользователя и товар параллельно.
-    /// </summary>
-    /// <param name="userId">Id пользователя</param>
-    /// <param name="productId">Id товара</param>
-    /// <param name="cancellationToken">Токен отмены</param>
-    /// <returns>Пользователь и товар</returns>
-    private async Task<(User user, Product product)> GetUserAndProductAsync(Guid userId, long productId, CancellationToken cancellationToken)
-    {
-        var userTask = _userRepository.GetQueryable()
-            .AsNoTracking()
-            .Include(x => x.Basket)
-            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+            _orderRepository.Update(order);
+            await _orderRepository.SaveChangesAsync(cancellationToken);
 
-        var productTask = _productRepository.GetQueryable()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == productId, cancellationToken);
+            return BaseResult.Success();
+        }
 
-        await Task.WhenAll(userTask, productTask);
+        public async Task<BaseResult> UpdateStatusAsync(long orderId, UpdateOrderStatusDto dto, CancellationToken cancellationToken = default)
+        {
+            var order = await _orderRepository.GetQueryable()
+                .FirstOrDefaultAsync(x => x.Id == orderId, cancellationToken);
+            if (order == null)
+            {
+                return BaseResult.Failure(ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
+            }
 
-        return (userTask.Result, productTask.Result);
-    }
+            order.UpdateStatus(dto.NewStatus);
 
-    /// <summary>
-    /// Получить заказ и товар параллельно
-    /// </summary>
-    /// <param name="orderId">Id заказа</param>
-    /// <param name="productId">Id товара</param>
-    /// <param name="cancellationToken">Токен отмены операции</param>
-    /// <returns>Заказ и товар</returns>
-    private async Task<(OrderItem order, Product product)> GetOrderAndProductAsync(long orderId, long productId, CancellationToken cancellationToken)
-    {
-        var orderTask = _orderRepository.GetQueryable()
-            .FirstOrDefaultAsync(x => x.Id == orderId, cancellationToken);
+            await _orderRepository.SaveChangesAsync(cancellationToken);
 
-        var productTask = _productRepository.GetQueryable()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == productId, cancellationToken);
-
-        await Task.WhenAll(orderTask, productTask);
-
-        return (orderTask.Result, productTask.Result);
-    }
-
-    /// <summary>
-    /// Были ли изменения у заказа
-    /// </summary>
-    /// <param name="order">Сущность существующего заказа</param>
-    /// <param name="dto">DTO с обновлёнными данными заказа</param>
-    /// <returns>True если изменения были</returns>
-    private static bool HasOrderChanges(OrderItem order, UpdateOrderDto dto)
-    {
-        return order.ProductId != dto.ProductId || order.ProductCount != dto.ProductCount;
-    }
-
-    /// <summary>
-    /// Обновить свойства заказа
-    /// </summary>
-    /// <param name="order">Существующий заказ</param>
-    /// <param name="product">Товар</param>
-    /// <param name="productCount">Количество товара в заказе</param>
-    private static void UpdateOrderProperties(OrderItem order, Product product, int productCount)
-    {
-        order.ProductId = product.Id;
-        order.ProductCount = productCount;
-        order.OrderCost = product.Cost * productCount;
+            return BaseResult.Success();
+        }
     }
 }

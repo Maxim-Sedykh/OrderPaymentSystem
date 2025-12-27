@@ -1,5 +1,4 @@
-﻿using OrderPaymentSystem.Domain.Dto.Order;
-using OrderPaymentSystem.Domain.Dto.Payment;
+﻿using OrderPaymentSystem.Domain.Dto.Payment;
 using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Domain.Interfaces.Services;
@@ -10,42 +9,29 @@ namespace OrderPaymentSystem.Domain.Interfaces.Services;
 public interface IPaymentService
 {
     /// <summary>
-    /// Получение платежей пользователя по его идентификатору
-    /// </summary>
-    /// <returns></returns>
-    Task<CollectionResult<PaymentDto>> GetUserPaymentsAsync(Guid userId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Получение всех заказов платежа по идентификатору
-    /// </summary>
-    /// <returns></returns>
-    Task<CollectionResult<OrderDto>> GetPaymentOrdersAsync(long id, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Получение платежа по идентификатору
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    Task<DataResult <PaymentDto>> GetPaymentByIdAsync(long id, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Добавление платежа
+    /// Создать платёж
     /// </summary>
     /// <param name="dto"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<BaseResult> CreatePaymentAsync(CreatePaymentDto dto, CancellationToken cancellationToken = default);
+    Task<BaseResult> CreateAsync(CreatePaymentDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Удаление платеэа по идентификатору
+    /// Получить платёж по Id
     /// </summary>
-    /// <param name="dto"></param>
+    /// <param name="paymentId"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<BaseResult> DeletePaymentAsync(long id, CancellationToken cancellationToken = default);
+    Task<DataResult<PaymentDto>> GetByIdAsync(long paymentId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Обновление платежа
+    /// Получить платёж по идентификатору заказа привязанному к платежу
     /// </summary>
-    /// <param name="dto"></param>
+    /// <param name="orderId"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<DataResult<PaymentDto>> UpdatePaymentAsync(long id, UpdatePaymentDto dto, CancellationToken cancellationToken = default);
+    Task<CollectionResult<PaymentDto>> GetByOrderIdAsync(long orderId, CancellationToken cancellationToken = default);
+
+    Task<BaseResult> CompletePaymentAsync(long paymentId, decimal amountPaid, decimal cashChange, CancellationToken cancellationToken = default)
 }
+

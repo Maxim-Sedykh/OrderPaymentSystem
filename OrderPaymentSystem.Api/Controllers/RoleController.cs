@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Role;
-using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
 using OrderPaymentSystem.Domain.Dto.Role;
-using OrderPaymentSystem.Domain.Dto.UserRole;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using System.Net.Mime;
@@ -33,8 +31,6 @@ public class RoleController : ControllerBase
     /// <param name="updateRoleValidator">Валидатор роли</param>
     public RoleController(IRoleService roleService,
         CreateRoleValidation createRoleValidation,
-        UpdateUserRoleValidation updateUserRoleValidation,
-        UserRoleValidation userRoleValidation,
         UpdateRoleValidator updateRoleValidator)
     {
         _roleService = roleService;
@@ -69,7 +65,7 @@ public class RoleController : ControllerBase
             return UnprocessableEntity(validationResult.Errors);
         }
 
-        var response = await _roleService.CreateRoleAsync(dto, cancellationToken);
+        var response = await _roleService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);
@@ -107,7 +103,7 @@ public class RoleController : ControllerBase
             return UnprocessableEntity(validationResult.Errors);
         }
 
-        var response = await _roleService.UpdateRoleAsync(id, dto, cancellationToken);
+        var response = await _roleService.UpdateAsync(id, dto, cancellationToken);
 
         if (response.IsSuccess)
             return Ok(response.Data);
@@ -138,7 +134,7 @@ public class RoleController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RoleDto>> DeleteRole(long id, CancellationToken cancellationToken)
     {
-        var response = await _roleService.DeleteRoleAsync(id, cancellationToken);
+        var response = await _roleService.DeleteByIdAsync(id, cancellationToken);
         if (response.IsSuccess)
         {
             return NoContent();
@@ -155,7 +151,7 @@ public class RoleController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RoleDto[]>> GetAllRoles(CancellationToken cancellationToken)
     {
-        var response = await _roleService.GetAllRolesAsync(cancellationToken);
+        var response = await _roleService.GetAllAsync(cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);

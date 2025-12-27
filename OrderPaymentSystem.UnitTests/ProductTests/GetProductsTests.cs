@@ -27,7 +27,7 @@ public class GetProductsTests : IClassFixture<ProductServiceFixture>
             .ReturnsAsync(products);
 
         // Act
-        var result = await _fixture.ProductService.GetProductsAsync();
+        var result = await _fixture.ProductService.GetAllAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -47,7 +47,7 @@ public class GetProductsTests : IClassFixture<ProductServiceFixture>
             .ReturnsAsync(products);
 
         // Act
-        var result = await _fixture.ProductService.GetProductsAsync();
+        var result = await _fixture.ProductService.GetAllAsync();
 
         // Assert
         Assert.NotNull(result);
@@ -65,7 +65,7 @@ public class GetProductsTests : IClassFixture<ProductServiceFixture>
             .ReturnsAsync((ProductDto[])null);
 
         // Act
-        var result = await _fixture.ProductService.GetProductsAsync();
+        var result = await _fixture.ProductService.GetAllAsync();
 
         // Assert
         Assert.NotNull(result);

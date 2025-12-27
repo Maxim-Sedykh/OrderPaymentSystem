@@ -1,7 +1,4 @@
-﻿using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Result;
-
-namespace OrderPaymentSystem.Domain.Entities;
+﻿namespace OrderPaymentSystem.Domain.Entities;
 
 /// <summary>
 /// Сущность-связка роли и пользователя
@@ -26,8 +23,8 @@ public class UserRole
     /// <param name="userId">Id пользователя</param>
     /// <param name="roleId">Id роли</param>
     /// <returns>Результат создания</returns>
-    public static DataResult<UserRole> Create(Guid userId, long roleId)
+    public static UserRole Create(Guid userId, long roleId)
     {
-        return DataResult<UserRole>.Success(new UserRole { UserId = userId, RoleId = roleId });
+        return new UserRole { UserId = userId, RoleId = roleId };
     }
 }

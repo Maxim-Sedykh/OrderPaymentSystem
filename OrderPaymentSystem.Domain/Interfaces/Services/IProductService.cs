@@ -12,33 +12,33 @@ public interface IProductService
     /// Получение всех товаров
     /// </summary>
     /// <returns></returns>
-    Task<CollectionResult<ProductDto>> GetProductsAsync(CancellationToken cancellationToken = default);
+    Task<CollectionResult<ProductDto>> GetAllAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Получение товара по идентификатору
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Task<DataResult<ProductDto>> GetProductByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<DataResult<ProductDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Добавление товара
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<BaseResult> CreateProductAsync(CreateProductDto dto, CancellationToken cancellationToken = default);
+    Task<BaseResult> CreateAsync(CreateProductDto dto, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Удаление товара по идентификатору
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<BaseResult> DeleteProductAsync(int id, CancellationToken cancellationToken = default);
+    Task<BaseResult> DeleteByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Обновление товара
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<ProductDto>> UpdateProductAsync(int id, UpdateProductDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<ProductDto>> UpdateAsync(int id, UpdateProductDto dto, CancellationToken cancellationToken = default);
 }

@@ -1,5 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
-using OrderPaymentSystem.Domain.Result;
+﻿using OrderPaymentSystem.Domain.Exceptions;
+using OrderPaymentSystem.Domain.Interfaces.Entities;
 
 namespace OrderPaymentSystem.Domain.Entities;
 
@@ -37,12 +37,14 @@ public class Product : IEntityId<int>, IAuditable
     /// <summary>
     /// Элементы заказов в которых есть товар
     /// </summary>
-    public ICollection<OrderItem> OrderItems { get; protected set; }
+    public ICollection<OrderItem> OrderItems { get; protected set; } = [];
 
     /// <summary>
     /// Элементы корзины в которых есть товар
     /// </summary>
-    public ICollection<BasketItem> BasketItems { get; protected set; }
+    public ICollection<BasketItem> BasketItems { get; protected set; } = [];
+
+    public int StockQuantity { get; private set; }
 
     protected Product() { }
 
@@ -52,19 +54,23 @@ public class Product : IEntityId<int>, IAuditable
     /// <param name="name">Название товара</param>
     /// <param name="description">Описание товара</param>
     /// <param name="price">Стоимость единицы товара</param>
-    /// <returns>Результат создания товара</returns>
-    public static DataResult<Product> Create(string name, string description, decimal price)
+    /// <returns>Созданный товар</returns>
+    public static Product Create(string name, string description, decimal price, int stockQuantity)
     {
-        if (string.IsNullOrWhiteSpace(name)) return DataResult<Product>.Failure(2001, "Product name cannot be empty.");
-        if (price <= 0) return DataResult<Product>.Failure(2002, "Product price must be positive.");
+        if (string.IsNullOrWhiteSpace(name))
+            throw new BusinessException(2001, "Product name cannot be empty.");
 
-        return DataResult<Product>.Success(new Product
+        if (price <= 0)
+            throw new BusinessException(2002, "Product price must be positive.");
+
+        return new Product
         {
             Id = default,
             Name = name,
             Description = description,
-            Price = price
-        });
+            Price = price,
+            StockQuantity = stockQuantity
+        };
     }
 
     /// <summary>
@@ -73,29 +79,29 @@ public class Product : IEntityId<int>, IAuditable
     /// <param name="name">Название товара</param>
     /// <param name="description">Описание товара</param>
     /// <param name="newPrice">Новая стоимость единицы товара</param>
-    /// <returns>Результат обновления</returns>
-    public BaseResult UpdateDetails(string name, string description, decimal newPrice)
+    public void UpdateDetails(string name, string description, decimal newPrice, int stockQuantity)
     {
-        if (string.IsNullOrWhiteSpace(name)) return BaseResult.Failure(2003, "Product name cannot be empty.");
-        if (newPrice <= 0) return BaseResult.Failure(2004, "Product price must be positive.");
+        if (string.IsNullOrWhiteSpace(name))
+            throw new BusinessException(2003, "Product name cannot be empty.");
+
+        if (newPrice <= 0)
+            throw new BusinessException(2004, "Product price must be positive.");
 
         Name = name;
         Description = description;
         Price = newPrice;
-
-        return BaseResult.Success();
+        StockQuantity = stockQuantity;
     }
 
     /// <summary>
     /// Изменить стоимость единицы товара
     /// </summary>
     /// <param name="newPrice">Новая стоимость единицы товара</param>
-    /// <returns>Результат обновления</returns>
-    public BaseResult ChangePrice(decimal newPrice)
+    public void ChangePrice(decimal newPrice)
     {
-        if (newPrice <= 0) return BaseResult.Failure(2005, "Product price must be positive.");
-        Price = newPrice;
+        if (newPrice <= 0)
+            throw new BusinessException(2005, "Product price must be positive.");
 
-        return BaseResult.Success();
+        Price = newPrice;
     }
 }

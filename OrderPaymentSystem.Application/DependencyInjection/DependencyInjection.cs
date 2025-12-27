@@ -40,7 +40,7 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IPaymentService, PaymentService>();
-        services.AddScoped<IBasketService, BasketService>();
+        services.AddScoped<IBasketItemService, BasketItemService>();
     }
 
     private static void InitAutoMapper(this IServiceCollection services)
@@ -85,6 +85,6 @@ public static class DependencyInjection
     {
         services.AddScoped<IAuthValidator, AuthValidator>();
         services.AddScoped<IRoleValidator, RoleValidator>();
-        services.AddScoped<IOrderValidator, OrderValidator>();
+        services.AddScoped<IOrderItemValidator, OrderItemValidator>();
     }
 }
