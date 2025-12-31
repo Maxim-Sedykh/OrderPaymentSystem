@@ -22,8 +22,8 @@ public sealed class DistributedCacheService : ICacheService
         IDistributedCache cache,
         ILogger<DistributedCacheService> logger)
     {
-        _cache = cache ?? throw new ArgumentNullException(nameof(cache));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _cache = cache;
+        _logger = logger;
 
         _jsonSerializerOptions = new JsonSerializerOptions
         {

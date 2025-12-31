@@ -1,24 +1,33 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Repositories;
+﻿using Microsoft.EntityFrameworkCore;
+using OrderPaymentSystem.Domain.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.DAL.Repositories;
 
 /// <summary>
-/// Generic репозиторий. Абстракции над DbContext
+/// Generic репозиторий. Абстракция над DbContext
 /// </summary>
 /// <typeparam name="TEntity">Тип сущности</typeparam>
-/// <param name="dbContext"></param>
-public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepository<TEntity> where TEntity : class
+public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
 {
+    private readonly ApplicationDbContext _dbContext;
+    private readonly DbSet<TEntity> _table;
+
+    public BaseRepository(ApplicationDbContext dbContext)
+    {
+        _dbContext = dbContext;
+        _table = _dbContext.Set<TEntity>();
+    }
+
     /// <inheritdoc/>
     public IQueryable<TEntity> GetQueryable()
     {
-        return dbContext.Set<TEntity>().AsQueryable();
+        return _table.AsQueryable();
     }
 
     /// <inheritdoc/>
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await dbContext.SaveChangesAsync(cancellationToken);
+        return await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -26,7 +35,7 @@ public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepo
     {
         ValidateEntityOnNull(entity);
 
-        await dbContext.AddAsync(entity, cancellationToken);
+        await _table.AddAsync(entity, cancellationToken);
 
         return entity;
     }
@@ -36,7 +45,7 @@ public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepo
     {
         ValidateEntityOnNull(entity);
 
-        dbContext.Remove(entity);
+        _table.Remove(entity);
     }
 
     /// <inheritdoc/>
@@ -44,7 +53,7 @@ public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepo
     {
         ValidateEntityOnNull(entity);
 
-        dbContext.Update(entity);
+        _table.Update(entity);
 
         return entity;
     }
@@ -54,7 +63,7 @@ public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepo
     {
         ValidateEntitiesOnNull(entities);
 
-        dbContext.RemoveRange(entities);
+        _table.RemoveRange(entities);
     }
 
     /// <inheritdoc/>
@@ -62,7 +71,7 @@ public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepo
     {
         ValidateEntitiesOnNull(entities);
 
-        dbContext.UpdateRange(entities);
+        _table.UpdateRange(entities);
     }
 
     /// <summary>
@@ -89,5 +98,10 @@ public class BaseRepository<TEntity>(ApplicationDbContext dbContext) : IBaseRepo
         {
             throw new ArgumentNullException(nameof(entities), "Entities is null");
         }
+    }
+
+    public async Task<TEntity> GetById<TId>(TId id)
+    {
+        return await _table.FindAsync(id);
     }
 }

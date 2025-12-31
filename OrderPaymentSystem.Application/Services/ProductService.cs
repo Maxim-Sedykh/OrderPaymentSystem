@@ -51,7 +51,7 @@ public class ProductService : IProductService
 
         if (productExists)
         {
-            return BaseResult.Failure((int)ErrorCodes.ProductAlreadyExist, ErrorMessage.ProductAlreadyExist);
+            return BaseResult.Failure(ErrorCodes.ProductAlreadyExist, ErrorMessage.ProductAlreadyExist);
         }
 
         var product = Product.Create(dto.Name, dto.Description, dto.Price, dto.StockQuantity);
@@ -73,7 +73,7 @@ public class ProductService : IProductService
 
         if (product == null)
         {
-            return BaseResult.Failure((int)ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
+            return BaseResult.Failure(ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
         }
 
         _productRepository.Remove(product);
@@ -95,7 +95,7 @@ public class ProductService : IProductService
 
         if (product == null)
         {
-            return DataResult<ProductDto>.Failure((int)ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
+            return DataResult<ProductDto>.Failure(ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
         }
 
         return DataResult<ProductDto>.Success(product);
@@ -108,13 +108,6 @@ public class ProductService : IProductService
             .AsProjected<Product, ProductDto>(_mapper)
             .ToArrayAsync(cancellationToken);
 
-        if (products.Length == 0)
-        {
-            _logger.LogError("No products found in database");
-
-            return CollectionResult<ProductDto>.Failure((int)ErrorCodes.ProductsNotFound, ErrorMessage.ProductsNotFound);
-        }
-
         return CollectionResult<ProductDto>.Success(products);
     }
 
@@ -126,7 +119,7 @@ public class ProductService : IProductService
 
         if (product == null)
         {
-            return DataResult<ProductDto>.Failure((int)ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
+            return DataResult<ProductDto>.Failure(ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
         }
 
         product.UpdateDetails(dto.Name, dto.Description, dto.Price, dto.StockQuantity);

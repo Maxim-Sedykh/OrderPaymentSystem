@@ -62,15 +62,11 @@ public class Payment : IEntityId<long>, IAuditable
     /// </summary>
     /// <param name="orderId">Id заказа</param>
     /// <param name="amountToPay">Количество денег которое нужно заплатить</param>
-    /// <param name="amountPayed">Фактическое количество денег которое было заплачено</param>
-    /// <param name="cashChange">Сдача</param>
     /// <param name="method">Метод платежа</param>
     /// <returns>Созданный платёж</returns>
     public static Payment Create(
         long orderId,
         decimal amountToPay,
-        decimal amountPayed,
-        decimal cashChange,
         PaymentMethod method)
     {
         if (amountToPay <= 0)
@@ -81,8 +77,6 @@ public class Payment : IEntityId<long>, IAuditable
             Id = default,
             OrderId = orderId,
             AmountToPay = amountToPay,
-            AmountPayed = amountPayed,
-            CashChange = cashChange,
             PaymentMethod = method,
             Status = PaymentStatus.Pending
         };

@@ -5,194 +5,87 @@
 /// </summary>
 public enum ErrorCodes
 {
-    #region Product Domain (0-29)
-    /// <summary>
-    /// Не найдено ни одного товара
-    /// </summary>
-    ProductsNotFound = 0,
-
-    /// <summary>
-    /// Товар не найден
-    /// </summary>
-    ProductNotFound = 1,
-
-    /// <summary>
-    /// Товар с таким именем уже существует
-    /// </summary>
-    ProductAlreadyExist = 2,
-    #endregion
-
-    #region User Domain (30-49)
-    /// <summary>
-    /// Пользователь не найден
-    /// </summary>
-    UserNotFound = 30,
-
-    /// <summary>
-    /// Пользователь с таким логином уже существует
-    /// </summary>
-    UserAlreadyExist = 31,
-
-    /// <summary>
-    /// Неавторизованный доступ
-    /// </summary>
-    UserUnauthorizedAccess = 32,
-
-    /// <summary>
-    /// У пользователя уже есть эта роль
-    /// </summary>
-    UserAlreadyExistThisRole = 33,
-    #endregion
-
-    #region Authentication Domain (40-49)
-    /// <summary>
-    /// Пароль и подтверждение пароля не совпадают
-    /// </summary>
-    PasswordNotEqualsPasswordConfirm = 40,
-
-    /// <summary>
-    /// Неверный пароль
-    /// </summary>
-    PasswordIsWrong = 41,
-    #endregion
-
-    #region Role Domain (50-59)
-    /// <summary>
-    /// Роль не найдена
-    /// </summary>
-    RoleNotFound = 50,
-
-    /// <summary>
-    /// Роль с таким именем уже существует
-    /// </summary>
-    RoleAlreadyExist = 51,
-
-    /// <summary>
-    /// У пользователя не найдены роли
-    /// </summary>
-    UserRolesNotFound = 52,
-
-    /// <summary>
-    /// Не найдено ни одной роли
-    /// </summary>
-    RolesNotFound = 53,
-    #endregion
-
-    #region Order Domain (60-69)
-    /// <summary>
-    /// Заказ не найден
-    /// </summary>
-    OrderNotFound = 60,
-
-    /// <summary>
-    /// Заказы не найдены
-    /// </summary>
-    OrdersNotFound = 61,
-    #endregion
-
-    #region Basket Domain (70-79)
-
-    /// <summary>
-    /// Корзина не найдена
-    /// </summary>
-    BasketNotFound = 70,
-
-    #endregion
-
-    #region Payment Domain (80-89)
-
-    /// <summary>
-    /// Платеж не найден
-    /// </summary>
-    PaymentNotFound = 80,
-
-    /// <summary>
-    /// Платежи не найдены
-    /// </summary>
-    PaymentsNotFound = 81,
-
-    /// <summary>
-    /// Недостаточно средств для оплаты
-    /// </summary>
-    NotEnoughPayFunds = 82,
-
-    #endregion
-
-    #region Common Domain (90-99)
-
-    /// <summary>
-    /// Изменения не обнаружены
-    /// </summary>
-    NoChangesFound = 90,
-
-    /// <summary>
-    /// Неверный запрос клиента
-    /// </summary>
-    InvalidClientRequest = 95,
-
-    /// <summary>
-    /// Невалидный токен
-    /// </summary>
-    InvalidToken = 96,
-
-    /// <summary>
-    /// Срок действия refresh token истек
-    /// </summary>
-    RefreshTokenExpired = 97,
-
-    #endregion
-
-    #region System Errors (500+)
-
-    /// <summary>
-    /// Внутренняя ошибка сервера
-    /// </summary>
+    // Общие ошибки
+    BadRequest = 400,
+    NotFound = 404,
     InternalServerError = 500,
+    Unauthorized = 401,
+    Forbidden = 403,
+    Conflict = 409,
+    NoChangesFound = 304, // Хотя это не HTTP-код, но для Result Pattern полезно
 
-    #endregion
+    // Ошибки Аутентификации и Авторизации (1xxx)
+    UserNotFound = 1001,
+    UserAlreadyExist = 1002,
+    InvalidPassword = 1003,
+    InvalidLoginOrPassword = 1004, // Объединил InvalidLogin и InvalidPassword для Login-а
+    InvalidToken = 1005,
+    RefreshTokenExpired = 1006,
+    PasswordNotEqualsPasswordConfirm = 1007,
+    RoleNotFound = 1008,
+    UserRolesNotFound = 1009,
+    UserAlreadyHasThisRole = 1010,
+    UserDoesNotHaveThisRole = 1011, // Для удаления/изменения роли
+    InvalidClientRequest = 1012, // Общие ошибки запроса клиента
 
-        None = 0, // No error
-    ValidationError = 1000, // General validation error
+    // Ошибки Продукта (2xxx)
+    ProductNotFound = 2001,
+    ProductAlreadyExist = 2002,
+    ProductPriceMustBePositive = 2003, // Из домена
+    ProductStockQuantityNotAvailable = 2004, // Из домена (проверка на складе)
+    ProductsNotFound = 2005, // Для коллекций
 
-    // Address related errors (1100-1199)
-    AddressStreetEmpty = 1101,
-    AddressCityEmpty = 1102,
-    AddressPostalCodeEmpty = 1103,
-    AddressCountryEmpty = 1104,
+    // Ошибки Позиции Корзины (3xxx)
+    BasketItemNotFound = 3001,
+    BasketItemQuantityMustBePositive = 3002, // Из домена
+    CannotIncreaseQuantityPastLimit = 3003, // Из домена
+    QuantityCannotBeZeroOrNegative = 3004, // Из домена
+    BasketItemCannotDecreaseBelowOne = 3005, // Из домена
 
-    // Product related errors (1200-1299)
-    ProductNameEmpty = 1201,
-    ProductPriceInvalid = 1202,
+    // Ошибки Заказа (4xxx)
+    OrderNotFound = 4001,
+    OrdersNotFound = 4002, // Для коллекций
+    OrderDeliveryAddressRequired = 4003, // Из домена
+    OrderMustContainAtLeastOneItem = 4004, // Из домена
+    OrderTotalAmountMustBePositive = 4005, // Из домена
+    OrderStatusChangeNotAllowed = 4006, // Из домена
+    OrderPaymentAlreadyAssigned = 4007, // Из домена
+    OrderCannotCancelShippedOrDelivered = 4008, // Из домена
+    OrderAlreadyCancelled = 4009, // Из домена
+    OrderCannotConfirmEmptyOrder = 4010, // Из домена
+    OrderAlreadyConfirmed = 4011, // Из домена
+    OrderCannotAddOrRemoveItemInCurrentStatus = 4012, // Из домена
+    OrderCannotRemoveItemFromEmptyOrder = 4013, // Из домена
+    OrderCannotRemoveNonExistingItem = 4014, // Из домена
+    OrderCannotBeConfirmedWithoutPayment = 4015, // Из домена
+    OrderCannotBeInStatusWhenDelivered = 4016, // Из домена
+    OrderCannotChangeStatusOfACancelledOrder = 4017, // Из домена
 
-    // BasketItem related errors (1300-1399)
-    BasketItemQuantityInvalid = 1301,
-    BasketItemProductNotFound = 1302, // E.g., when updating quantity of non-existent item
+    // Ошибки Позиции Заказа (5xxx)
+    OrderItemNotFound = 5001,
+    OrderItemQuantityInvalid = 5002, // Из домена
+    OrderItemPriceInvalid = 5003, // Из домена
+    OrderItemsNotFound = 5004, // Для коллекций
 
-    // User related errors (1400-1499)
-    UserLoginEmpty = 1401,
-    UserPasswordHashEmpty = 1402,
-    UserBasketEmpty = 1404,
+    // Ошибки Платежа (6xxx)
+    PaymentNotFound = 6001,
+    PaymentAlreadyExistsForOrder = 6002,
+    PaymentAmountToPayMustBePositive = 6003, // Из домена
+    PaymentStatusChangeNotAllowed = 6004, // Из домена
+    PaymentAlreadyProcessed = 6005, // Из домена
+    PaymentAmountMismatched = 6006, // Из домена
+    PaymentOrderNotAssociated = 6007, // Из домена
+    PaymentInsufficientFunds = 6008, // Из домена
 
-    // UserToken related errors (1500-1599)
-    RefreshTokenEmpty = 1501,
+    RoleAlreadyExist = 7001,
+    RolesNotFound = 7002,
+    UserAlreadyExistThisRole = 7002,
 
-    // Order related errors (1600-1699)
-    OrderDeliveryAddressNull = 1601,
-    OrderNoItems = 1602,
-    OrderTotalAmountInvalid = 1603,
-    OrderProductPriceInvalid = 1604,
-    OrderPaymentAlreadyAssigned = 1605,
-    OrderCannotChangeDeliveredStatus = 1606,
-    OrderCannotChangeCancelledStatus = 1607,
-    OrderAlreadyCancelled = 1608,
-    OrderCannotCancelShippedOrDelivered = 1609,
+    QuantityMustBePositive = 10001,
+    InvalidUserId = 10002,
+    InvalidProductId = 10004,
 
-    // Payment related errors (1700-1799)
-    PaymentAmountDueInvalid = 1701,
-    PaymentNotInPendingState = 1702,
-    PaymentAmountPaidInvalid = 1703,
-    PaymentAmountPaidLessThanDue = 1704,
-    PaymentCannotRefundNotSuccessful = 1705,
-    PaymentAmountToRefundInvalid = 1706,
-    PaymentAmountToRefundGreaterThanPaid = 1707,
+    InvalidPaymentId = 100077,
+
+    ConcurrencyConflict = 0325493250,
 }

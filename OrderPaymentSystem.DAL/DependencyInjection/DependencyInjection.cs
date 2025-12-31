@@ -26,9 +26,9 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("PostgresSQL");
 
         services.AddSingleton<AuditInterceptor>();
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddDbContext<ApplicationDbContext>(optionsBuilder =>
         {
-            options.UseNpgsql(connectionString);
+            optionsBuilder.UseNpgsql(connectionString, options => options.EnableRetryOnFailure());
         });
 
         services.AddSingleton<IPasswordHasher, PasswordHasher>();

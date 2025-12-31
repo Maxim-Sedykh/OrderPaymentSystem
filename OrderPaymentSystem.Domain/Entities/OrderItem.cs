@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Exceptions;
+﻿using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Exceptions;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -57,8 +58,11 @@ public class OrderItem : IEntityId<long>
     /// <param name="quantity">Количество товара</param>
     /// <param name="productPrice">Стоимость товара</param>
     /// <returns>Созданный элемент заказа</returns>
-    public static OrderItem Create(int productId, int quantity, decimal productPrice)
+    public static OrderItem Create(int productId, int quantity, decimal productPrice, IStockInfo stockInfo)
     {
+        if (!stockInfo.IsStockQuantityAvailable(quantity))
+            throw new BusinessException(ErrorCodes.ProductStockQuantityNotAvailable, "ProductStockQuantityNotAvailable");
+
         if (quantity <= 0)
             throw new BusinessException(7001, "Quantity must be positive.");
 
@@ -76,10 +80,16 @@ public class OrderItem : IEntityId<long>
     /// Обновить количество товара
     /// </summary>
     /// <param name="newQuantity">Новое количество товара</param>
-    public void UpdateQuantity(int newQuantity)
+    public void UpdateQuantity(int newQuantity, IStockInfo productStockInfo)
     {
+        if (!productStockInfo.IsStockQuantityAvailable(newQuantity))
+            throw new BusinessException(ErrorCodes.ProductStockQuantityNotAvailable, "ProductStockQuantityNotAvailable");
+
         if (newQuantity <= 0)
             throw new BusinessException(3001, "Quantity must be positive.");
+
+        if (productStockInfo == null)
+            throw new BusinessException(3001, "Quantity must be positive.");    
 
         Quantity = newQuantity;
     }

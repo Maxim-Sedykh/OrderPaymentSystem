@@ -30,20 +30,14 @@ public class User : IEntityId<Guid>, IAuditable
     /// <inheritdoc/>
     public DateTime? UpdatedAt { get; protected set; }
 
-    /// <summary>
-    /// Роли
-    /// </summary>
-    public ICollection<Role> Roles { get; protected set; } = [];
+    private readonly List<Role> _roles = new();
+    public virtual IReadOnlyCollection<Role> Roles => _roles.AsReadOnly();
 
-    /// <summary>
-    /// Заказы
-    /// </summary>
-    public ICollection<Order> Orders { get; protected set; } = [];
+    private readonly List<Order> _orders = new();
+    public virtual IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
 
-    /// <summary>
-    /// Элементы корзины
-    /// </summary>
-    public ICollection<BasketItem> BasketItems { get; protected set; } = [];
+    private readonly List<BasketItem> _basketItems = new();
+    public virtual IReadOnlyCollection<BasketItem> BasketItems => _basketItems.AsReadOnly();
 
     /// <summary>
     /// Токен аутентификации

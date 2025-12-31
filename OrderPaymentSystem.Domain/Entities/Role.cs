@@ -19,10 +19,8 @@ public class Role : IEntityId<long>
     /// </summary>
     public string Name { get; protected set; }
 
-    /// <summary>
-    /// Пользователи у которых есть эта роль
-    /// </summary>
-    public ICollection<User> Users { get; protected set; } = [];
+    private readonly List<User> _users = new();
+    public virtual IReadOnlyCollection<User> Users => _users.AsReadOnly();
 
     protected Role() { }
 

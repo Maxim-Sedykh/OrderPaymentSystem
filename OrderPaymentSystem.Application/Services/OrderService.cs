@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.OrderItem;
@@ -18,52 +19,92 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<Order> _orderRepository;
         private readonly IBaseRepository<Payment> _paymentRepository;
         private readonly IBaseRepository<Product> _productRepository;
+        private readonly ILogger<OrderService> _logger;
 
-        public OrderService(IMapper mapper, IBaseRepository<Order> orderRepository)
+        public OrderService(IMapper mapper, IBaseRepository<Order> orderRepository, IBaseRepository<Payment> paymentRepository, IBaseRepository<Product> productRepository, ILogger<OrderService> logger)
         {
             _mapper = mapper;
             _orderRepository = orderRepository;
+            _paymentRepository = paymentRepository;
+            _productRepository = productRepository;
+            _logger = logger;
         }
 
         public async Task<BaseResult> CompleteProcessingAsync(long orderId, long paymentId, CancellationToken cancellationToken = default)
         {
-            var order = await _orderRepository.GetQueryable()
-                .Include(o => o.Items)
-                .FirstOrDefaultAsync(x => x.Id == orderId, cancellationToken);
-            if (order == null)
+            try
             {
-                return BaseResult.Failure(1001, $"Order with ID '{orderId}' not found.");
-            }
+                var order = await _orderRepository.GetQueryable()
+                    .Include(o => o.Items)
+                    .ThenInclude(oi => oi.Product)
+                    .FirstOrDefaultAsync(x => x.Id == orderId, cancellationToken);
+                if (order == null)
+                {
+                    return BaseResult.Failure(ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
+                }
 
-            var payment = await _paymentRepository.GetQueryable()
-                .FirstOrDefaultAsync(x => x.Id == paymentId, cancellationToken);
-            if (payment == null)
+                var payment = await _paymentRepository.GetQueryable()
+                    .FirstOrDefaultAsync(x => x.Id == paymentId, cancellationToken);
+                if (payment == null)
+                {
+                    return BaseResult.Failure(ErrorCodes.PaymentNotFound, ErrorMessage.PaymentNotFound);
+                }
+
+                if (payment.OrderId != orderId)
+                {
+                    return BaseResult.Failure(ErrorCodes.PaymentOrderNotAssociated, ErrorMessage.PaymentOrderNotAssociated);
+                }
+
+                foreach (var orderItem in order.Items)
+                {
+                    orderItem.Product.ReduceStockQuantity(orderItem.Quantity);
+                }
+
+                order.AssignPayment(paymentId);
+                order.ConfirmOrder();
+
+                _orderRepository.Update(order);
+
+                await _orderRepository.SaveChangesAsync(cancellationToken);
+
+                return BaseResult.Success();
+            }
+            catch (DbUpdateConcurrencyException ex)
             {
-                return BaseResult.Failure(1001, $"Payment with ID '{paymentId}' not found.");
+                _logger.LogError(ex, "Concurrency conflict during stock reduction for Order: {OrderId}", orderId);
+
+                return BaseResult.Failure(ErrorCodes.ConcurrencyConflict, "Товар был изменен другим пользователем. Попробуйте еще раз.");
             }
-
-            if (payment.OrderId != orderId)
-            {
-                return BaseResult.Failure(1001, $"Payment {paymentId} is not associated with order {orderId}.");
-            }
-
-            order.AssignPayment(paymentId);
-            order.ConfirmOrder();
-
-            _orderRepository.Update(order);
-
-            await _orderRepository.SaveChangesAsync(cancellationToken);
-
-            return BaseResult.Success();
         }
 
         public async Task<DataResult<OrderDto>> CreateAsync(Guid userId, CreateOrderDto dto, CancellationToken cancellationToken = default)
         {
-            var orderItemEntities = dto.OrderItems
-                .Select(x => OrderItem.Create(x.ProductId, x.Quantity, x.ProductPrice)).ToArray();
+            var orderItems = new List<OrderItem>();
+            var productIds = dto.OrderItems.Select(x => x.ProductId);
 
-            var totalAmount = orderItemEntities.Sum(item => item.ItemTotalSum);
-            var order = Order.Create(userId, dto.DeliveryAddress, orderItemEntities, totalAmount);
+            var products = await _productRepository.GetQueryable()
+                    .AsNoTracking()
+                    .Where(x => productIds.Contains(x.Id))
+                    .ToDictionaryAsync(k => k.Id, v => v);
+
+            foreach (var itemDto in dto.OrderItems)
+            {
+                if (!products.TryGetValue(itemDto.ProductId, out var product))
+                {
+                    return DataResult<OrderDto>.Failure(ErrorCodes.ProductNotFound,
+                        string.Format(ErrorMessage.ProductNotFound, itemDto.ProductId));
+                }
+
+                if (product == null)
+                {
+                    return DataResult<OrderDto>.Failure(ErrorCodes.ProductNotFound,
+                        string.Format(ErrorMessage.ProductNotFound, itemDto.ProductId));
+                }
+
+                orderItems.Add(OrderItem.Create(itemDto.ProductId, itemDto.Quantity, product.Price, product));
+            }
+
+            var order = Order.Create(userId, dto.DeliveryAddress, orderItems);
 
             await _orderRepository.CreateAsync(order, cancellationToken);
             await _orderRepository.SaveChangesAsync(cancellationToken);
@@ -93,11 +134,6 @@ namespace OrderPaymentSystem.Application.Services
                 .AsProjected<Order, OrderDto>(_mapper)
                 .ToArrayAsync(cancellationToken);
 
-            if (orders == null)
-            {
-                return CollectionResult<OrderDto>.Failure(ErrorCodes.OrdersNotFound, ErrorMessage.OrdersNotFound);
-            }
-
             return CollectionResult<OrderDto>.Success(orders);
         }
 
@@ -105,26 +141,21 @@ namespace OrderPaymentSystem.Application.Services
         {
             var order = await _orderRepository.GetQueryable()
                 .Include(o => o.Items)
+                .ThenInclude(x => x.Product)
                 .Include(o => o.Payment)
                 .FirstOrDefaultAsync(x => x.Id == orderId, cancellationToken);
+
             if (order == null)
             {
-                return BaseResult.Failure(666, $"Order with ID '{orderId}' not found.");
+                return BaseResult.Failure(ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
             }
 
             foreach (var item in order.Items)
             {
-                var product = await _productRepository.GetQueryable()
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(p => p.Id == item.ProductId, cancellationToken);
-
-                if (product == null)
+                if (item.Product == null)
                 {
-                    return BaseResult.Failure(666, $"Product with ID '{item.ProductId}' for order '{orderId}' not found.");
-                }
-                if (product.StockQuantity < item.Quantity)
-                {
-                    return BaseResult.Failure(666, $"Not enough stock for product '{product.Id}' to ship order '{orderId}'. Available: {product.StockQuantity}, Required: {item.Quantity}.");
+                    return BaseResult.Failure(ErrorCodes.ProductNotFound,
+                        string.Format(ErrorMessage.ProductNotFound, item.Product.Id));
                 }
             }
 
@@ -143,10 +174,11 @@ namespace OrderPaymentSystem.Application.Services
                 .FirstOrDefaultAsync(x => x.Id == orderId, cancellationToken);
             if (order == null)
             {
-                return BaseResult.Failure(666, $"Order with ID '{orderId}' not found.");
+                return BaseResult.Failure(ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
             }
 
             var productIds = updateDtos.Select(a => a.ProductId).Distinct().ToList();
+
             var products = await _productRepository.GetQueryable()
                 .Where(p => productIds.Contains(p.Id))
                 .AsNoTracking()
@@ -156,12 +188,10 @@ namespace OrderPaymentSystem.Application.Services
             {
                 if (!products.TryGetValue(update.ProductId, out var product))
                 {
-                    return BaseResult.Failure(666, $"Product with ID '{update.ProductId}' not found.");
+                    return BaseResult.Failure(ErrorCodes.ProductNotFound,
+                        string.Format(ErrorMessage.ProductNotFound, update.ProductId));
                 }
-                if (update.NewQuantity != 0)
-                {
-                    order.UpdateOrderItems(update.ProductId, update.NewQuantity, product.Price);
-                }
+                order.UpdateOrderItem(update.ProductId, update.NewQuantity, product.Price, product);
             }
 
             _orderRepository.Update(order);
@@ -181,6 +211,7 @@ namespace OrderPaymentSystem.Application.Services
 
             order.UpdateStatus(dto.NewStatus);
 
+            _orderRepository.Update(order);
             await _orderRepository.SaveChangesAsync(cancellationToken);
 
             return BaseResult.Success();

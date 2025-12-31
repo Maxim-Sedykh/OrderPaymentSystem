@@ -36,7 +36,7 @@ public class RoleService : IRoleService
 
         if (roleExists)
         {
-            return DataResult<RoleDto>.Failure((int)ErrorCodes.RoleAlreadyExist, ErrorMessage.RoleAlreadyExist);
+            return DataResult<RoleDto>.Failure(ErrorCodes.RoleAlreadyExist, ErrorMessage.RoleAlreadyExist);
         }
 
         var role = Role.Create(dto.Name);
@@ -57,7 +57,7 @@ public class RoleService : IRoleService
 
         if (role == null)
         {
-            return BaseResult.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
+            return BaseResult.Failure(ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
         }
 
         _roleRepository.Remove(role);
@@ -77,12 +77,12 @@ public class RoleService : IRoleService
 
         if (role == null)
         {
-            return DataResult<RoleDto>.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
+            return DataResult<RoleDto>.Failure(ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
         }
 
         if (role.Name == dto.Name)
         {
-            return DataResult<RoleDto>.Failure((int)ErrorCodes.NoChangesFound, ErrorMessage.NoChangesFound);
+            return DataResult<RoleDto>.Failure(ErrorCodes.NoChangesFound, ErrorMessage.NoChangesFound);
         }
 
         role.UpdateName(dto.Name);
@@ -103,7 +103,7 @@ public class RoleService : IRoleService
 
         if (roles.Length == 0)
         {
-            return CollectionResult<RoleDto>.Failure((int)ErrorCodes.RolesNotFound, ErrorMessage.RolesNotFound);
+            return CollectionResult<RoleDto>.Failure(ErrorCodes.RolesNotFound, ErrorMessage.RolesNotFound);
         }
 
         return CollectionResult<RoleDto>.Success(roles);

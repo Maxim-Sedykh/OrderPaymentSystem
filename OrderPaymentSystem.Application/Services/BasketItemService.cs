@@ -36,7 +36,7 @@ namespace OrderPaymentSystem.Application.Services
                 return DataResult<BasketItemDto>.Failure(ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
             }
 
-            var basketItem = BasketItem.Create(userId, product.Id, dto.Quantity);
+            var basketItem = BasketItem.Create(userId, product.Id, dto.Quantity, product);
 
             await _basketItemRepository.CreateAsync(basketItem, cancellationToken);
             await _basketItemRepository.SaveChangesAsync(cancellationToken);
@@ -50,7 +50,9 @@ namespace OrderPaymentSystem.Application.Services
                 .FirstOrDefaultAsync(x => x.Id == basketItemId, cancellationToken);
             if (basketItem == null)
             {
-                return BaseResult.Failure(1003, $"Basket item with Id '{basketItemId}' does not exist.");
+                return BaseResult.Failure(
+                    ErrorCodes.BasketItemNotFound,
+                    string.Format(ErrorMessage.BasketItemNotFound, basketItemId));
             }
 
             _basketItemRepository.Remove(basketItem);
@@ -66,24 +68,20 @@ namespace OrderPaymentSystem.Application.Services
                 .AsProjected<BasketItem, BasketItemDto>(_mapper)
                 .ToArrayAsync(cancellationToken);
 
-            if (items.Length == 0)
-            {
-                return CollectionResult<BasketItemDto>.Failure(ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
-            }
-
             return CollectionResult<BasketItemDto>.Success(items);
         }
 
         public async Task<DataResult<BasketItemDto>> UpdateQuantityAsync(long basketItemId, UpdateQuantityDto dto, CancellationToken cancellationToken = default)
         {
             var basketItem = await _basketItemRepository.GetQueryable()
+                .Include(x => x.Product)
                 .FirstOrDefaultAsync(x => x.Id == basketItemId, cancellationToken);
             if (basketItem == null)
             {
-                return DataResult<BasketItemDto>.Failure(1003, $"Basket item with Id '{basketItemId}' does not exist.");
+                return DataResult<BasketItemDto>.Failure(ErrorCodes.BasketItemNotFound, ErrorMessage.BasketItemNotFound);
             }
 
-            basketItem.UpdateQuantity(dto.NewQuantity);
+            basketItem.UpdateQuantity(dto.NewQuantity, basketItem.Product);
             await _basketItemRepository.SaveChangesAsync(cancellationToken);
 
             return DataResult<BasketItemDto>.Success(_mapper.Map<BasketItemDto>(basketItem));

@@ -61,11 +61,11 @@ namespace OrderPaymentSystem.Application.Resources {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Корзина пользователя не найдена.
+        ///   Ищет локализованную строку, похожую на Элемент корзины с Id {0} не найден.
         /// </summary>
-        internal static string BasketNotFound {
+        internal static string BasketItemNotFound {
             get {
-                return ResourceManager.GetString("BasketNotFound", resourceCulture);
+                return ResourceManager.GetString("BasketItemNotFound", resourceCulture);
             }
         }
         
@@ -115,6 +115,15 @@ namespace OrderPaymentSystem.Application.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Элемент заказа не найден.
+        /// </summary>
+        internal static string OrderItemNotFound {
+            get {
+                return ResourceManager.GetString("OrderItemNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Заказ не найден.
         /// </summary>
         internal static string OrderNotFound {
@@ -151,11 +160,29 @@ namespace OrderPaymentSystem.Application.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Платёж уже существует для заказа с Id {0}.
+        /// </summary>
+        internal static string PaymentAlreadyExistsForOrder {
+            get {
+                return ResourceManager.GetString("PaymentAlreadyExistsForOrder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Платёж не найден.
         /// </summary>
         internal static string PaymentNotFound {
             get {
                 return ResourceManager.GetString("PaymentNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Платёж не связан с заказом.
+        /// </summary>
+        internal static string PaymentOrderNotAssociated {
+            get {
+                return ResourceManager.GetString("PaymentOrderNotAssociated", resourceCulture);
             }
         }
         
@@ -178,7 +205,7 @@ namespace OrderPaymentSystem.Application.Resources {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Товар не найден.
+        ///   Ищет локализованную строку, похожую на Товар с Id {0} не найден.
         /// </summary>
         internal static string ProductNotFound {
             get {
@@ -192,6 +219,15 @@ namespace OrderPaymentSystem.Application.Resources {
         internal static string ProductsNotFound {
             get {
                 return ResourceManager.GetString("ProductsNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Количества товара с Id {0} не хватает на складе.
+        /// </summary>
+        internal static string ProductStockQuantityNotAvailable {
+            get {
+                return ResourceManager.GetString("ProductStockQuantityNotAvailable", resourceCulture);
             }
         }
         

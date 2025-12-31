@@ -6,7 +6,7 @@ namespace OrderPaymentSystem.Domain.Entities;
 /// <summary>
 /// Товар
 /// </summary>
-public class Product : IEntityId<int>, IAuditable
+public class Product : IEntityId<int>, IAuditable, IStockInfo
 {
     /// <summary>
     /// Id товара
@@ -34,10 +34,8 @@ public class Product : IEntityId<int>, IAuditable
     /// <inheritdoc/>
     public DateTime? UpdatedAt { get; protected set; }
 
-    /// <summary>
-    /// Элементы заказов в которых есть товар
-    /// </summary>
-    public ICollection<OrderItem> OrderItems { get; protected set; } = [];
+    private readonly List<OrderItem> _orderItems = new();
+    public virtual IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
 
     /// <summary>
     /// Элементы корзины в которых есть товар
@@ -45,6 +43,8 @@ public class Product : IEntityId<int>, IAuditable
     public ICollection<BasketItem> BasketItems { get; protected set; } = [];
 
     public int StockQuantity { get; private set; }
+
+    public byte[] RowVersion { get; private set; }
 
     protected Product() { }
 
@@ -103,5 +103,25 @@ public class Product : IEntityId<int>, IAuditable
             throw new BusinessException(2005, "Product price must be positive.");
 
         Price = newPrice;
+    }
+
+    public bool IsStockQuantityAvailable(int requestedQuantity)
+    {
+        return StockQuantity >= requestedQuantity;
+    }
+
+    public void ReduceStockQuantity(int quantityToReduce)
+    {
+        if (quantityToReduce <= 0)
+        {
+            throw new BusinessException(20055, "Stock quantity must be positive.");
+        }
+
+        if (StockQuantity < quantityToReduce)
+        {
+            throw new BusinessException(20055, "Not enough stock quantity.");
+        }
+
+        StockQuantity -= quantityToReduce;
     }
 }

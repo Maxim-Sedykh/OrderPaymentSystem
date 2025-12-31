@@ -12,6 +12,11 @@ namespace OrderPaymentSystem.Domain.Entities;
 public class Order : IEntityId<long>, IAuditable
 {
     /// <summary>
+    /// Элементы заказа. Внутренняя коллекция элементов
+    /// </summary>
+    private readonly List<OrderItem> _items = [];
+
+    /// <summary>
     /// Id заказа
     /// </summary>
     public long Id { get; protected set; }
@@ -48,9 +53,9 @@ public class Order : IEntityId<long>, IAuditable
     public DateTime? UpdatedAt { get; }
 
     /// <summary>
-    /// Элементы заказа
+    /// Элементы заказа. Для доступа из внешнего кода
     /// </summary>
-    public ICollection<OrderItem> Items { get; protected set; } = [];
+    public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
 
     /// <summary>
     /// Платёж по заказу
@@ -68,38 +73,28 @@ public class Order : IEntityId<long>, IAuditable
     /// Создать заказ
     /// </summary>
     /// <param name="userId">Id пользователя</param>
-    /// <param name="deliveryAddress">Адрес доставки заказа</param>
-    /// <param name="orderItems">Элементы заказа</param>
-    /// <param name="totalAmount">Общая стоимость заказа</param>
+    /// <param name="address">Адрес доставки заказа</param>
+    /// <param name="items">Элементы заказа</param>
     /// <returns>Созданный заказ</returns>
-    public static Order Create(
-        Guid userId,
-        Address deliveryAddress,
-        ICollection<OrderItem> orderItems,
-        decimal totalAmount)
+    public static Order Create(Guid userId, Address address, IEnumerable<OrderItem> items)
     {
-        if (userId == Guid.Empty)
-            throw new BusinessException(1001, "User ID cannot be empty.");
+        if (userId == Guid.Empty) throw new BusinessException(ErrorCodes.InvalidUserId, "User ID empty");
+        if (address == null) throw new BusinessException(ErrorCodes.OrderDeliveryAddressRequired, "Address null");
 
-        if (deliveryAddress == null)
-            throw new BusinessException(9001, "Delivery address cannot be null.");
-
-        if (orderItems.IsNotNullOrEmpty())
-            throw new BusinessException(9002, "Order must contain at least one item.");
-
-        if (totalAmount <= 0)
-            throw new BusinessException(9003, "Total amount must be positive.");
+        var itemList = items?.ToList();
+        if (itemList.IsNullOrEmpty())
+            throw new BusinessException(ErrorCodes.OrderItemsNotFound, "Order items empty");
 
         var order = new Order
         {
-            Id = default,
             UserId = userId,
-            DeliveryAddress = deliveryAddress,
-            TotalAmount = totalAmount,
-            Status = OrderStatus.Pending,
-            Items = orderItems
+            DeliveryAddress = address,
+            Status = OrderStatus.Pending
         };
 
+        foreach (var item in itemList) order._items.Add(item);
+
+        order.RecalculateTotalAmount();
         return order;
     }
 
@@ -110,9 +105,9 @@ public class Order : IEntityId<long>, IAuditable
     public void UpdateStatus(OrderStatus newStatus)
     {
         if (Status == OrderStatus.Delivered && newStatus != OrderStatus.Delivered && newStatus != OrderStatus.Refunded)
-            throw new BusinessException(9004, "Cannot change status of a delivered order.");
+            throw new BusinessException(ErrorCodes.OrderCannotBeInStatusWhenDelivered, "Cannot change status of a delivered order.");
         if (Status == OrderStatus.Cancelled && newStatus != OrderStatus.Cancelled)
-            throw new BusinessException(9005, "Cannot change status of a cancelled order.");
+            throw new BusinessException(ErrorCodes.OrderCannotChangeStatusOfACancelledOrder, "Cannot change status of a cancelled order.");
 
         Status = newStatus;
     }
@@ -124,31 +119,31 @@ public class Order : IEntityId<long>, IAuditable
     public void AssignPayment(long paymentId)
     {
         if (paymentId <= 0)
-            throw new BusinessException(1001, "Payment ID must be positive.");
+            throw new BusinessException(ErrorCodes.InvalidPaymentId, "Payment ID must be positive.");
 
         if (PaymentId.HasValue)
-            throw new BusinessException(9006, "Payment already assigned to this order.");
+            throw new BusinessException(ErrorCodes.PaymentAlreadyExistsForOrder, "Payment already assigned to this order.");
 
         PaymentId = paymentId;
     }
 
     /// <summary>
-    /// Отметить заказ как отправленный (Shipped).
+    /// Отметить заказ как отправленный
     /// </summary>
     public void ShipOrder()
     {
         if (Status != OrderStatus.Confirmed)
-            throw new BusinessException(666, $"Order must be 'Confirmed' to be shipped. Current status: {Status}.");
-        if (!Items.IsNotNullOrEmpty())
-            throw new BusinessException(666, "Cannot ship an empty order.");
+            throw new BusinessException(ErrorCodes.OrderStatusChangeNotAllowed, $"Order must be 'Confirmed' to be shipped. Current status: {Status}.");
+        if (Items.IsNullOrEmpty())
+            throw new BusinessException(ErrorCodes.OrderItemsNotFound, "Cannot ship an empty order.");
         if (!PaymentId.HasValue)
-            throw new BusinessException(666, "Order cannot be shipped without a payment.");
+            throw new BusinessException(ErrorCodes.PaymentNotFound, "Order cannot be shipped without a payment.");
 
         UpdateStatus(OrderStatus.Shipped);
     }
 
     /// <summary>
-    /// Подтвердить заказ. Например, после проверки доступности товаров или оплаты.
+    /// Подтвердить заказ
     /// </summary>
     public void ConfirmOrder()
     {
@@ -169,42 +164,80 @@ public class Order : IEntityId<long>, IAuditable
     /// <param name="productId">ID продукта</param>
     /// <param name="quantityChange">Изменение количества (+ для добавления, - для уменьшения)</param>
     /// <param name="productPrice">Текущая цена продукта (для новых позиций)</param>
-    public void UpdateOrderItems(int productId, int quantityChange, decimal productPrice)
+    /// <param name="stockInfo">Информация о наличии товара на складе</param>
+    public void UpdateOrderItem(int productId, int quantityChange, decimal productPrice, IStockInfo stockInfo)
     {
         if (Status != OrderStatus.Pending && Status != OrderStatus.Confirmed)
-            throw new BusinessException(666, "OrderCannotAddOrRemoveItemInCurrentStatus");
+            throw new BusinessException(ErrorCodes.OrderCannotAddOrRemoveItemInCurrentStatus, "OrderCannotAddOrRemoveItemInCurrentStatus");
 
-        var existingItem = Items.FirstOrDefault(x => x.ProductId == productId);
+        var existingItem = _items.FirstOrDefault(x => x.ProductId == productId);
 
         if (existingItem != null)
         {
             var newQuantity = existingItem.Quantity + quantityChange;
             if (newQuantity <= 0)
             {
-                Items.Remove(existingItem);
+                _items.Remove(existingItem);
             }
             else
             {
-                existingItem.UpdateQuantity(newQuantity);
+                existingItem.UpdateQuantity(newQuantity, stockInfo);
             }
         }
         else
         {
-            // Если позиция не существует и мы пытаемся добавить
             if (quantityChange > 0)
             {
                 if (productPrice <= 0)
-                    throw new BusinessException(666, "OrderItemPriceInvalid");
+                    throw new BusinessException(ErrorCodes.OrderItemPriceInvalid, "OrderItemPriceInvalid");
 
-                var newItem = OrderItem.Create(productId, quantityChange, productPrice);
-                Items.Add(newItem);
+                var newItem = OrderItem.Create(productId, quantityChange, productPrice, stockInfo);
+                _items.Add(newItem);
             }
             else
             {
-                // Попытка уменьшить количество несуществующего товара
-                throw new BusinessException(666, "OrderCannotRemoveNonExistingItem");
+                throw new BusinessException(ErrorCodes.OrderCannotRemoveNonExistingItem, "OrderCannotRemoveNonExistingItem");
             }
         }
         RecalculateTotalAmount();
+    }
+
+    public void AddOrderItem(OrderItem item, IStockInfo stockInfo)
+    {
+        if (!stockInfo.IsStockQuantityAvailable(item.Quantity))
+            throw new BusinessException(ErrorCodes.ProductStockQuantityNotAvailable, "ProductStockQuantityNotAvailable");
+
+        _items.Add(item);
+
+        RecalculateTotalAmount();
+    }
+
+    public void RemoveOrderItem(OrderItem item)
+    {
+        _items.Remove(item);
+
+        RecalculateTotalAmount();
+    }
+
+    public void UpdateOrderItemQuantity(long orderItemId, int newQuantity, IStockInfo stockInfo)
+    {
+        var orderItem = _items.FirstOrDefault(x => x.Id == orderItemId);
+        orderItem.UpdateQuantity(newQuantity, stockInfo);
+
+        RecalculateTotalAmount();
+    }
+
+    /// <summary>
+    /// Пересчитывает общую сумму заказа на основе стоимости его позиций.
+    /// </summary>
+    public void RecalculateTotalAmount()
+    {
+        if (_items == null || !_items.Any())
+        {
+            TotalAmount = 0;
+            return;
+        }
+
+        TotalAmount = _items.Sum(item => item.Quantity * item.ProductPrice);
     }
 }

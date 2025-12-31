@@ -117,8 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="BasketNotFound" xml:space="preserve">
-    <value>Корзина пользователя не найдена</value>
+  <data name="BasketItemNotFound" xml:space="preserve">
+    <value>Элемент корзины с Id {0} не найден</value>
   </data>
   <data name="InternalServerError" xml:space="preserve">
     <value>Внутренняя ошибка сервера</value>
@@ -135,6 +135,9 @@
   <data name="NotEnoughPayFunds" xml:space="preserve">
     <value>Не хватает средств для оплаты</value>
   </data>
+  <data name="OrderItemNotFound" xml:space="preserve">
+    <value>Элемент заказа не найден</value>
+  </data>
   <data name="OrderNotFound" xml:space="preserve">
     <value>Заказ не найден</value>
   </data>
@@ -147,8 +150,14 @@
   <data name="PasswordNotEqualsPasswordConfirm" xml:space="preserve">
     <value>Пароли не равны</value>
   </data>
+  <data name="PaymentAlreadyExistsForOrder" xml:space="preserve">
+    <value>Платёж уже существует для заказа с Id {0}</value>
+  </data>
   <data name="PaymentNotFound" xml:space="preserve">
     <value>Платёж не найден</value>
+  </data>
+  <data name="PaymentOrderNotAssociated" xml:space="preserve">
+    <value>Платёж не связан с заказом</value>
   </data>
   <data name="PaymentsNotFound" xml:space="preserve">
     <value>Платежи не найдены</value>
@@ -157,10 +166,13 @@
     <value>Товар уже существует</value>
   </data>
   <data name="ProductNotFound" xml:space="preserve">
-    <value>Товар не найден</value>
+    <value>Товар с Id {0} не найден</value>
   </data>
   <data name="ProductsNotFound" xml:space="preserve">
     <value>Товары не найдены</value>
+  </data>
+  <data name="ProductStockQuantityNotAvailable" xml:space="preserve">
+    <value>Количества товара с Id {0} не хватает на складе</value>
   </data>
   <data name="RefreshTokenExpired" xml:space="preserve">
     <value>Время жизни токена истекло</value>

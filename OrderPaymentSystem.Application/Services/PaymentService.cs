@@ -1,10 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Payment;
 using OrderPaymentSystem.Domain.Entities;
+using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Extensions;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Interfaces.Services;
+using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
 
 namespace OrderPaymentSystem.Application.Services
@@ -12,12 +15,16 @@ namespace OrderPaymentSystem.Application.Services
     public class PaymentService : IPaymentService
     {
         private readonly IBaseRepository<Payment> _paymentRepository;
+        private readonly IBaseRepository<Order> _orderRepository;
+        private readonly IPaymentValidator _paymentValidator;
         private readonly IMapper _mapper;
 
-        public PaymentService(IBaseRepository<Payment> paymentRepository, IMapper mapper)
+        public PaymentService(IBaseRepository<Payment> paymentRepository, IMapper mapper, IBaseRepository<Order> orderRepository, IPaymentValidator paymentValidator)
         {
             _paymentRepository = paymentRepository;
             _mapper = mapper;
+            _orderRepository = orderRepository;
+            _paymentValidator = paymentValidator;
         }
 
         public async Task<BaseResult> CompletePaymentAsync(long paymentId, decimal amountPaid, decimal cashChange, CancellationToken cancellationToken = default)
@@ -26,7 +33,7 @@ namespace OrderPaymentSystem.Application.Services
                 .FirstOrDefaultAsync(x => x.Id == paymentId, cancellationToken);
             if (payment == null)
             {
-                return BaseResult.Failure(666, $"Payment with ID '{paymentId}' not found.");
+                return BaseResult.Failure(ErrorCodes.PaymentNotFound, ErrorMessage.PaymentNotFound);
             }
 
             payment.ProcessPayment(amountPaid, cashChange);
@@ -39,15 +46,14 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<BaseResult> CreateAsync(CreatePaymentDto dto, CancellationToken cancellationToken = default)
         {
-            var paymentExists = await _paymentRepository.GetQueryable()
-                .AnyAsync(x => x.OrderId == dto.OrderId, cancellationToken);
-
-            if (paymentExists)
+            var (orderExists, paymentExists) = await IsExistsPaymentAndOrderAsync(dto.OrderId, cancellationToken);
+            var validateCreatingPaymentResult = _paymentValidator.ValidateCreatingPayment(orderExists, paymentExists, dto.OrderId);
+            if (!validateCreatingPaymentResult.IsSuccess)
             {
-                return BaseResult.Failure(4001, "Payment for this order already exists");
+                return BaseResult.Failure(validateCreatingPaymentResult.Error);
             }
 
-            var payment = Payment.Create(dto.OrderId, dto.AmountToPay, dto.AmountPayed, dto.CashChange, dto.Method);
+            var payment = Payment.Create(dto.OrderId, dto.AmountToPay, dto.Method);
 
             await _paymentRepository.CreateAsync(payment, cancellationToken);
             await _paymentRepository.SaveChangesAsync(cancellationToken);
@@ -64,7 +70,7 @@ namespace OrderPaymentSystem.Application.Services
 
             if (payment == null)
             {
-                return DataResult<PaymentDto>.Failure(4002, "Payment not found");
+                return DataResult<PaymentDto>.Failure(ErrorCodes.PaymentNotFound, ErrorMessage.PaymentNotFound);
             }
 
             return DataResult<PaymentDto>.Success(payment);
@@ -78,6 +84,19 @@ namespace OrderPaymentSystem.Application.Services
                 .ToArrayAsync(cancellationToken);
 
             return CollectionResult<PaymentDto>.Success(payments);
+        }
+
+        private async Task<(bool orderExists, bool paymentExists)> IsExistsPaymentAndOrderAsync(long orderId, CancellationToken cancellationToken = default)
+        {
+            var orderExistsTask = _orderRepository.GetQueryable()
+                .AnyAsync(x => x.Id == orderId, cancellationToken);
+
+            var paymentExistsTask = _paymentRepository.GetQueryable()
+                .AnyAsync(x => x.OrderId == orderId, cancellationToken);
+
+            await Task.WhenAll(orderExistsTask, paymentExistsTask);
+
+            return (orderExistsTask.Result, paymentExistsTask.Result);
         }
     }
 }

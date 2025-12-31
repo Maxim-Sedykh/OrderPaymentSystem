@@ -47,4 +47,6 @@ public interface IBaseRepository<TEntity> : IStateSaveChanges
     /// <param name="entities">Сущность</param>
     /// <returns>Сущность</returns>
     void UpdateRange(IEnumerable<TEntity> entities);
+
+    Task<TEntity> GetById<TId>(TId id);
 }

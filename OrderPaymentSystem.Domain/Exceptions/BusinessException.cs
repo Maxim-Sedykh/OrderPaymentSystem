@@ -1,4 +1,6 @@
-﻿namespace OrderPaymentSystem.Domain.Exceptions
+﻿using OrderPaymentSystem.Domain.Enum;
+
+namespace OrderPaymentSystem.Domain.Exceptions
 {
     /// <summary>
     /// Базовый класс для бизнес-исключений
@@ -6,11 +8,14 @@
     /// </summary>
     public class BusinessException : Exception
     {
-        public int Code { get; }
+        public int CodeValue { get; }
+        public string CodeName { get; }
 
-        public BusinessException(int code, string message) : base(message)
+        public BusinessException(ErrorCodes errorCode, string message, Exception innerException = null)
+            : base(message, innerException)
         {
-            Code = code;
+            CodeValue = (int)errorCode;
+            CodeName = errorCode.ToString();
         }
     }
 }

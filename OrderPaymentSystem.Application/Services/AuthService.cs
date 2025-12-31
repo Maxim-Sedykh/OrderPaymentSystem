@@ -78,9 +78,10 @@ public class AuthService : IAuthService
         var user = await _userRepository.GetQueryable()
             .AsNoTracking()
             .Include(x => x.Roles)
+            .Include(x => x.UserToken)
             .FirstOrDefaultAsync(x => x.Login == dto.Login, cancellationToken);
 
-        var validateLoginResult = _authValidator.ValidateLogin(user, enteredPassword: dto.Password);
+        var validateLoginResult = _authValidator.ValidateLogin(user, dto.Password);
         if (!validateLoginResult.IsSuccess)
             return DataResult<TokenDto>.Failure(validateLoginResult.Error);
 
@@ -100,24 +101,17 @@ public class AuthService : IAuthService
         var refreshToken = _userTokenService.GenerateRefreshToken();
         var refreshTokenExpire = DateTime.UtcNow.AddDays(TokenLifeTimeInDays);
 
-        var userToken = await _userTokenRepository.GetQueryable()
-            .FirstOrDefaultAsync(x => x.UserId == user.Id, cancellationToken);
-
-        if (userToken == null)
+        if (user.UserToken == null)
         {
-            userToken = UserToken.Create(
-                user.Id,
-                refreshToken,
-                refreshTokenExpire
-            );
+            var newUserToken = UserToken.Create(user.Id, refreshToken, refreshTokenExpire);
 
-            await _userTokenRepository.CreateAsync(userToken, cancellationToken);
+            await _userTokenRepository.CreateAsync(newUserToken, cancellationToken);
         }
         else
         {
-            userToken.UpdateRefreshTokenData(refreshToken, refreshTokenExpire);
+            user.UserToken.UpdateRefreshTokenData(refreshToken, refreshTokenExpire);
 
-            _userTokenRepository.Update(userToken);
+            _userTokenRepository.Update(user.UserToken);
         }
 
         await _userTokenRepository.SaveChangesAsync(cancellationToken);
@@ -148,10 +142,9 @@ public class AuthService : IAuthService
             return BaseResult.Failure((int)ErrorCodes.UserAlreadyExist, ErrorMessage.UserAlreadyExist);
         }
 
-        User user = null;
-
         await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
 
+        User user;
         try
         {
             user = User.Create(
@@ -171,15 +164,14 @@ public class AuthService : IAuthService
             if (roleId == 0)
             {
                 await transaction.RollbackAsync(cancellationToken);
-
+                _logger.LogError("Default 'User' role not found during registration for user: {Login}", dto.Login);
                 return BaseResult.Failure((int)ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
             }
 
             var userRole = UserRole.Create(user.Id, roleId);
-
             await _userRoleRepository.CreateAsync(userRole, cancellationToken);
-
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             await transaction.CommitAsync(cancellationToken);
 
             await _cacheService.SetAsync(
@@ -201,7 +193,7 @@ public class AuthService : IAuthService
             await transaction.RollbackAsync(cancellationToken);
             _logger.LogError(ex, "Error during registration for user: {Login}", dto.Login);
 
-            throw;
+            return BaseResult.Failure((int)ErrorCodes.InternalServerError, ErrorMessage.InternalServerError);
         }
     }
 }
