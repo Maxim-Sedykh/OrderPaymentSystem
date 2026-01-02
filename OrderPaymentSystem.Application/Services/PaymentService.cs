@@ -5,7 +5,7 @@ using OrderPaymentSystem.Domain.Dto.Payment;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Extensions;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;

@@ -11,7 +11,7 @@ using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Auth;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;

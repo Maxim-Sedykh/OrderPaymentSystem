@@ -4,12 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.DAL.Auth;
 using OrderPaymentSystem.DAL.Cache;
 using OrderPaymentSystem.DAL.Interceptors;
-using OrderPaymentSystem.DAL.Repositories;
+using OrderPaymentSystem.DAL.Repositories.Base;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Interfaces.Auth;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 using OrderPaymentSystem.Domain.Settings;
 
 namespace OrderPaymentSystem.DAL.DependencyInjection;

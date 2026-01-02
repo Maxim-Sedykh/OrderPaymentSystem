@@ -7,7 +7,8 @@ using OrderPaymentSystem.Domain.Dto.OrderItem;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Extensions;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Interfaces.Validators;
 using OrderPaymentSystem.Domain.Result;
@@ -21,14 +22,14 @@ public class OrderItemService : IOrderItemService
 {
     private readonly IBaseRepository<Product> _productRepository;
     private readonly IBaseRepository<Order> _orderRepository;
-    private readonly IBaseRepository<OrderItem> _orderItemRepository;
+    private readonly IOrderItemRepository _orderItemRepository;
     private readonly IOrderItemValidator _orderItemValidator;
     private readonly IMapper _mapper;
     private readonly ILogger _logger;
 
     public OrderItemService(IBaseRepository<Product> productRepository,
         IBaseRepository<Order> orderRepository,
-        IBaseRepository<OrderItem> orderItemRepository,
+        IOrderItemRepository orderItemRepository,
         IOrderItemValidator orderItemValidator,
         IMapper mapper,
         ILogger logger)
@@ -65,8 +66,7 @@ public class OrderItemService : IOrderItemService
     /// <inheritdoc/>
     public async Task<BaseResult> DeleteByIdAsync(long orderItemId, CancellationToken cancellationToken = default)
     {
-        var orderItem = await _orderItemRepository.GetQueryable()
-            .FirstOrDefaultAsync(x => x.Id == orderItemId, cancellationToken);
+        var orderItem = await _orderItemRepository.GetByIdAsync(orderItemId, cancellationToken);
         if (orderItem == null)
         {
             return BaseResult.Failure(ErrorCodes.OrderItemNotFound, ErrorMessage.OrderItemNotFound);
@@ -93,8 +93,7 @@ public class OrderItemService : IOrderItemService
     /// <inheritdoc/>
     public async Task<CollectionResult<OrderItemDto>> GetByOrderIdAsync(long orderId, CancellationToken cancellationToken = default)
     {
-        var orderItems = await _orderItemRepository.GetQueryable()
-            .Where(x => x.OrderId == orderId)
+        var orderItems = await _orderItemRepository.GetByOrderId(orderId)
             .AsProjected<OrderItem, OrderItemDto>(_mapper)
             .ToArrayAsync(cancellationToken);
 
@@ -104,9 +103,7 @@ public class OrderItemService : IOrderItemService
     /// <inheritdoc/>
     public async Task<DataResult<OrderItemDto>> UpdateQuantityAsync(long orderItemId, UpdateQuantityDto dto, CancellationToken cancellationToken = default)
     {
-        var orderItem = await _orderItemRepository.GetQueryable()
-            .Include(x => x.Product)
-            .FirstOrDefaultAsync(x => x.Id == orderItemId, cancellationToken);
+        var orderItem = await _orderItemRepository.GetByIdWithProductAsync(orderItemId, cancellationToken);
 
         if (orderItem == null)
         {

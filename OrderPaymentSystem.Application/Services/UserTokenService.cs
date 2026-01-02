@@ -5,7 +5,7 @@ using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Dto.Token;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 using OrderPaymentSystem.Domain.Settings;

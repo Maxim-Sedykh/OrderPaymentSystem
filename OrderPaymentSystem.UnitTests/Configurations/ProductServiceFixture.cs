@@ -6,7 +6,7 @@ using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Interfaces.Cache;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 using Serilog;
 
 namespace OrderPaymentSystem.UnitTests.Configurations;

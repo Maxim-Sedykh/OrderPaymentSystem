@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using OrderPaymentSystem.Domain.Interfaces.Databases;
 
-namespace OrderPaymentSystem.DAL.Repositories;
+namespace OrderPaymentSystem.DAL.Repositories.Base;
 
 /// <summary>
 /// Unit of work. Сервис для работы с транзакциями EF Core

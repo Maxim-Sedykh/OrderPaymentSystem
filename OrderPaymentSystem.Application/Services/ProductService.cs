@@ -7,7 +7,7 @@ using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Extensions;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 
@@ -20,7 +20,6 @@ public class ProductService : IProductService
 {
     private readonly IBaseRepository<Product> _productRepository;
     private readonly IMapper _mapper;
-    private readonly IMediator _mediator;
     private readonly ILogger<ProductService> _logger;
 
     /// <summary>
@@ -33,12 +32,10 @@ public class ProductService : IProductService
     public ProductService(
         IBaseRepository<Product> productRepository,
         IMapper mapper,
-        IMediator mediator,
         ILogger<ProductService> logger)
     {
         _productRepository = productRepository;
         _mapper = mapper;
-        _mediator = mediator;
         _logger = logger;
     }
 

@@ -6,8 +6,10 @@ using OrderPaymentSystem.Domain.Dto.Order;
 using OrderPaymentSystem.Domain.Dto.OrderItem;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Exceptions;
 using OrderPaymentSystem.Domain.Extensions;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 
@@ -20,18 +22,22 @@ namespace OrderPaymentSystem.Application.Services
         private readonly IBaseRepository<Payment> _paymentRepository;
         private readonly IBaseRepository<Product> _productRepository;
         private readonly ILogger<OrderService> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public OrderService(IMapper mapper, IBaseRepository<Order> orderRepository, IBaseRepository<Payment> paymentRepository, IBaseRepository<Product> productRepository, ILogger<OrderService> logger)
+        public OrderService(IMapper mapper, IBaseRepository<Order> orderRepository, IBaseRepository<Payment> paymentRepository, IBaseRepository<Product> productRepository, ILogger<OrderService> logger, IUnitOfWork unitOfWork)
         {
             _mapper = mapper;
             _orderRepository = orderRepository;
             _paymentRepository = paymentRepository;
             _productRepository = productRepository;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<BaseResult> CompleteProcessingAsync(long orderId, long paymentId, CancellationToken cancellationToken = default)
         {
+            await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
             try
             {
                 var order = await _orderRepository.GetQueryable()
@@ -67,13 +73,25 @@ namespace OrderPaymentSystem.Application.Services
 
                 await _orderRepository.SaveChangesAsync(cancellationToken);
 
+                await transaction.CommitAsync();
+
                 return BaseResult.Success();
             }
             catch (DbUpdateConcurrencyException ex)
             {
                 _logger.LogError(ex, "Concurrency conflict during stock reduction for Order: {OrderId}", orderId);
 
+                await transaction.RollbackAsync(cancellationToken);
+
                 return BaseResult.Failure(ErrorCodes.ConcurrencyConflict, "Товар был изменен другим пользователем. Попробуйте еще раз.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unknown error when completing the order");
+
+                await transaction.RollbackAsync(cancellationToken);
+
+                return BaseResult.Failure(ErrorCodes.InternalServerError, "Произошла ошибка при завершении товара");
             }
         }
 
@@ -159,6 +177,11 @@ namespace OrderPaymentSystem.Application.Services
                 }
             }
 
+            if (order.Payment.Status != PaymentStatus.Succeeded)
+            {
+                return BaseResult.Failure(ErrorCodes.OrderCannotBeConfirmedWithoutPayment, "OrderCannotBeConfirmedWithoutPayment");
+            }
+
             order.ShipOrder();
 
             _orderRepository.Update(order);
@@ -186,12 +209,21 @@ namespace OrderPaymentSystem.Application.Services
 
             foreach (var update in updateDtos)
             {
-                if (!products.TryGetValue(update.ProductId, out var product))
+                try
                 {
-                    return BaseResult.Failure(ErrorCodes.ProductNotFound,
-                        string.Format(ErrorMessage.ProductNotFound, update.ProductId));
+                    if (!products.TryGetValue(update.ProductId, out var product))
+                    {
+                        return BaseResult.Failure(ErrorCodes.ProductNotFound,
+                            string.Format(ErrorMessage.ProductNotFound, update.ProductId));
+                    }
+                    order.UpdateOrderItem(update.ProductId, update.NewQuantity, product.Price, product);
                 }
-                order.UpdateOrderItem(update.ProductId, update.NewQuantity, product.Price, product);
+                catch (BusinessException ex)
+                {
+                    _logger.LogError(ex, $"Product with id {update.ProductId} ended");
+
+                    return BaseResult.Failure(ErrorCodes.ProductStockQuantityNotAvailable, $"Product with id {update.ProductId} stock quantity not available");
+                }
             }
 
             _orderRepository.Update(order);

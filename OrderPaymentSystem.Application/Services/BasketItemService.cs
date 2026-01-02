@@ -6,7 +6,8 @@ using OrderPaymentSystem.Domain.Dto.Basket;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Extensions;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 using OrderPaymentSystem.Domain.Interfaces.Services;
 using OrderPaymentSystem.Domain.Result;
 
@@ -14,11 +15,11 @@ namespace OrderPaymentSystem.Application.Services
 {
     public class BasketItemService : IBasketItemService
     {
-        private readonly IBaseRepository<BasketItem> _basketItemRepository;
+        private readonly IBasketItemRepository _basketItemRepository;
         private readonly IBaseRepository<Product> _productRepository;
         private readonly IMapper _mapper;
 
-        public BasketItemService(IBaseRepository<BasketItem> basketItemRepository,
+        public BasketItemService(IBasketItemRepository basketItemRepository,
             IBaseRepository<Product> productRepository,
             IMapper mapper)
         {
@@ -46,8 +47,7 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<BaseResult> DeleteByIdAsync(long basketItemId, CancellationToken cancellationToken = default)
         {
-            var basketItem = await _basketItemRepository.GetQueryable()
-                .FirstOrDefaultAsync(x => x.Id == basketItemId, cancellationToken);
+            var basketItem = await _basketItemRepository.GetByIdAsync(basketItemId, cancellationToken);
             if (basketItem == null)
             {
                 return BaseResult.Failure(
@@ -63,8 +63,8 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<CollectionResult<BasketItemDto>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            var items = await _basketItemRepository.GetQueryable()
-                .Where(x => x.UserId == userId)
+            var items = await _basketItemRepository
+                .GetByUserId(userId)
                 .AsProjected<BasketItem, BasketItemDto>(_mapper)
                 .ToArrayAsync(cancellationToken);
 
@@ -73,9 +73,7 @@ namespace OrderPaymentSystem.Application.Services
 
         public async Task<DataResult<BasketItemDto>> UpdateQuantityAsync(long basketItemId, UpdateQuantityDto dto, CancellationToken cancellationToken = default)
         {
-            var basketItem = await _basketItemRepository.GetQueryable()
-                .Include(x => x.Product)
-                .FirstOrDefaultAsync(x => x.Id == basketItemId, cancellationToken);
+            var basketItem = await _basketItemRepository.GetByIdWithProductAsync(basketItemId, cancellationToken);
             if (basketItem == null)
             {
                 return DataResult<BasketItemDto>.Failure(ErrorCodes.BasketItemNotFound, ErrorMessage.BasketItemNotFound);

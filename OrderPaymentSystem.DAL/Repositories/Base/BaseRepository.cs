@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 
-namespace OrderPaymentSystem.DAL.Repositories;
+namespace OrderPaymentSystem.DAL.Repositories.Base;
 
 /// <summary>
 /// Generic репозиторий. Абстракция над DbContext
@@ -9,8 +9,8 @@ namespace OrderPaymentSystem.DAL.Repositories;
 /// <typeparam name="TEntity">Тип сущности</typeparam>
 public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
 {
-    private readonly ApplicationDbContext _dbContext;
-    private readonly DbSet<TEntity> _table;
+    protected readonly ApplicationDbContext _dbContext;
+    protected readonly DbSet<TEntity> _table;
 
     public BaseRepository(ApplicationDbContext dbContext)
     {
@@ -79,7 +79,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
     /// </summary>
     /// <param name="entity">Сущность</param>
     /// <exception cref="ArgumentNullException"></exception>
-    private static void ValidateEntityOnNull(TEntity entity)
+    protected static void ValidateEntityOnNull(TEntity entity)
     {
         if (entity is null)
         {
@@ -92,16 +92,11 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
     /// </summary>
     /// <param name="entities"></param>
     /// <exception cref="ArgumentNullException"></exception>
-    private static void ValidateEntitiesOnNull(IEnumerable<TEntity> entities)
+    protected static void ValidateEntitiesOnNull(IEnumerable<TEntity> entities)
     {
         if (entities == null || !entities.Any())
         {
             throw new ArgumentNullException(nameof(entities), "Entities is null");
         }
-    }
-
-    public async Task<TEntity> GetById<TId>(TId id)
-    {
-        return await _table.FindAsync(id);
     }
 }

@@ -1,7 +1,7 @@
 ﻿using MockQueryable.Moq;
 using Moq;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 
 namespace OrderPaymentSystem.UnitTests.Configurations;
 

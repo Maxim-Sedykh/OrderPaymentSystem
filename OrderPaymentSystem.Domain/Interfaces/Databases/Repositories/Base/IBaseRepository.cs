@@ -1,6 +1,7 @@
 ﻿using OrderPaymentSystem.Domain.Interfaces.Databases;
+using OrderPaymentSystem.Domain.Interfaces.Entities;
 
-namespace OrderPaymentSystem.Domain.Interfaces.Repositories;
+namespace OrderPaymentSystem.Domain.Interfaces.Databases.Repositories.Base;
 
 /// <summary>
 /// Интерфейс для generic репозитория. Абстракции над DbContext
@@ -47,6 +48,4 @@ public interface IBaseRepository<TEntity> : IStateSaveChanges
     /// <param name="entities">Сущность</param>
     /// <returns>Сущность</returns>
     void UpdateRange(IEnumerable<TEntity> entities);
-
-    Task<TEntity> GetById<TId>(TId id);
 }
