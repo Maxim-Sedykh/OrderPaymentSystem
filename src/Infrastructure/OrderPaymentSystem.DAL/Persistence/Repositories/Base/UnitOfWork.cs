@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
-using OrderPaymentSystem.Domain.Interfaces.Databases;
+using OrderPaymentSystem.Application.Interfaces.Databases;
 
 namespace OrderPaymentSystem.DAL.Persistence.Repositories.Base;
 

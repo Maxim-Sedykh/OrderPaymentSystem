@@ -14,11 +14,5 @@ namespace OrderPaymentSystem.Application.Extensions
         {
             return DataResult<T>.Failure(new Error(errorMessage, (int)errorCode));
         }
-
-        // Можно добавить и методы Success, если они тоже будут использовать ErrorCodes
-        // public static BaseResult Success(this BaseResult _, ErrorCodes errorCode, string successMessage)
-        // {
-        //     return BaseResult.Success(new Error(successMessage, (int)errorCode)); // Если Success тоже может иметь код
-        // }
     }
 }

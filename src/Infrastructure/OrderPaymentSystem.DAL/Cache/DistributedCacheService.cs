@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
-using OrderPaymentSystem.Domain.Interfaces.Cache;
+using OrderPaymentSystem.Application.Interfaces.Cache;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

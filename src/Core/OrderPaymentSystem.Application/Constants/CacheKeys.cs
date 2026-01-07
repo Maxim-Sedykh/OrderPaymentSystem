@@ -1,4 +1,4 @@
-﻿namespace OrderPaymentSystem.Shared.Constants;
+﻿namespace OrderPaymentSystem.Application.Constants;
 
 /// <summary>
 /// Класс констант для хранения значений ключей для кэширования в Redis

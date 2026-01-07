@@ -1,15 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderPaymentSystem.Application.Interfaces.Auth;
+using OrderPaymentSystem.Application.Interfaces.Cache;
+using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.DAL.Auth;
 using OrderPaymentSystem.DAL.Cache;
 using OrderPaymentSystem.DAL.Interceptors;
 using OrderPaymentSystem.DAL.Persistence;
 using OrderPaymentSystem.DAL.Persistence.Repositories.Base;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Interfaces.Auth;
-using OrderPaymentSystem.Domain.Interfaces.Cache;
-using OrderPaymentSystem.Domain.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
 using OrderPaymentSystem.Domain.Settings;
 

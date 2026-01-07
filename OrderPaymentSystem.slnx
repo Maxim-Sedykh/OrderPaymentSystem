@@ -22,9 +22,9 @@
     <Project Path="benchmarks/OrderPaymentSystem.Benchmarks/OrderPaymentSystem.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/src/Core/">
-    <Project Path="OrderPaymentSystem.Shared/OrderPaymentSystem.Shared.csproj" Id="e6968edb-58b6-443c-bffd-7e73a8b0385d" />
     <Project Path="src/Core/OrderPaymentSystem.Application/OrderPaymentSystem.Application.csproj" />
     <Project Path="src/Core/OrderPaymentSystem.Domain/OrderPaymentSystem.Domain.csproj" />
+    <Project Path="src/Core/OrderPaymentSystem.Shared/OrderPaymentSystem.Shared.csproj" />
   </Folder>
   <Folder Name="/src/Infrastructure/">
     <Project Path="src/Infrastructure/OrderPaymentSystem.DAL/OrderPaymentSystem.DAL.csproj" />

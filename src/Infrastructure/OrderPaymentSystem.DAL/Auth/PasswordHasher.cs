@@ -1,4 +1,4 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Auth;
+﻿using OrderPaymentSystem.Application.Interfaces.Auth;
 using System.Security.Cryptography;
 
 namespace OrderPaymentSystem.DAL.Auth;
