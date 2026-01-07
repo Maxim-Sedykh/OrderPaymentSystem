@@ -1,0 +1,13 @@
+﻿using OrderPaymentSystem.Domain.Entities;
+using OrderPaymentSystem.Shared.Result;
+
+namespace OrderPaymentSystem.Application.Interfaces.Validators;
+
+public interface IPaymentValidator
+{
+    /// <summary>
+    /// Валидировать создание платежа
+    /// </summary>
+    /// <returns>Результат валидации</returns>
+    BaseResult ValidateCreatingPayment(bool orderExists, bool paymentExists, long orderId);
+}
