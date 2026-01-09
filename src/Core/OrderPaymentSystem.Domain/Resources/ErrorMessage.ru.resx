@@ -201,8 +201,8 @@
   <data name="PasswordHashCannotBeEmpty" xml:space="preserve">
     <value>Пароль не должен быть пустым</value>
   </data>
-  <data name="PasswordIsWrong" xml:space="preserve">
-    <value>Пароль неверный</value>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Неверные данные пользователя</value>
   </data>
   <data name="PasswordNotEqualsPasswordConfirm" xml:space="preserve">
     <value>Пароли не равны</value>
@@ -293,5 +293,8 @@
   </data>
   <data name="UserRolesNotFound" xml:space="preserve">
     <value>У пользователя с Id {0} нет ролей</value>
+  </data>
+  <data name="UserRoleNotFound" xml:space="preserve">
+    <value>У пользователя роль с Id {0} не найдена</value>
   </data>
 </root>

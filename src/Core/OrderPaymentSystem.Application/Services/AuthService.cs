@@ -5,11 +5,8 @@ using OrderPaymentSystem.Application.Interfaces.Auth;
 using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Interfaces.Validators;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 using System.Security.Claims;
 
@@ -26,7 +23,6 @@ public class AuthService : IAuthService
     private readonly ILogger<AuthService> _logger;
     private readonly IUserTokenService _userTokenService;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IAuthValidator _authValidator;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ICacheService _cacheService;
 
@@ -35,21 +31,18 @@ public class AuthService : IAuthService
     /// </summary>
     /// <param name="userTokenService">Сервис для работы с JWT-токенами</param>
     /// <param name="unitOfWork">Сервис для работы с транзакциями</param>
-    /// <param name="authValidator">Валидатор</param>
     /// <param name="passwordHasher">Сервис для хэширования паролей</param>
     /// <param name="cacheService">Сервис для работы с кэшем</param>
     public AuthService(
         ILogger<AuthService> logger,
         IUserTokenService userTokenService,
         IUnitOfWork unitOfWork,
-        IAuthValidator authValidator,
         IPasswordHasher passwordHasher,
         ICacheService cacheService)
     {
         _logger = logger;
         _userTokenService = userTokenService;
         _unitOfWork = unitOfWork;
-        _authValidator = authValidator;
         _passwordHasher = passwordHasher;
         _cacheService = cacheService;
     }
@@ -58,10 +51,10 @@ public class AuthService : IAuthService
     public async Task<DataResult<TokenDto>> LoginAsync(LoginUserDto dto, CancellationToken cancellationToken = default)
     {
         var user = await _unitOfWork.Users.GetWithRolesAndTokenByLoginAsync(dto.Login, cancellationToken);
-
-        var validateLoginResult = _authValidator.ValidateLogin(user, dto.Password);
-        if (!validateLoginResult.IsSuccess)
-            return DataResult<TokenDto>.Failure(validateLoginResult.Error);
+        if (user == null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
+        {
+            return DataResult<TokenDto>.Failure(DomainErrors.User.InvalidCredentials());
+        }
 
         var claims = _userTokenService.GetClaimsFromUser(user);
 

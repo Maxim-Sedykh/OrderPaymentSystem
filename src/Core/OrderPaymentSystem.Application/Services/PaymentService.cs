@@ -4,11 +4,8 @@ using OrderPaymentSystem.Application.DTOs.Payment;
 using OrderPaymentSystem.Application.Extensions;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Interfaces.Validators;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Services;
@@ -16,16 +13,13 @@ namespace OrderPaymentSystem.Application.Services;
 public class PaymentService : IPaymentService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IPaymentValidator _paymentValidator;
     private readonly IMapper _mapper;
 
     public PaymentService(IUnitOfWork unitOfWork,
-        IMapper mapper,
-        IPaymentValidator paymentValidator)
+        IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
-        _paymentValidator = paymentValidator;
     }
 
     public async Task<BaseResult> CompletePaymentAsync(long paymentId, decimal amountPaid, decimal cashChange, CancellationToken cancellationToken = default)
@@ -47,11 +41,8 @@ public class PaymentService : IPaymentService
     public async Task<BaseResult> CreateAsync(CreatePaymentDto dto, CancellationToken cancellationToken = default)
     {
         var (orderExists, paymentExists) = await IsExistsPaymentAndOrderAsync(dto.OrderId, cancellationToken);
-        var validateCreatingPaymentResult = _paymentValidator.ValidateCreatingPayment(orderExists, paymentExists, dto.OrderId);
-        if (!validateCreatingPaymentResult.IsSuccess)
-        {
-            return BaseResult.Failure(validateCreatingPaymentResult.Error);
-        }
+        if (!orderExists) return BaseResult.Failure(DomainErrors.Order.NotFound(dto.OrderId));
+        if (paymentExists) return BaseResult.Failure(DomainErrors.Payment.AlreadyExists(dto.OrderId));
 
         var payment = Payment.Create(dto.OrderId, dto.AmountToPay, dto.Method);
 

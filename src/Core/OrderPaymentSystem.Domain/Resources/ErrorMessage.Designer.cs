@@ -142,6 +142,15 @@ namespace OrderPaymentSystem.Domain.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Неверные данные пользователя.
+        /// </summary>
+        public static string InvalidCredentials {
+            get {
+                return ResourceManager.GetString("InvalidCredentials", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Не валидный Id платежа.
         /// </summary>
         public static string InvalidPaymentId {
@@ -309,15 +318,6 @@ namespace OrderPaymentSystem.Domain.Resources {
         public static string PasswordHashCannotBeEmpty {
             get {
                 return ResourceManager.GetString("PasswordHashCannotBeEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Неверный пароль.
-        /// </summary>
-        public static string PasswordIsWrong {
-            get {
-                return ResourceManager.GetString("PasswordIsWrong", resourceCulture);
             }
         }
         
@@ -579,6 +579,15 @@ namespace OrderPaymentSystem.Domain.Resources {
         public static string UserNotFoundByLogin {
             get {
                 return ResourceManager.GetString("UserNotFoundByLogin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на У пользователя роль с Id {0} не найдена.
+        /// </summary>
+        public static string UserRoleNotFound {
+            get {
+                return ResourceManager.GetString("UserRoleNotFound", resourceCulture);
             }
         }
         

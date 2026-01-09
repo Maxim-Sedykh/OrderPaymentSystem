@@ -5,10 +5,8 @@ using OrderPaymentSystem.Application.DTOs.Basket;
 using OrderPaymentSystem.Application.Extensions;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Services;

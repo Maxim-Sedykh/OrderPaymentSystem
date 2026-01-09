@@ -201,8 +201,8 @@
   <data name="PasswordHashCannotBeEmpty" xml:space="preserve">
     <value>Password cannot be empty</value>
   </data>
-  <data name="PasswordIsWrong" xml:space="preserve">
-    <value>Password is wrong</value>
+  <data name="InvalidCredentials" xml:space="preserve">
+    <value>Invalid user data</value>
   </data>
   <data name="PasswordNotEqualsPasswordConfirm" xml:space="preserve">
     <value>Password not equals password confirm</value>
@@ -293,5 +293,8 @@
   </data>
   <data name="UserRolesNotFound" xml:space="preserve">
     <value>User with id {0} has no assigned roles.</value>
+  </data>
+  <data name="UserRoleNotFound" xml:space="preserve">
+    <value>User has not role with id {0}</value>
   </data>
 </root>

@@ -126,7 +126,7 @@ public class Order : IEntityId<long>, IAuditable
             throw new BusinessException(DomainErrors.Payment.InvalidId());
 
         if (PaymentId.HasValue)
-            throw new BusinessException(DomainErrors.Payment.AlreadyExists());
+            throw new BusinessException(DomainErrors.Payment.AlreadyExists(Id));
 
         PaymentId = paymentId;
     }

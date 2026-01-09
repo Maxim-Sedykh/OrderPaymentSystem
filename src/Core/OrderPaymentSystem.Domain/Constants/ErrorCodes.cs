@@ -49,6 +49,9 @@
         public const int RoleNotFoundById = 1022;
         public const int RolesNotFound = 1023;
         public const int UserNotFoundByLogin = 1024;
+        public const int InvalidCredentials = 1025;
+        public const int UserRoleNotFound = 1026;
+        
 
         #endregion
 

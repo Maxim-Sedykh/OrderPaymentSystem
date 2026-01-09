@@ -1,4 +1,6 @@
-﻿using OrderPaymentSystem.Shared.Result;
+﻿using OrderPaymentSystem.Domain.Constants;
+using OrderPaymentSystem.Shared.Exceptions;
+using OrderPaymentSystem.Shared.Result;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Mime;
@@ -47,8 +49,9 @@ public class ExceptionHandlingMiddleware(ILogger logger, RequestDelegate next)
         var errorMessage = exception.Message;
         var response = exception switch
         {
-            UnauthorizedAccessException => BaseResult.Failure((int)HttpStatusCode.Unauthorized, errorMessage),
-            _ => BaseResult.Failure((int)HttpStatusCode.InternalServerError, errorMessage),
+            UnauthorizedAccessException => BaseResult.Failure(ErrorCodes.Unauthorized, errorMessage),
+            BusinessException businessException => BaseResult.Failure(businessException.ErrorCode, businessException.Message),
+            _ => BaseResult.Failure(ErrorCodes.InternalServerError, errorMessage),
         };
 
         httpContext.Response.ContentType = MediaTypeNames.Application.Json;

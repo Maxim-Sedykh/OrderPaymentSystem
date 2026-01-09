@@ -6,11 +6,8 @@ using OrderPaymentSystem.Application.DTOs.OrderItem;
 using OrderPaymentSystem.Application.Extensions;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Interfaces.Validators;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Services;
@@ -21,17 +18,14 @@ namespace OrderPaymentSystem.Application.Services;
 public class OrderItemService : IOrderItemService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IOrderItemValidator _orderItemValidator;
     private readonly IMapper _mapper;
     private readonly ILogger _logger;
 
     public OrderItemService(IUnitOfWork unitOfWork,
-        IOrderItemValidator orderItemValidator,
         IMapper mapper,
         ILogger logger)
     {
         _unitOfWork = unitOfWork;
-        _orderItemValidator = orderItemValidator;
         _mapper = mapper;
         _logger = logger;
     }
@@ -40,12 +34,10 @@ public class OrderItemService : IOrderItemService
     public async Task<DataResult<OrderItemDto>> CreateAsync(CreateOrderItemDto dto, CancellationToken cancellationToken = default)
     {
         var (order, product) = await GetOrderAndProductAsync(dto.OrderId, dto.ProductId, cancellationToken);
-
-        var validateUpdatingOrderResult = _orderItemValidator.ValidateUpdatingOrder(order, product);
-        if (!validateUpdatingOrderResult.IsSuccess)
-        {
-            return DataResult<OrderItemDto>.Failure(validateUpdatingOrderResult.Error);
-        }
+        if (order == null)
+            return DataResult<OrderItemDto>.Failure(DomainErrors.Order.NotFound(dto.OrderId));
+        if (product == null)
+            return DataResult<OrderItemDto>.Failure(DomainErrors.Product.NotFound(dto.ProductId));
 
         var orderItem = OrderItem.Create(product.Id, dto.Quantity, product.Price, product);
 

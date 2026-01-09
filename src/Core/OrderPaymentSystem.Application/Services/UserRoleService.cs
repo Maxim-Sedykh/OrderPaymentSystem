@@ -3,13 +3,9 @@ using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs.UserRole;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Interfaces.Validators;
-using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
-using System.Xml;
 
 namespace OrderPaymentSystem.Application.Services;
 
@@ -18,16 +14,13 @@ namespace OrderPaymentSystem.Application.Services;
 /// </summary>
 public class UserRoleService : IUserRoleService
 {
-    private readonly IRoleValidator _roleValidator;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RoleService> _logger;
 
     public UserRoleService(
-        IRoleValidator roleValidator,
         IUnitOfWork unitOfWork,
         ILogger<RoleService> logger)
     {
-        _roleValidator = roleValidator;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -74,12 +67,8 @@ public class UserRoleService : IUserRoleService
     {
         var user = await _unitOfWork.Users.GetByIdWithRolesAsync(userId, cancellationToken);
         var role = user?.Roles.FirstOrDefault(x => x.Id == roleId);
-
-        var validationResult = _roleValidator.ValidateRoleForUser(user, role);
-        if (!validationResult.IsSuccess)
-        {
-            return DataResult<UserRoleDto>.Failure(validationResult.Error);
-        }
+        if (user == null) return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(userId));
+        if (role == null) return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundById(roleId));
 
         var userRole = await _unitOfWork.UserRoles.GetByUserIdAndRoleIdAsync(user.Id, role.Id, cancellationToken);
 
@@ -96,14 +85,26 @@ public class UserRoleService : IUserRoleService
         CancellationToken cancellationToken = default)
     {
         var user = await _unitOfWork.Users.GetByIdWithRolesAsync(userId, cancellationToken);
-        var currentRole = user?.Roles.FirstOrDefault(x => x.Id == dto.FromRoleId);
+        if (user == null)
+        {
+            return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(userId));
+        }
+
+        var currentRole = user.Roles.FirstOrDefault(x => x.Id == dto.FromRoleId);
+        if (currentRole == null)
+        {
+            return DataResult<UserRoleDto>.Failure(DomainErrors.Role.UserRoleNotFound(dto.FromRoleId));
+        }
 
         var newRole = await _unitOfWork.Roles.GetByIdAsync(dto.ToRoleId, cancellationToken);
-
-        var validationResult = _roleValidator.ValidateRoleForUser(user, currentRole, newRole);
-        if (!validationResult.IsSuccess)
+        if (newRole == null)
         {
-            return DataResult<UserRoleDto>.Failure(validationResult.Error);
+            return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundById(dto.ToRoleId));
+        }
+
+        if (user.Roles.Any(x => x.Id == dto.ToRoleId))
+        {
+            return DataResult<UserRoleDto>.Failure(DomainErrors.Role.UserAlreadyHasRole(newRole.Id));
         }
 
         await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);

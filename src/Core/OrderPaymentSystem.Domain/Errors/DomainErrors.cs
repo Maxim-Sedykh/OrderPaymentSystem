@@ -30,6 +30,9 @@ public static class DomainErrors
 
     public static class User
     {
+        public static Error InvalidCredentials()
+            => new(ErrorCodes.InvalidCredentials, ErrorMessage.InvalidCredentials);
+
         public static Error NotFoundById(Guid id) 
             => new(ErrorCodes.UserNotFoundById, string.Format(ErrorMessage.UserNotFoundById, id));
 
@@ -75,12 +78,12 @@ public static class DomainErrors
         public static Error NameEmpty() 
             => new(ErrorCodes.RoleNameCannotBeEmpty, ErrorMessage.RoleNameCannotBeEmpty);
 
-        public static Error UserRolesNotFound() 
-            => new(ErrorCodes.UserRolesNotFound, ErrorMessage.UserRolesNotFound);
-
         public static Error UserAlreadyHasRole(int roleId) 
             => new(ErrorCodes.UserAlreadyExistThisRole,
                 string.Format(ErrorMessage.UserAlreadyExistThisRole, roleId));
+
+        public static Error UserRoleNotFound(int roleId)
+            => new(ErrorCodes.UserRoleNotFound, string.Format(ErrorMessage.UserRolesNotFound, roleId));
     }
 
     public static class Product
@@ -136,21 +139,9 @@ public static class DomainErrors
             => new(ErrorCodes.OrderStatusChangeNotAllowed,
                 string.Format(ErrorMessage.OrderStatusChangeNotAllowed, from, to));
 
-        public static Error CannotBeShipped(string reason) 
-            => new(ErrorCodes.OrderStatusChangeNotAllowed,
-                string.Format(ErrorMessage.OrderCannotBeShipped, reason));
-
         public static Error CannotBeConfirmedWithoutPayment()
             => new(ErrorCodes.OrderCannotBeConfirmedWithoutPayment,
                 string.Format(ErrorMessage.OrderCannotBeConfirmedWithoutPayment));
-
-        public static Error CannotBeConfirmed(string currentStatus) 
-            => new(ErrorCodes.OrderCannotBeConfirmedInvalidStatus,
-                string.Format(ErrorMessage.OrderCannotBeConfirmed, currentStatus));
-
-        public static Error CannotRemoveNonExistingItem() 
-            => new(ErrorCodes.OrderCannotRemoveNonExistingItem,
-                ErrorMessage.OrderCannotRemoveNonExistingItem);
 
         public static Error CannotAddOrRemoveItemInCurrentStatus(OrderStatus status)
             => new(ErrorCodes.OrderCannotAddOrRemoveItemInCurrentStatus,
@@ -165,8 +156,8 @@ public static class DomainErrors
         public static Error NotFound(long id) 
             => new(ErrorCodes.PaymentNotFound, string.Format(ErrorMessage.PaymentNotFound, id));
 
-        public static Error AlreadyExists() 
-            => new(ErrorCodes.PaymentAlreadyExistsForOrder, ErrorMessage.PaymentAlreadyExistsForOrder);
+        public static Error AlreadyExists(long orderId) 
+            => new(ErrorCodes.PaymentAlreadyExistsForOrder, string.Format(ErrorMessage.PaymentAlreadyExistsForOrder, orderId));
 
         public static Error OrderNotAssociated() 
             => new(ErrorCodes.PaymentOrderNotAssociated, ErrorMessage.PaymentOrderNotAssociated);
