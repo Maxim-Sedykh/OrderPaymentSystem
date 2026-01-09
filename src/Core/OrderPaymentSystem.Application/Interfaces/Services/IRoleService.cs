@@ -29,7 +29,7 @@ public interface IRoleService
     /// <param name="id"></param>
     /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns></returns>
-    Task<BaseResult> DeleteByIdAsync(long id, CancellationToken cancellationToken = default);
+    Task<BaseResult> DeleteByIdAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Обновление роли

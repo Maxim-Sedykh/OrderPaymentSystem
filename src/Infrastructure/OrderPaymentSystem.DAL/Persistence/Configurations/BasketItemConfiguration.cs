@@ -16,16 +16,14 @@ public class BasketItemConfiguration : IEntityTypeConfiguration<BasketItem>
 		builder.Property(bi => bi.CreatedAt)
 			.IsRequired();
 
-		// Связь один-ко-многим с User
 		builder.HasOne(bi => bi.User)
 			.WithMany(u => u.BasketItems)
 			.HasForeignKey(bi => bi.UserId)
-			.OnDelete(DeleteBehavior.Cascade); // Если User удаляется, BasketItems также удаляются
+			.OnDelete(DeleteBehavior.Cascade);
 
-		// Связь один-ко-многим с Product
 		builder.HasOne(bi => bi.Product)
 			.WithMany(p => p.BasketItems)
 			.HasForeignKey(bi => bi.ProductId)
-			.OnDelete(DeleteBehavior.Restrict); // Продукт не удаляется, если он находится в корзине
+			.OnDelete(DeleteBehavior.Restrict);
 	}
 }

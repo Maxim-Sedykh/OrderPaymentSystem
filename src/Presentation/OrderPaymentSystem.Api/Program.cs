@@ -1,6 +1,7 @@
 using OrderPaymentSystem.Api;
 using OrderPaymentSystem.Api.Middlewares;
 using OrderPaymentSystem.Application.DependencyInjection;
+using OrderPaymentSystem.Application.Settings;
 using OrderPaymentSystem.DAL.DependencyInjection;
 using OrderPaymentSystem.Domain.Settings;
 using Prometheus;
@@ -8,7 +9,7 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(JwtSettings.DefaultSection));
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection(nameof(JwtSettings)));
 builder.Services.Configure<RedisSettings>(builder.Configuration.GetSection(nameof(RedisSettings)));
 
 builder.Services.AddEndpointsApiExplorer();

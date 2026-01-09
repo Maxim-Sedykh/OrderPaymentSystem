@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using MediatR;
-using Microsoft.Extensions.Options;
 using Moq;
 using OrderPaymentSystem.Application.DTOs.Product;
 using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Interfaces.Cache;
 using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
 using Serilog;
 

@@ -18,9 +18,9 @@ public record Error
     /// <summary>
     /// Конструктор создания ошибки
     /// </summary>
-    /// <param name="message">Сообщение об ошибке</param>
     /// <param name="code">Числовой код создания ошибки</param>
-    public Error(string message, int code) 
+    /// <param name="message">Сообщение об ошибке</param>
+    public Error(int code, string message) 
     {
         Message = message;
         Code = code;

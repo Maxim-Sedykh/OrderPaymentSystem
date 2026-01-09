@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs.Role;
+using OrderPaymentSystem.Application.Extensions;
+using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
+using OrderPaymentSystem.Domain.Errors;
+using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Services;
@@ -15,15 +18,18 @@ namespace OrderPaymentSystem.Application.Services;
 /// </summary>
 public class RoleService : IRoleService
 {
-    private readonly IBaseRepository<Role> _roleRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly ILogger<RoleService> _logger;
 
     public RoleService(
-        IBaseRepository<Role> roleRepository,
-        IMapper mapper)
+        IUnitOfWork unitOfWork,
+        IMapper mapper,
+        ILogger<RoleService> logger)
     {
-        _roleRepository = roleRepository;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -31,37 +37,36 @@ public class RoleService : IRoleService
         CreateRoleDto dto,
         CancellationToken cancellationToken = default)
     {
-        var roleExists = await _roleRepository.GetQueryable()
+        var roleExists = await _unitOfWork.Roles.GetQueryable()
             .AnyAsync(x => x.Name == dto.Name, cancellationToken);
 
         if (roleExists)
         {
-            return DataResult<RoleDto>.Failure(ErrorCodes.RoleAlreadyExist, ErrorMessage.RoleAlreadyExist);
+            return DataResult<RoleDto>.Failure(DomainErrors.Role.AlreadyExists(dto.Name));
         }
 
         var role = Role.Create(dto.Name);
 
-        await _roleRepository.CreateAsync(role, cancellationToken);
-        await _roleRepository.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Roles.CreateAsync(role, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return DataResult<RoleDto>.Success(_mapper.Map<RoleDto>(role));
     }
 
     /// <inheritdoc/>
     public async Task<BaseResult> DeleteByIdAsync(
-        long id,
+        int id,
         CancellationToken cancellationToken = default)
     {
-        var role = await _roleRepository.GetQueryable()
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        var role = await _unitOfWork.Roles.GetByIdAsync(id, cancellationToken);
 
         if (role == null)
         {
-            return BaseResult.Failure(ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
+            return BaseResult.Failure(DomainErrors.Role.NotFoundById(id));
         }
 
-        _roleRepository.Remove(role);
-        await _roleRepository.SaveChangesAsync(cancellationToken);
+        _unitOfWork.Roles.Remove(role);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return BaseResult.Success();
     }
@@ -72,24 +77,23 @@ public class RoleService : IRoleService
         UpdateRoleDto dto,
         CancellationToken cancellationToken = default)
     {
-        var role = await _roleRepository.GetQueryable()
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        var role = await _unitOfWork.Roles.GetByIdAsync(id, cancellationToken);
 
         if (role == null)
         {
-            return DataResult<RoleDto>.Failure(ErrorCodes.RoleNotFound, ErrorMessage.RoleNotFound);
+            return DataResult<RoleDto>.Failure(DomainErrors.Role.NotFoundById(id));
         }
 
         if (role.Name == dto.Name)
         {
-            return DataResult<RoleDto>.Failure(ErrorCodes.NoChangesFound, ErrorMessage.NoChangesFound);
+            return DataResult<RoleDto>.Failure(DomainErrors.General.NoChanges());
         }
 
         role.UpdateName(dto.Name);
 
-        var updatedRole = _roleRepository.Update(role);
+        var updatedRole = _unitOfWork.Roles.Update(role);
 
-        await _roleRepository.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return DataResult<RoleDto>.Success(_mapper.Map<RoleDto>(updatedRole));
     }
@@ -97,13 +101,15 @@ public class RoleService : IRoleService
     /// <inheritdoc/>
     public async Task<CollectionResult<RoleDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var roles = await _roleRepository.GetQueryable()
-            .Select(x => new RoleDto(x.Id, x.Name))
+        var roles = await _unitOfWork.Roles.GetAllQuery()
+            .AsProjected<Role, RoleDto>(_mapper)
             .ToArrayAsync(cancellationToken);
 
         if (roles.Length == 0)
         {
-            return CollectionResult<RoleDto>.Failure(ErrorCodes.RolesNotFound, ErrorMessage.RolesNotFound);
+            _logger.LogWarning("Roles not found in database");
+
+            return CollectionResult<RoleDto>.Failure(DomainErrors.Role.RolesNotFound());
         }
 
         return CollectionResult<RoleDto>.Success(roles);

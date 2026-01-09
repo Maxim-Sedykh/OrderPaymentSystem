@@ -50,7 +50,19 @@ public class CollectionResult<T> : DataResult<IReadOnlyCollection<T>>
 
         return new CollectionResult<T>(
             Array.Empty<T>(),
-            new Error(errorMessage, errorCode));
+            new Error(errorCode, errorMessage));
+    }
+
+    /// <summary>
+    /// Создает неуспешный результат операции с указанной ошибкой.
+    /// </summary>
+    /// <param name="error">Ошибка</param>
+    /// <returns>Неуспешный результат с ошибкой</returns>
+    public static new CollectionResult<T> Failure(Error error)
+    {
+        return new CollectionResult<T>(
+            Array.Empty<T>(),
+            new Error(error.Code, error.Message));
     }
 
     /// <summary>

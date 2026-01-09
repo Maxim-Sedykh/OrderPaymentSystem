@@ -20,28 +20,23 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
 
 		builder.Property(p => p.Description)
 			.HasMaxLength(1000)
-			.IsRequired(false); // Описание может быть опциональным
+			.IsRequired(false);
 
 		builder.Property(p => p.Price)
 			.IsRequired()
-			.HasColumnType("decimal(18,2)"); // Важно для decimal, чтобы указать точность и масштаб
+			.HasColumnType("decimal(18,2)");
 
-		// Связь один-ко-многим с OrderItem
 		builder.HasMany(p => p.OrderItems)
 			.WithOne(oi => oi.Product)
 			.HasForeignKey(oi => oi.ProductId)
-			.OnDelete(DeleteBehavior.Restrict); // Продукт не должен удаляться, если он является частью заказа
+			.OnDelete(DeleteBehavior.Restrict);
 
-		// Связь один-ко-многим с BasketItem
 		builder.HasMany(p => p.BasketItems)
 			.WithOne(bi => bi.Product)
 			.HasForeignKey(bi => bi.ProductId)
-			.OnDelete(DeleteBehavior.Restrict); // Продукт не должен удаляться, если он находится в корзине
+			.OnDelete(DeleteBehavior.Restrict);
 
-		// Аудит-поля
 		builder.Property(p => p.CreatedAt).IsRequired();
-		builder.Property(p => p.CreatedBy).IsRequired();
 		builder.Property(p => p.UpdatedAt).IsRequired(false);
-		builder.Property(p => p.UpdatedBy).IsRequired(false);
 	}
 }

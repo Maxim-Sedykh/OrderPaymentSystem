@@ -1,9 +1,7 @@
-﻿namespace OrderPaymentSystem.Domain.Settings;
+﻿namespace OrderPaymentSystem.Application.Settings;
 
 public class JwtSettings
 {
-    public const string DefaultSection = "Jwt";
-
     public string Issuer {  get; set; }
 
     public string Audience { get; set; }

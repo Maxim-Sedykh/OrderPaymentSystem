@@ -32,7 +32,7 @@ public class DataResult<T> : BaseResult
         new(data);
 
     public static new DataResult<T> Failure(int errorCode, string errorMessage) =>
-        new(default, new Error(errorMessage, errorCode));
+        new(default, new Error(errorCode, errorMessage));
 
     public static new DataResult<T> Failure(Error error) => new(default, error);
 }

@@ -1,7 +1,5 @@
 ﻿using Moq;
 using OrderPaymentSystem.Application.DTOs.Product;
-using OrderPaymentSystem.Application.Queries;
-using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.UnitTests.Configurations;
 using Xunit;
 

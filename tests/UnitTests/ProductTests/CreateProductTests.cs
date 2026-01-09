@@ -1,9 +1,6 @@
 ﻿using Moq;
-using OrderPaymentSystem.Application.Commands.ProductCommands;
 using OrderPaymentSystem.Application.DTOs.Product;
-using OrderPaymentSystem.Domain.Dto.Product;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.UnitTests.Configurations;
 using Xunit;
 

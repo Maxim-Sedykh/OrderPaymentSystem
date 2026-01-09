@@ -1,5 +1,4 @@
-﻿using MockQueryable.Moq;
-using Moq;
+﻿using Moq;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
 

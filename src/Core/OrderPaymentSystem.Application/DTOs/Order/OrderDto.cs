@@ -1,8 +1,5 @@
 ﻿using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.ValueObjects;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OrderPaymentSystem.Application.DTOs.Order;
 

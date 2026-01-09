@@ -1,18 +1,18 @@
-﻿using OrderPaymentSystem.Domain.Exceptions;
+﻿using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
-using OrderPaymentSystem.Domain.Result;
+using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
 
 /// <summary>
 /// Роль
 /// </summary>
-public class Role : IEntityId<long>
+public class Role : IEntityId<int>
 {
     /// <summary>
     /// Id роли
     /// </summary>
-    public long Id { get; protected set; }
+    public int Id { get; protected set; }
 
     /// <summary>
     /// Название роли
@@ -20,7 +20,7 @@ public class Role : IEntityId<long>
     public string Name { get; protected set; }
 
     private readonly List<User> _users = new();
-    public virtual IReadOnlyCollection<User> Users => _users.AsReadOnly();
+    public IReadOnlyCollection<User> Users => _users.AsReadOnly();
 
     protected Role() { }
 
@@ -32,7 +32,7 @@ public class Role : IEntityId<long>
     public static Role Create(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new BusinessException(6001, "Role name cannot be empty.");
+            throw new BusinessException(ErrorCodes.RoleNameCannotByEmpty, "Role name cannot be empty.");
 
         return new Role { Id = default, Name = name };
     }
@@ -45,7 +45,7 @@ public class Role : IEntityId<long>
     public void UpdateName(string newName)
     {
         if (string.IsNullOrWhiteSpace(newName))
-            throw new BusinessException(6002, "Role name cannot be empty.");
+            throw new BusinessException(ErrorCodes.RoleNameCannotByEmpty, "Role name cannot be empty.");
 
         Name = newName;
     }

@@ -1,4 +1,7 @@
-﻿namespace OrderPaymentSystem.Domain.Entities;
+﻿using OrderPaymentSystem.Domain.Constants;
+using OrderPaymentSystem.Shared.Exceptions;
+
+namespace OrderPaymentSystem.Domain.Entities;
 
 /// <summary>
 /// Сущность-связка роли и пользователя
@@ -25,6 +28,12 @@ public class UserRole
     /// <returns>Результат создания</returns>
     public static UserRole Create(Guid userId, long roleId)
     {
+        if (userId == default)
+            throw new BusinessException(ErrorCodes.InvalidUserId, "Invalid user id");
+
+        if (roleId == default)
+            throw new BusinessException(ErrorCodes.InvalidRoleId, "Invalid role id");
+
         return new UserRole { UserId = userId, RoleId = roleId };
     }
 }

@@ -1,5 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Exceptions;
-using OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
+using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
 

@@ -15,7 +15,7 @@ public interface IBasketItemRepository : IBaseRepository<BasketItem>
     /// <returns>Сущность элемента корзины</returns>
     Task<BasketItem> GetByIdAsync(long id, CancellationToken cancellationToken = default);
 
-    IQueryable<BasketItem> GetByUserId(Guid userId);
+    IQueryable<BasketItem> GetByUserIdQuery(Guid userId);
 
     Task<BasketItem> GetByIdWithProductAsync(long id, CancellationToken cancellationToken = default);
 }

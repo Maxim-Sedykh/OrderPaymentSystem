@@ -1,6 +1,7 @@
-﻿using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Exceptions;
+﻿using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
+using OrderPaymentSystem.Domain.Resources;
+using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
 
@@ -58,7 +59,7 @@ public class BasketItem : IEntityId<long>, IAuditable
     public static BasketItem Create(Guid userId, int productId, int quantity, IStockInfo stockInfo)
     {
         if (userId == Guid.Empty)
-            throw new BusinessException(ErrorCodes.InvalidUserId, "User ID cannot be empty.");
+            throw new BusinessException(ErrorCodes.InvalidUserId, ErrorMessage.InvalidUserId);
 
         if (productId <= 0)
             throw new BusinessException(ErrorCodes.InvalidProductId, "Product ID must be positive.");

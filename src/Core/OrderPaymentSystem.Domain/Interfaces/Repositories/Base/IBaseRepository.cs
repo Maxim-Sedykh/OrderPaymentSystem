@@ -1,12 +1,10 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
-
-namespace OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
+﻿namespace OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
 
 /// <summary>
 /// Интерфейс для generic репозитория. Абстракции над DbContext
 /// </summary>
 /// <typeparam name="TEntity">Тип сущности</typeparam>
-public interface IBaseRepository<TEntity> : IStateSaveChanges
+public interface IBaseRepository<TEntity>
 {
     /// <summary>
     /// Получить все сущности в виде <see cref="IQueryable"/>

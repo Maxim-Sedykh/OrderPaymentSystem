@@ -1,14 +1,14 @@
 ﻿using AutoMapper;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs.Product;
 using OrderPaymentSystem.Application.Extensions;
+using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
+using OrderPaymentSystem.Domain.Errors;
+using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Services;
@@ -18,23 +18,16 @@ namespace OrderPaymentSystem.Application.Services;
 /// </summary>
 public class ProductService : IProductService
 {
-    private readonly IBaseRepository<Product> _productRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ILogger<ProductService> _logger;
 
-    /// <summary>
-    /// Конструктор сервиса
-    /// </summary>
-    /// <param name="productRepository">Репозиторий для работы с товарами</param>
-    /// <param name="mapper">Маппер</param>
-    /// <param name="mediator">Посредник, медиатор</param>
-    /// <param name="logger">Логгер</param>
     public ProductService(
-        IBaseRepository<Product> productRepository,
+        IUnitOfWork unitOfWork,
         IMapper mapper,
         ILogger<ProductService> logger)
     {
-        _productRepository = productRepository;
+        _unitOfWork = unitOfWork;
         _mapper = mapper;
         _logger = logger;
     }
@@ -43,18 +36,16 @@ public class ProductService : IProductService
     public async Task<BaseResult> CreateAsync(CreateProductDto dto,
         CancellationToken cancellationToken = default)
     {
-        var productExists = await _productRepository.GetQueryable()
-            .AnyAsync(x => x.Name == dto.Name, cancellationToken);
-
+        var productExists = await _unitOfWork.Products.ExistsByNameAsync(dto.Name, cancellationToken);
         if (productExists)
         {
-            return BaseResult.Failure(ErrorCodes.ProductAlreadyExist, ErrorMessage.ProductAlreadyExist);
+            return BaseResult.Failure(DomainErrors.Product.AlreadyExist(dto.Name));
         }
 
         var product = Product.Create(dto.Name, dto.Description, dto.Price, dto.StockQuantity);
 
-        await _productRepository.CreateAsync(product, cancellationToken);
-        await _productRepository.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Products.CreateAsync(product, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Product created successfully: {ProductName} (ID: {ProductId})",
             dto.Name, product.Id);
@@ -65,16 +56,15 @@ public class ProductService : IProductService
     /// <inheritdoc/>
     public async Task<BaseResult> DeleteByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var product = await _productRepository.GetQueryable()
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        var product = await _unitOfWork.Products.GetByIdAsync(id, cancellationToken: cancellationToken);
 
         if (product == null)
         {
-            return BaseResult.Failure(ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
+            return BaseResult.Failure(DomainErrors.Product.NotFound(id));
         }
 
-        _productRepository.Remove(product);
-        await _productRepository.SaveChangesAsync(cancellationToken);
+        _unitOfWork.Products.Remove(product);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Product deleted successfully: {ProductName} (ID: {ProductId})",
             product.Name, product.Id);
@@ -85,14 +75,13 @@ public class ProductService : IProductService
     /// <inheritdoc/>
     public async Task<DataResult<ProductDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var product = await _productRepository.GetQueryable()
-            .Where(x => x.Id == id)
+        var product = await _unitOfWork.Products.GetByIdQuery(id)
             .AsProjected<Product, ProductDto>(_mapper)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (product == null)
         {
-            return DataResult<ProductDto>.Failure(ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
+            return DataResult<ProductDto>.Failure(DomainErrors.Product.NotFound(id));
         }
 
         return DataResult<ProductDto>.Success(product);
@@ -101,7 +90,7 @@ public class ProductService : IProductService
     /// <inheritdoc/>
     public async Task<CollectionResult<ProductDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var products = await _productRepository.GetQueryable()
+        var products = await _unitOfWork.Products.GetAllQuery()
             .AsProjected<Product, ProductDto>(_mapper)
             .ToArrayAsync(cancellationToken);
 
@@ -111,18 +100,17 @@ public class ProductService : IProductService
     /// <inheritdoc/>
     public async Task<DataResult<ProductDto>> UpdateAsync(int id, UpdateProductDto dto, CancellationToken cancellationToken = default)
     {
-        var product = await _productRepository.GetQueryable()
-            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        var product = await _unitOfWork.Products.GetByIdAsync(id, cancellationToken: cancellationToken);
 
         if (product == null)
         {
-            return DataResult<ProductDto>.Failure(ErrorCodes.ProductNotFound, ErrorMessage.ProductNotFound);
+            return DataResult<ProductDto>.Failure(DomainErrors.Product.NotFound(id));
         }
 
         product.UpdateDetails(dto.Name, dto.Description, dto.Price, dto.StockQuantity);
 
-        _productRepository.Update(product);
-        await _productRepository.SaveChangesAsync(cancellationToken);
+        _unitOfWork.Products.Update(product);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var updatedProduct = _mapper.Map<ProductDto>(product);
 

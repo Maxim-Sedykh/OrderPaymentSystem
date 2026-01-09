@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using OrderPaymentSystem.Api.Swagger;
-using OrderPaymentSystem.Domain.Settings;
+using OrderPaymentSystem.Application.Settings;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Text;

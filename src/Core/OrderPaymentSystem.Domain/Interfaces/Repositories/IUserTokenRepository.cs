@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using OrderPaymentSystem.Domain.Entities;
+using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
 
 namespace OrderPaymentSystem.Domain.Interfaces.Repositories;
 
-public class IUserTokenRepository
+public interface IUserTokenRepository : IBaseRepository<UserToken>
 {
 }

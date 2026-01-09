@@ -1,5 +1,4 @@
-﻿using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Shared.Result;
+﻿using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Interfaces.Validators;
 

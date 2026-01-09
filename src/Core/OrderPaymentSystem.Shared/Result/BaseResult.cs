@@ -12,7 +12,7 @@ public class BaseResult
     /// <param name="error"></param>
     protected BaseResult(Error error = null)
     {
-        Error = error ?? new Error("Internal server error", 500);
+        Error = error ?? new Error(500, "Internal server error");
     }
 
     /// <summary>
@@ -36,7 +36,7 @@ public class BaseResult
     /// <param name="errorCode">Код ошибки в виде числа</param>
     /// <param name="errorMessage">Сообщение об ошибке</param>
     public static BaseResult Failure(int errorCode, string errorMessage) =>
-        new(new Error(errorMessage, errorCode));
+        new(new Error(errorCode, errorMessage));
 
     /// <summary>
     /// Создание ошибочного результата

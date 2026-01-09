@@ -23,8 +23,6 @@ public static class DependencyInjection
     {
         InitAutoMapper(services);
 
-        services.AddMediatR(cf => cf.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
-
         InitServices(services);
 
         InitFluentValidators(services);

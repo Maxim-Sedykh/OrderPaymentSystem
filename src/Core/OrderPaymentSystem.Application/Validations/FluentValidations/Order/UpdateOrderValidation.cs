@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using OrderPaymentSystem.Domain.Dto.Order;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Order;
 

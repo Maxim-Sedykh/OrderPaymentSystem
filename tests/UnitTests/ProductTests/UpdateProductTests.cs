@@ -1,8 +1,6 @@
-﻿using MockQueryable.Moq;
-using Moq;
+﻿using Moq;
 using OrderPaymentSystem.Application.DTOs.Product;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.UnitTests.Configurations;
 using Xunit;
 

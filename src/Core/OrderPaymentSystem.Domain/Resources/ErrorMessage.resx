@@ -117,8 +117,23 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AddressCityEmpty" xml:space="preserve">
+    <value>Город в адресе не может быть пустым</value>
+  </data>
+  <data name="AddressCountryEmpty" xml:space="preserve">
+    <value>Страна в адресе не может быть пустым</value>
+  </data>
+  <data name="AddressStreetEmpty" xml:space="preserve">
+    <value>Улица в адресе не может быть пустым</value>
+  </data>
+  <data name="AddressZipCodeEmpty" xml:space="preserve">
+    <value>Индекс в адресе не может быть пустым</value>
+  </data>
   <data name="BasketItemNotFound" xml:space="preserve">
     <value>Элемент корзины с Id {0} не найден</value>
+  </data>
+  <data name="ConcurrencyConflict" xml:space="preserve">
+    <value>Запись была обновлена другим пользователем, попробуйте ещё раз</value>
   </data>
   <data name="InternalServerError" xml:space="preserve">
     <value>Внутренняя ошибка сервера</value>
@@ -126,8 +141,20 @@
   <data name="InvalidClientRequest" xml:space="preserve">
     <value>Не валидный запрос клиента</value>
   </data>
+  <data name="InvalidPaymentId" xml:space="preserve">
+    <value>Не валидный Id платежа</value>
+  </data>
+  <data name="InvalidRoleId" xml:space="preserve">
+    <value>Не валидный Id роли</value>
+  </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>Не валидный токен</value>
+  </data>
+  <data name="InvalidUserId" xml:space="preserve">
+    <value>Не валидный Id пользователя</value>
+  </data>
+  <data name="LoginCannotBeEmpty" xml:space="preserve">
+    <value>Логин пользователя не может быть пустым</value>
   </data>
   <data name="NoChangesFound" xml:space="preserve">
     <value>Изменений не найдено</value>
@@ -135,14 +162,35 @@
   <data name="NotEnoughPayFunds" xml:space="preserve">
     <value>Не хватает средств для оплаты</value>
   </data>
+  <data name="OrderCannotBeConfirmed" xml:space="preserve">
+    <value>Заказ не может быть подтверждён. Текущий статус {0}</value>
+  </data>
+  <data name="OrderCannotBeConfirmedWithoutPayment" xml:space="preserve">
+    <value>Заказ не может быть подтверждён без законченного платежа</value>
+  </data>
+  <data name="OrderCannotBeShipped" xml:space="preserve">
+    <value>Заказ не может быть доставлен по причине {0}</value>
+  </data>
+  <data name="OrderCannotRemoveNonExistingItem" xml:space="preserve">
+    <value>Нельзя удалить несуществующий элемент заказа из заказа</value>
+  </data>
+  <data name="OrderDeliveryAddressRequired" xml:space="preserve">
+    <value>Для заказа необходимо указать адрес доставки</value>
+  </data>
   <data name="OrderItemNotFound" xml:space="preserve">
-    <value>Элемент заказа не найден</value>
+    <value>Элемент заказа c Id {0} не найден</value>
+  </data>
+  <data name="OrderItemsEmpty" xml:space="preserve">
+    <value>Заказ должен содержать хотя бы один элемент</value>
   </data>
   <data name="OrderNotFound" xml:space="preserve">
-    <value>Заказ не найден</value>
+    <value>Заказ с Id {0} не найден</value>
   </data>
-  <data name="OrdersNotFound" xml:space="preserve">
-    <value>Заказы не найдены</value>
+  <data name="OrderStatusChangeNotAllowed" xml:space="preserve">
+    <value>Нельзя поменять статус заказа с {0} на {1}</value>
+  </data>
+  <data name="PasswordHashCannotBeEmpty" xml:space="preserve">
+    <value>Пароль не должен быть пустым</value>
   </data>
   <data name="PasswordIsWrong" xml:space="preserve">
     <value>Неверный пароль</value>
@@ -153,8 +201,20 @@
   <data name="PaymentAlreadyExistsForOrder" xml:space="preserve">
     <value>Платёж уже существует для заказа с Id {0}</value>
   </data>
+  <data name="PaymentAmountPositive" xml:space="preserve">
+    <value>Сумма платежа должна быть положительной</value>
+  </data>
+  <data name="PaymentCashChangeMismatch" xml:space="preserve">
+    <value>Несоответствие сдачи в платеже</value>
+  </data>
+  <data name="PaymentInvalidStatus" xml:space="preserve">
+    <value>Платёж уже находится в статусе {0}</value>
+  </data>
+  <data name="PaymentNotEnoughAmount" xml:space="preserve">
+    <value>Сумма платежа {0} меньше чем нужно заплатить {1}</value>
+  </data>
   <data name="PaymentNotFound" xml:space="preserve">
-    <value>Платёж не найден</value>
+    <value>Платёж с Id {0} не найден</value>
   </data>
   <data name="PaymentOrderNotAssociated" xml:space="preserve">
     <value>Платёж не связан с заказом</value>
@@ -163,39 +223,66 @@
     <value>Платежи не найдены</value>
   </data>
   <data name="ProductAlreadyExist" xml:space="preserve">
-    <value>Товар уже существует</value>
+    <value>Товар с названием {0} уже существует</value>
+  </data>
+  <data name="ProductNameEmpty" xml:space="preserve">
+    <value>Название товара должно быть не пустым</value>
   </data>
   <data name="ProductNotFound" xml:space="preserve">
     <value>Товар с Id {0} не найден</value>
+  </data>
+  <data name="ProductPricePositive" xml:space="preserve">
+    <value>У товара должна быть положительная цена</value>
   </data>
   <data name="ProductsNotFound" xml:space="preserve">
     <value>Товары не найдены</value>
   </data>
   <data name="ProductStockQuantityNotAvailable" xml:space="preserve">
-    <value>Количества товара с Id {0} не хватает на складе</value>
+    <value>Запрошенное количество товара{0} для товара с Id {1} недоступно.</value>
+  </data>
+  <data name="QuantityPositive" xml:space="preserve">
+    <value>Количество товара должно быть не отрицательным</value>
+  </data>
+  <data name="RefreshTokenEmpty" xml:space="preserve">
+    <value>Refresh токен не может быть пустым</value>
   </data>
   <data name="RefreshTokenExpired" xml:space="preserve">
     <value>Время жизни токена истекло</value>
   </data>
-  <data name="RoleAlreadyExist" xml:space="preserve">
-    <value>Роль с таким названием уже существует</value>
+  <data name="RefreshTokenFuture" xml:space="preserve">
+    <value>Время истечения жизни токена должно быть в будущем</value>
   </data>
-  <data name="RoleNotFound" xml:space="preserve">
-    <value>Роль не найдена</value>
+  <data name="RoleAlreadyExist" xml:space="preserve">
+    <value>Роль с таким названием {0} уже существует</value>
+  </data>
+  <data name="RoleNameCannotBeEmpty" xml:space="preserve">
+    <value>Название роли не может быть пустым</value>
+  </data>
+  <data name="RoleNotFoundById" xml:space="preserve">
+    <value>Роль c id {0} не найдена</value>
+  </data>
+  <data name="RoleNotFoundByName" xml:space="preserve">
+    <value>Роль с названием {0} не найдена</value>
   </data>
   <data name="RolesNotFound" xml:space="preserve">
     <value>Роли не найдены</value>
   </data>
+  <data name="StockQuantityPositive" xml:space="preserve">
+    <value>Количество товара на складе не может быть отрицательным</value>
+  </data>
   <data name="UserAlreadyExist" xml:space="preserve">
-    <value>Пользователь уже существует</value>
+    <value>Пользователь c логином {0} уже существует</value>
   </data>
   <data name="UserAlreadyExistThisRole" xml:space="preserve">
-    <value>Пользователь с этой ролью уже существует</value>
+    <value>Пользователь с ролью у которой Id {0} уже существует</value>
   </data>
-  <data name="UserNotFound" xml:space="preserve">
-    <value>Пользователь не найден</value>
+  <data name="UserNotFoundById" xml:space="preserve">
+    <value>Пользователь с Id {0} не найден</value>
+  </data>
+  <data name="UserNotFoundByLogin" xml:space="preserve">
+    <value>Пользователь с логином {0} не найден</value>
   </data>
   <data name="UserRolesNotFound" xml:space="preserve">
-    <value>Роли пользователей</value>
+    <value>У пользователя с Id {0} нет ролей</value>
   </data>
 </root>

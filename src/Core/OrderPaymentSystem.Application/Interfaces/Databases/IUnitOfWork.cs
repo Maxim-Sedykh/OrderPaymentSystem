@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
+using OrderPaymentSystem.Domain.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.Application.Interfaces.Databases;
 
@@ -7,6 +8,16 @@ namespace OrderPaymentSystem.Application.Interfaces.Databases;
 /// </summary>
 public interface IUnitOfWork
 {
+    IOrderRepository Orders { get; }
+    IProductRepository Products { get; }
+    IOrderItemRepository OrderItems { get; }
+    IBasketItemRepository BasketItems { get; }
+    IPaymentRepository Payments { get; }
+    IRoleRepository Roles { get; }
+    IUserRepository Users { get; }
+    IUserRoleRepository UserRoles { get; }
+    IUserTokenRepository UserToken { get; }
+
     /// <summary>
     /// Сохранить состояние сущности в БД
     /// </summary>

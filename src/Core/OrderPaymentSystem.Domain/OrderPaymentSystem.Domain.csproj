@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OrderPaymentSystem.Shared\OrderPaymentSystem.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Resources\ErrorMessage.Designer.cs">
       <DependentUpon>ErrorMessage.resx</DependentUpon>
       <DesignTime>True</DesignTime>

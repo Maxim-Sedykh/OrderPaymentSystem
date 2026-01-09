@@ -21,7 +21,7 @@ public class BasketItemRepository : BaseRepository<BasketItem>, IBasketItemRepos
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     }
 
-    public IQueryable<BasketItem> GetByUserId(Guid userId)
+    public IQueryable<BasketItem> GetByUserIdQuery(Guid userId)
     {
         return _table.Where(x => x.UserId == userId);
     }

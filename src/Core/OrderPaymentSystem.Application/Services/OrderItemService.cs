@@ -4,13 +4,13 @@ using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs;
 using OrderPaymentSystem.Application.DTOs.OrderItem;
 using OrderPaymentSystem.Application.Extensions;
+using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Interfaces.Validators;
-using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
-using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
+using OrderPaymentSystem.Domain.Errors;
+using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Services;
@@ -20,23 +20,17 @@ namespace OrderPaymentSystem.Application.Services;
 /// </summary>
 public class OrderItemService : IOrderItemService
 {
-    private readonly IBaseRepository<Product> _productRepository;
-    private readonly IBaseRepository<Order> _orderRepository;
-    private readonly IOrderItemRepository _orderItemRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly IOrderItemValidator _orderItemValidator;
     private readonly IMapper _mapper;
     private readonly ILogger _logger;
 
-    public OrderItemService(IBaseRepository<Product> productRepository,
-        IBaseRepository<Order> orderRepository,
-        IOrderItemRepository orderItemRepository,
+    public OrderItemService(IUnitOfWork unitOfWork,
         IOrderItemValidator orderItemValidator,
         IMapper mapper,
         ILogger logger)
     {
-        _productRepository = productRepository;
-        _orderRepository = orderRepository;
-        _orderItemRepository = orderItemRepository;
+        _unitOfWork = unitOfWork;
         _orderItemValidator = orderItemValidator;
         _mapper = mapper;
         _logger = logger;
@@ -57,8 +51,8 @@ public class OrderItemService : IOrderItemService
 
         order.AddOrderItem(orderItem, product);
 
-        _orderRepository.Update(order);
-        await _orderRepository.SaveChangesAsync(cancellationToken);
+        _unitOfWork.Orders.Update(order);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return DataResult<OrderItemDto>.Success(_mapper.Map<OrderItemDto>(orderItem));
     }
@@ -66,26 +60,25 @@ public class OrderItemService : IOrderItemService
     /// <inheritdoc/>
     public async Task<BaseResult> DeleteByIdAsync(long orderItemId, CancellationToken cancellationToken = default)
     {
-        var orderItem = await _orderItemRepository.GetByIdAsync(orderItemId, cancellationToken);
+        var orderItem = await _unitOfWork.OrderItems.GetByIdAsync(orderItemId, cancellationToken);
         if (orderItem == null)
         {
-            return BaseResult.Failure(ErrorCodes.OrderItemNotFound, ErrorMessage.OrderItemNotFound);
+            return BaseResult.Failure(DomainErrors.Order.ItemNotFound(orderItemId));
         }
 
-        var order = await _orderRepository.GetQueryable()
-            .Include(o => o.Items)
-            .FirstOrDefaultAsync(o => o.Id == orderItem.OrderId, cancellationToken);
+        var order = await _unitOfWork.Orders.GetByIdWithItemsAsync(orderItem.OrderId, cancellationToken);
 
         if (order == null)
         {
-            _logger.LogError("Associated order not found for order item ID: {OrderItemId}. This indicates a data inconsistency.", orderItemId);
-            return BaseResult.Failure(ErrorCodes.InternalServerError, ErrorMessage.InternalServerError);
+            _logger.LogError("Matched order not found for order item with id: {OrderItemId}", orderItemId);
+
+            return BaseResult.Failure(DomainErrors.Order.NotFound(orderItem.OrderId));
         }
 
         order.RemoveOrderItem(orderItem);
 
-        _orderRepository.Update(order);
-        await _orderRepository.SaveChangesAsync(cancellationToken);
+        _unitOfWork.Orders.Update(order);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return BaseResult.Success();
     }
@@ -93,7 +86,7 @@ public class OrderItemService : IOrderItemService
     /// <inheritdoc/>
     public async Task<CollectionResult<OrderItemDto>> GetByOrderIdAsync(long orderId, CancellationToken cancellationToken = default)
     {
-        var orderItems = await _orderItemRepository.GetByOrderId(orderId)
+        var orderItems = await _unitOfWork.OrderItems.GetByOrderId(orderId)
             .AsProjected<OrderItem, OrderItemDto>(_mapper)
             .ToArrayAsync(cancellationToken);
 
@@ -103,33 +96,31 @@ public class OrderItemService : IOrderItemService
     /// <inheritdoc/>
     public async Task<DataResult<OrderItemDto>> UpdateQuantityAsync(long orderItemId, UpdateQuantityDto dto, CancellationToken cancellationToken = default)
     {
-        var orderItem = await _orderItemRepository.GetByIdWithProductAsync(orderItemId, cancellationToken);
+        var orderItem = await _unitOfWork.OrderItems.GetByIdWithProductAsync(orderItemId, cancellationToken);
 
         if (orderItem == null)
         {
-            return DataResult<OrderItemDto>.Failure(ErrorCodes.OrderItemNotFound, ErrorMessage.OrderItemNotFound);
+            return DataResult<OrderItemDto>.Failure(DomainErrors.Order.ItemNotFound(orderItemId));
         }
 
-        var order = await _orderRepository.GetQueryable()
-            .Include(o => o.Items)
-            .FirstOrDefaultAsync(o => o.Id == orderItem.OrderId, cancellationToken);
+        var order = await _unitOfWork.Orders.GetByIdWithItemsAsync(orderItem.OrderId, cancellationToken);
 
         if (order == null)
         {
             _logger.LogError("Associated order not found for order item ID: {OrderItemId}. This indicates a data inconsistency.", orderItemId);
-            return DataResult<OrderItemDto>.Failure(ErrorCodes.OrderNotFound, ErrorMessage.OrderNotFound);
+            return DataResult<OrderItemDto>.Failure(DomainErrors.Order.NotFound(orderItem.OrderId));
         }
 
         order.UpdateOrderItemQuantity(orderItemId, dto.NewQuantity, orderItem.Product);
 
-        _orderRepository.Update(order);
-        await _orderRepository.SaveChangesAsync(cancellationToken);
+        _unitOfWork.Orders.Update(order);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var updatedOrderItem = order.Items.FirstOrDefault(oi => oi.Id == orderItemId);
         if (updatedOrderItem == null)
         {
             _logger.LogError("Failed to retrieve updated order item after saving for OrderItemId: {OrderItemId}", orderItemId);
-            return DataResult<OrderItemDto>.Failure(ErrorCodes.OrderItemNotFound, ErrorMessage.OrderItemNotFound);
+            return DataResult<OrderItemDto>.Failure(DomainErrors.Order.ItemNotFound(orderItemId));
         }
 
         return DataResult<OrderItemDto>.Success(_mapper.Map<OrderItemDto>(updatedOrderItem));
@@ -142,15 +133,10 @@ public class OrderItemService : IOrderItemService
     /// <param name="productId">Id товара</param>
     /// <param name="cancellationToken">Токен отмены операции</param>
     /// <returns>Заказ и товар</returns>
-    private async Task<(Order order, Product product)> GetOrderAndProductAsync(long orderId, long productId, CancellationToken cancellationToken)
+    private async Task<(Order order, Product product)> GetOrderAndProductAsync(long orderId, int productId, CancellationToken cancellationToken)
     {
-        var orderTask = _orderRepository.GetQueryable()
-            .Include(o => o.Items)
-            .FirstOrDefaultAsync(x => x.Id == orderId, cancellationToken);
-
-        var productTask = _productRepository.GetQueryable()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == productId, cancellationToken);
+        var orderTask = _unitOfWork.Orders.GetByIdWithItemsAsync(orderId, cancellationToken);
+        var productTask = _unitOfWork.Products.GetByIdAsync(productId, asNoTracking: true, cancellationToken);
 
         await Task.WhenAll(orderTask, productTask);
 

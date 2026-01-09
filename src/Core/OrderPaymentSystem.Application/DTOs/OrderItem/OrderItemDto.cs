@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OrderPaymentSystem.Application.DTOs.OrderItem;
+﻿namespace OrderPaymentSystem.Application.DTOs.OrderItem;
 
 public class OrderItemDto
 {

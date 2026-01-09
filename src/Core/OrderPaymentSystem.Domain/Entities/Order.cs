@@ -1,8 +1,9 @@
-﻿using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Exceptions;
-using OrderPaymentSystem.Domain.Extensions;
+﻿using OrderPaymentSystem.Domain.Constants;
+using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
 using OrderPaymentSystem.Domain.ValueObjects;
+using OrderPaymentSystem.Shared.Exceptions;
+using OrderPaymentSystem.Shared.Extensions;
 
 namespace OrderPaymentSystem.Domain.Entities;
 

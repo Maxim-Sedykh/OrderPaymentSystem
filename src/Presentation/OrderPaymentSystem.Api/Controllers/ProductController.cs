@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.DTOs.Product;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Product;
-using OrderPaymentSystem.Domain.Enum;
 
 namespace OrderPaymentSystem.Api.Controllers;
 

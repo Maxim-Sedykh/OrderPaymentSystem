@@ -1,7 +1,5 @@
 ﻿using OrderPaymentSystem.Application.Interfaces.Validators;
-using OrderPaymentSystem.Application.Resources;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Validations.Validators;

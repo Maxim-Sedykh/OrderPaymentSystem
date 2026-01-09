@@ -1,13 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using OrderPaymentSystem.Application.DTOs.Token;
+using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Resources;
+using OrderPaymentSystem.Application.Settings;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Enum;
-using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
-using OrderPaymentSystem.Domain.Settings;
+using OrderPaymentSystem.Domain.Errors;
+using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -24,18 +24,18 @@ public class UserTokenService : IUserTokenService
     private readonly string _jwtKey;
     private readonly string _issuer;
     private readonly string _audience;
-    private readonly IBaseRepository<User> _userRepository;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
 
     public UserTokenService(
         IOptions<JwtSettings> options,
-        IBaseRepository<User> userRepository,
+        IUnitOfWork unitOfWork,
         TimeProvider timeProvider = null)
     {
         _jwtKey = options.Value.JwtKey;
         _issuer = options.Value.Issuer;
         _audience = options.Value.Audience;
-        _userRepository = userRepository;
+        _unitOfWork = unitOfWork;
         _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
@@ -97,7 +97,7 @@ public class UserTokenService : IUserTokenService
             return DataResult<TokenDto>.Failure(userResult.Error);
         }
 
-        var user = userResult.Data!;
+        var user = userResult.Data;
         var newClaims = GetClaimsFromUser(user);
         var newAccessToken = GenerateAccessToken(newClaims);
         var newRefreshToken = GenerateRefreshToken();
@@ -107,8 +107,8 @@ public class UserTokenService : IUserTokenService
             _timeProvider.GetUtcNow().UtcDateTime.AddDays(7)
         );
 
-        _userRepository.Update(user);
-        await _userRepository.SaveChangesAsync(cancellationToken);
+        _unitOfWork.Users.Update(user);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         var tokenDto = new TokenDto
         {
@@ -136,33 +136,30 @@ public class UserTokenService : IUserTokenService
         }
         catch (SecurityTokenException)
         {
-            return DataResult<User>.Failure((int)ErrorCodes.InvalidToken, ErrorMessage.InvalidToken);
+            return DataResult<User>.Failure(DomainErrors.General.InvalidToken());
         }
 
-        var userName = claimsPrincipal.Identity?.Name;
-        if (string.IsNullOrEmpty(userName))
+        var login = claimsPrincipal.Identity?.Name;
+        if (string.IsNullOrEmpty(login))
         {
-            return DataResult<User>.Failure((int)ErrorCodes.InvalidToken, ErrorMessage.InvalidToken);
+            return DataResult<User>.Failure(DomainErrors.General.InvalidToken());
         }
 
-        var user = await _userRepository.GetQueryable()
-            .Include(x => x.UserToken)
-            .Include(x => x.Roles)
-            .FirstOrDefaultAsync(x => x.Login == userName, cancellationToken);
+        var user = await _unitOfWork.Users.GetWithRolesAndTokenByLoginAsync(login, cancellationToken);
 
         if (user?.UserToken == null)
         {
-            return DataResult<User>.Failure((int)ErrorCodes.UserNotFound, ErrorMessage.UserNotFound);
+            return DataResult<User>.Failure(DomainErrors.User.NotFoundByLogin(login));
         }
 
         if (user.UserToken.RefreshToken != dto.RefreshToken)
         {
-            return DataResult<User>.Failure((int)ErrorCodes.InvalidClientRequest, ErrorMessage.InvalidClientRequest);
+            return DataResult<User>.Failure(DomainErrors.General.InvalidClientRequest());
         }
 
         if (user.UserToken.RefreshTokenExpireTime <= _timeProvider.GetUtcNow().UtcDateTime)
         {
-            return DataResult<User>.Failure((int)ErrorCodes.RefreshTokenExpired, ErrorMessage.RefreshTokenExpired);
+            return DataResult<User>.Failure(DomainErrors.Token.RefreshExpired());
         }
 
         return DataResult<User>.Success(user);

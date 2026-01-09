@@ -1,8 +1,5 @@
 ﻿using FluentValidation;
 using OrderPaymentSystem.Application.DTOs.UserRole;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
 

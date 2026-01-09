@@ -12,7 +12,7 @@ public class UserConfigurations : IEntityTypeConfiguration<User>
 
 		builder.Property(x => x.Id).ValueGeneratedOnAdd();
         builder.Property(x => x.Login).IsRequired().HasMaxLength(50);
-        builder.Property(x => x.Password).IsRequired();
+        builder.Property(x => x.PasswordHash).IsRequired();
 
         builder.HasOne(x => x.UserToken)
                 .WithOne(x => x.User)
@@ -22,9 +22,8 @@ public class UserConfigurations : IEntityTypeConfiguration<User>
 		builder.HasMany(u => u.Orders)
 			.WithOne(o => o.User)
 			.HasForeignKey(o => o.UserId)
-			.OnDelete(DeleteBehavior.Restrict); // Заказы не должны удаляться при удалении пользователя
+			.OnDelete(DeleteBehavior.Restrict);
 
-		// Связь один-ко-многим с BasketItem
 		builder.HasMany(u => u.BasketItems)
 			.WithOne(bi => bi.User)
 			.HasForeignKey(bi => bi.UserId)
