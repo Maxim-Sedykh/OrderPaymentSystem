@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Errors;
+using OrderPaymentSystem.Domain.Interfaces.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -54,10 +55,10 @@ public class User : IEntityId<Guid>, IAuditable
     public static User Create(string login, string passwordHash)
     {
         if (string.IsNullOrWhiteSpace(login)) 
-            throw new BusinessException(4001, "Login cannot be empty.");
+            throw new BusinessException(DomainErrors.User.LoginEmpty());
 
         if (string.IsNullOrWhiteSpace(passwordHash)) 
-            throw new BusinessException(4002, "Password hash cannot be empty.");
+            throw new BusinessException(DomainErrors.User.PasswordHashEmpty());
 
         return new User
         {
@@ -75,7 +76,7 @@ public class User : IEntityId<Guid>, IAuditable
     public void ChangePassword(string newPasswordHash)
     {
         if (string.IsNullOrWhiteSpace(newPasswordHash)) 
-            throw new BusinessException(4003, "New password hash cannot be empty.");
+            throw new BusinessException(DomainErrors.User.PasswordHashEmpty());
 
         PasswordHash = newPasswordHash;
     }

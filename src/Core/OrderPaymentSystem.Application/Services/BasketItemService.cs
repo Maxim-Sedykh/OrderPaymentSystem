@@ -72,7 +72,7 @@ public class BasketItemService : IBasketItemService
             return DataResult<BasketItemDto>.Failure(DomainErrors.BasketItem.NotFound(basketItemId));
         }
 
-        basketItem.UpdateQuantity(dto.NewQuantity, basketItem.Product);
+        basketItem.UpdateQuantity(dto.NewQuantity, basketItem.ProductId, basketItem.Product);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return DataResult<BasketItemDto>.Success(_mapper.Map<BasketItemDto>(basketItem));

@@ -1,4 +1,5 @@
 ﻿using OrderPaymentSystem.Domain.Constants;
+using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
 
@@ -61,10 +62,10 @@ public class OrderItem : IEntityId<long>
     public static OrderItem Create(int productId, int quantity, decimal productPrice, IStockInfo stockInfo)
     {
         if (!stockInfo.IsStockQuantityAvailable(quantity))
-            throw new BusinessException(ErrorCodes.ProductStockQuantityNotAvailable, "ProductStockQuantityNotAvailable");
+            throw new BusinessException(DomainErrors.Product.StockNotAvailable(quantity, productId));
 
         if (quantity <= 0)
-            throw new BusinessException(7001, "Quantity must be positive.");
+            throw new BusinessException(DomainErrors.General.QuantityPositive());
 
         return new OrderItem
         {
@@ -80,16 +81,16 @@ public class OrderItem : IEntityId<long>
     /// Обновить количество товара
     /// </summary>
     /// <param name="newQuantity">Новое количество товара</param>
-    public void UpdateQuantity(int newQuantity, IStockInfo productStockInfo)
+    public void UpdateQuantity(int newQuantity, int productId, IStockInfo productStockInfo)
     {
         if (!productStockInfo.IsStockQuantityAvailable(newQuantity))
-            throw new BusinessException(ErrorCodes.ProductStockQuantityNotAvailable, "ProductStockQuantityNotAvailable");
+            throw new BusinessException(DomainErrors.Product.StockNotAvailable(newQuantity, productId));
 
         if (newQuantity <= 0)
-            throw new BusinessException(3001, "Quantity must be positive.");
+            throw new BusinessException(DomainErrors.General.QuantityPositive());
 
         if (productStockInfo == null)
-            throw new BusinessException(3001, "Quantity must be positive.");    
+            throw new BusinessException(DomainErrors.General.QuantityPositive());    
 
         Quantity = newQuantity;
     }

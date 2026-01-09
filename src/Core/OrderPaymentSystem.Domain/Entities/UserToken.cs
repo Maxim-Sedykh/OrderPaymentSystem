@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Errors;
+using OrderPaymentSystem.Domain.Interfaces.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -42,13 +43,13 @@ public class UserToken : IEntityId<long>
     /// <param name="refreshToken">Refresh токен</param>
     /// <param name="expireTime">Время истечения жизни токена</param>
     /// <returns>Результат создания</returns>
-    public static UserToken Create(Guid userId, string refreshToken, DateTime expireTime)
+    public static UserToken Create(Guid userId, string refreshToken, DateTime expireTime) //TODO проверки тоже вынести
     {
         if (string.IsNullOrWhiteSpace(refreshToken))
-            throw new BusinessException(5001, "Refresh token cannot be empty.");
+            throw new BusinessException(DomainErrors.Token.RefreshEmpty());
 
         if (expireTime <= DateTime.UtcNow)
-            throw new BusinessException(5002, "Refresh token expiration must be in the future.");
+            throw new BusinessException(DomainErrors.Token.RefreshFuture());
 
         return new UserToken
         {
@@ -68,10 +69,10 @@ public class UserToken : IEntityId<long>
     public void UpdateRefreshTokenData(string newRefreshToken, DateTime newExpireTime)
     {
         if (string.IsNullOrWhiteSpace(newRefreshToken))
-            throw new BusinessException(5003, "Refresh token cannot be empty.");
+            throw new BusinessException(DomainErrors.Token.RefreshEmpty());
 
         if (newExpireTime <= DateTime.UtcNow)
-            throw new BusinessException(5004, "Refresh token expiration must be in the future.");
+            throw new BusinessException(DomainErrors.Token.RefreshFuture());
 
         RefreshToken = newRefreshToken;
         RefreshTokenExpireTime = newExpireTime;

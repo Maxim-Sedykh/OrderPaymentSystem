@@ -1,6 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Constants;
+﻿using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
-using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -59,16 +58,16 @@ public class BasketItem : IEntityId<long>, IAuditable
     public static BasketItem Create(Guid userId, int productId, int quantity, IStockInfo stockInfo)
     {
         if (userId == Guid.Empty)
-            throw new BusinessException(ErrorCodes.InvalidUserId, ErrorMessage.InvalidUserId);
+            throw new BusinessException(DomainErrors.User.InvalidId());
 
         if (productId <= 0)
-            throw new BusinessException(ErrorCodes.InvalidProductId, "Product ID must be positive.");
+            throw new BusinessException(DomainErrors.Product.InvalidId());
 
         if (quantity <= 0)
-            throw new BusinessException(ErrorCodes.QuantityCannotBeZeroOrNegative, "Quantity must be positive.");
+            throw new BusinessException(DomainErrors.General.QuantityPositive());
 
         if (!stockInfo.IsStockQuantityAvailable(quantity))
-            throw new BusinessException(ErrorCodes.ProductStockQuantityNotAvailable, "ProductStockQuantityNotAvailable");
+            throw new BusinessException(DomainErrors.Product.StockNotAvailable(productId, quantity));
 
         return new BasketItem
         {
@@ -83,14 +82,15 @@ public class BasketItem : IEntityId<long>, IAuditable
     /// Обновить количество товара
     /// </summary>
     /// <param name="newQuantity">Новое количество товара</param>
+    /// <param name="productId">Id товара</param>
     /// <param name="stockInfo">Информация о наличии товара на складе</param>
-    public void UpdateQuantity(int newQuantity, IStockInfo stockInfo)
+    public void UpdateQuantity(int newQuantity, int productId, IStockInfo stockInfo)
     {
         if (!stockInfo.IsStockQuantityAvailable(newQuantity))
-            throw new BusinessException(ErrorCodes.ProductStockQuantityNotAvailable, "ProductStockQuantityNotAvailable");
+            throw new BusinessException(DomainErrors.Product.StockNotAvailable(newQuantity, productId));
 
         if (newQuantity <= 0)
-            throw new BusinessException(ErrorCodes.QuantityCannotBeZeroOrNegative, "Quantity must be positive.");
+            throw new BusinessException(DomainErrors.General.QuantityPositive());
 
         if (Quantity == newQuantity)
             return;

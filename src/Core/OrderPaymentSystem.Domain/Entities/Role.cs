@@ -1,4 +1,5 @@
 ﻿using OrderPaymentSystem.Domain.Constants;
+using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
 
@@ -32,7 +33,7 @@ public class Role : IEntityId<int>
     public static Role Create(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new BusinessException(ErrorCodes.RoleNameCannotByEmpty, "Role name cannot be empty.");
+            throw new BusinessException(DomainErrors.Role.NameEmpty());
 
         return new Role { Id = default, Name = name };
     }
@@ -45,7 +46,7 @@ public class Role : IEntityId<int>
     public void UpdateName(string newName)
     {
         if (string.IsNullOrWhiteSpace(newName))
-            throw new BusinessException(ErrorCodes.RoleNameCannotByEmpty, "Role name cannot be empty.");
+            throw new BusinessException(DomainErrors.Role.NameEmpty());
 
         Name = newName;
     }

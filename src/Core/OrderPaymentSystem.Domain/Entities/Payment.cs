@@ -1,4 +1,5 @@
 ﻿using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
 
@@ -70,7 +71,7 @@ public class Payment : IEntityId<long>, IAuditable
         PaymentMethod method)
     {
         if (amountToPay <= 0)
-            throw new BusinessException(8001, "Amount to pay must be positive.");
+            throw new BusinessException(DomainErrors.Payment.AmountPositive());
 
         return new Payment
         {
@@ -90,13 +91,13 @@ public class Payment : IEntityId<long>, IAuditable
     public void ProcessPayment(decimal amountPaid, decimal cashChange)
     {
         if (Status != PaymentStatus.Pending)
-            throw new BusinessException(666, $"Payment is already in {Status} status.");
+            throw new BusinessException(DomainErrors.Payment.InvalidStatus(Status.ToString(), PaymentStatus.Succeeded.ToString()));
         if (amountPaid <= 0)
-            throw new BusinessException(666, "Amount paid must be positive.");
+            throw new BusinessException(DomainErrors.Payment.AmountPositive());
         if (amountPaid < AmountToPay)
-            throw new BusinessException(666, $"Amount paid {amountPaid} is less than amount to pay {AmountToPay}.");
+            throw new BusinessException(DomainErrors.Payment.NotEnoughAmount(amountPaid, AmountToPay));
         if (amountPaid - AmountToPay != cashChange)
-            throw new BusinessException(666, "Cash change does not match calculation.");
+            throw new BusinessException(DomainErrors.Payment.CashChangeMismatch());
 
         AmountPayed = amountPaid;
         CashChange = cashChange;

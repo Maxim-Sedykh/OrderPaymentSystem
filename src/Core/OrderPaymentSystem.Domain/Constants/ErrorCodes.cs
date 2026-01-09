@@ -17,6 +17,7 @@
         public const int ConcurrencyConflict = 409;
         public const int InternalServerError = 500;
         public const int NoChangesFound = 304;
+        public const int QuantityPositive = 305;
 
         #endregion
 
@@ -92,9 +93,9 @@
         public const int OrderCannotRemoveItemFromEmptyOrder = 4013;
         public const int OrderCannotRemoveNonExistingItem = 4014;
         public const int OrderCannotBeConfirmedWithoutPayment = 4015;
-        public const int OrderCannotBeInStatusWhenDelivered = 4016;
         public const int OrderCannotChangeStatusOfACancelledOrder = 4017;
         public const int OrderCannotBeConfirmedInvalidStatus = 4017;
+        public const int OrderEmptyPaymentId = 4018;
 
         #endregion
 

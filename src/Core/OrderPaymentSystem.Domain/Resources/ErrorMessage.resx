@@ -135,6 +135,9 @@
   <data name="ConcurrencyConflict" xml:space="preserve">
     <value>Запись была обновлена другим пользователем, попробуйте ещё раз</value>
   </data>
+  <data name="EmptyPaymentId" xml:space="preserve">
+    <value>У заказа нет платежа</value>
+  </data>
   <data name="InternalServerError" xml:space="preserve">
     <value>Внутренняя ошибка сервера</value>
   </data>
@@ -143,6 +146,9 @@
   </data>
   <data name="InvalidPaymentId" xml:space="preserve">
     <value>Не валидный Id платежа</value>
+  </data>
+  <data name="InvalidProductId" xml:space="preserve">
+    <value>Не валидный Id товара</value>
   </data>
   <data name="InvalidRoleId" xml:space="preserve">
     <value>Не валидный Id роли</value>
@@ -161,6 +167,9 @@
   </data>
   <data name="NotEnoughPayFunds" xml:space="preserve">
     <value>Не хватает средств для оплаты</value>
+  </data>
+  <data name="OrderCannotAddOrRemoveItemInCurrentStatus" xml:space="preserve">
+    <value>Нельзя менять элементы товара в статусе {0}</value>
   </data>
   <data name="OrderCannotBeConfirmed" xml:space="preserve">
     <value>Заказ не может быть подтверждён. Текущий статус {0}</value>
@@ -208,7 +217,7 @@
     <value>Несоответствие сдачи в платеже</value>
   </data>
   <data name="PaymentInvalidStatus" xml:space="preserve">
-    <value>Платёж уже находится в статусе {0}</value>
+    <value>Невозможно поменять статус платежа с {0} на {1}</value>
   </data>
   <data name="PaymentNotEnoughAmount" xml:space="preserve">
     <value>Сумма платежа {0} меньше чем нужно заплатить {1}</value>

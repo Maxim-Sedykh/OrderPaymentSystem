@@ -1,4 +1,5 @@
 ﻿using OrderPaymentSystem.Domain.Constants;
+using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -29,10 +30,10 @@ public class UserRole
     public static UserRole Create(Guid userId, long roleId)
     {
         if (userId == default)
-            throw new BusinessException(ErrorCodes.InvalidUserId, "Invalid user id");
+            throw new BusinessException(DomainErrors.User.InvalidId());
 
         if (roleId == default)
-            throw new BusinessException(ErrorCodes.InvalidRoleId, "Invalid role id");
+            throw new BusinessException(DomainErrors.Role.InvalidId());
 
         return new UserRole { UserId = userId, RoleId = roleId };
     }

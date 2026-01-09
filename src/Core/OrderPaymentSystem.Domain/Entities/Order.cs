@@ -1,5 +1,6 @@
 ﻿using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Enum;
+using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Domain.Interfaces.Entities;
 using OrderPaymentSystem.Domain.ValueObjects;
 using OrderPaymentSystem.Shared.Exceptions;
@@ -79,12 +80,12 @@ public class Order : IEntityId<long>, IAuditable
     /// <returns>Созданный заказ</returns>
     public static Order Create(Guid userId, Address address, IEnumerable<OrderItem> items)
     {
-        if (userId == Guid.Empty) throw new BusinessException(ErrorCodes.InvalidUserId, "User ID empty");
-        if (address == null) throw new BusinessException(ErrorCodes.OrderDeliveryAddressRequired, "Address null");
+        if (userId == Guid.Empty) throw new BusinessException(DomainErrors.User.InvalidId());
+        if (address == null) throw new BusinessException(DomainErrors.Order.DeliveryAddressRequired());
 
         var itemList = items?.ToList();
         if (itemList.IsNullOrEmpty())
-            throw new BusinessException(ErrorCodes.OrderItemsNotFound, "Order items empty");
+            throw new BusinessException(DomainErrors.Order.ItemsEmpty());
 
         var order = new Order
         {
@@ -105,10 +106,12 @@ public class Order : IEntityId<long>, IAuditable
     /// <param name="newStatus">Новый статус</param>
     public void UpdateStatus(OrderStatus newStatus)
     {
-        if (Status == OrderStatus.Delivered && newStatus != OrderStatus.Delivered && newStatus != OrderStatus.Refunded)
-            throw new BusinessException(ErrorCodes.OrderCannotBeInStatusWhenDelivered, "Cannot change status of a delivered order.");
-        if (Status == OrderStatus.Cancelled && newStatus != OrderStatus.Cancelled)
-            throw new BusinessException(ErrorCodes.OrderCannotChangeStatusOfACancelledOrder, "Cannot change status of a cancelled order.");
+        if ((Status == OrderStatus.Delivered 
+            && newStatus != OrderStatus.Delivered 
+            && newStatus != OrderStatus.Refunded)
+            || (Status == OrderStatus.Cancelled 
+                && newStatus != OrderStatus.Cancelled))
+            throw new BusinessException(DomainErrors.Order.StatusChangeNotAllowed(Status.ToString(), newStatus.ToString()));
 
         Status = newStatus;
     }
@@ -120,10 +123,10 @@ public class Order : IEntityId<long>, IAuditable
     public void AssignPayment(long paymentId)
     {
         if (paymentId <= 0)
-            throw new BusinessException(ErrorCodes.InvalidPaymentId, "Payment ID must be positive.");
+            throw new BusinessException(DomainErrors.Payment.InvalidId());
 
         if (PaymentId.HasValue)
-            throw new BusinessException(ErrorCodes.PaymentAlreadyExistsForOrder, "Payment already assigned to this order.");
+            throw new BusinessException(DomainErrors.Payment.AlreadyExists());
 
         PaymentId = paymentId;
     }
@@ -134,11 +137,11 @@ public class Order : IEntityId<long>, IAuditable
     public void ShipOrder()
     {
         if (Status != OrderStatus.Confirmed)
-            throw new BusinessException(ErrorCodes.OrderStatusChangeNotAllowed, $"Order must be 'Confirmed' to be shipped. Current status: {Status}.");
+            throw new BusinessException(DomainErrors.Order.StatusChangeNotAllowed(Status.ToString(), OrderStatus.Shipped.ToString()));
         if (Items.IsNullOrEmpty())
-            throw new BusinessException(ErrorCodes.OrderItemsNotFound, "Cannot ship an empty order.");
+            throw new BusinessException(DomainErrors.Order.ItemsEmpty());
         if (!PaymentId.HasValue)
-            throw new BusinessException(ErrorCodes.PaymentNotFound, "Order cannot be shipped without a payment.");
+            throw new BusinessException(DomainErrors.Order.EmptyPaymentId());
 
         UpdateStatus(OrderStatus.Shipped);
     }
@@ -146,21 +149,20 @@ public class Order : IEntityId<long>, IAuditable
     /// <summary>
     /// Подтвердить заказ
     /// </summary>
-    public void ConfirmOrder()
+    public void ConfirmOrder() //TODO вынести в отдельный метод логику с проверками
     {
         if (Status != OrderStatus.Pending)
-            throw new BusinessException(666, $"Order status is {Status}, cannot confirm.");
-        if (!Items.Any())
-            throw new BusinessException(666, "Cannot confirm an empty order.");
+            throw new BusinessException(DomainErrors.Order.StatusChangeNotAllowed(Status.ToString(), OrderStatus.Confirmed.ToString()));
+        if (Items.IsNullOrEmpty())
+            throw new BusinessException(DomainErrors.Order.ItemsEmpty());
         if (!PaymentId.HasValue)
-            throw new BusinessException(666, "Order cannot be confirmed without an assigned payment.");
+            throw new BusinessException(DomainErrors.Order.EmptyPaymentId());
 
         UpdateStatus(OrderStatus.Confirmed);
     }
 
     /// <summary>
     /// Корректирует количество существующей позиции заказа или добавляет новую.
-    /// Этот метод более высокоуровневый и может использоваться для массовых обновлений.
     /// </summary>
     /// <param name="productId">ID продукта</param>
     /// <param name="quantityChange">Изменение количества (+ для добавления, - для уменьшения)</param>
@@ -169,7 +171,7 @@ public class Order : IEntityId<long>, IAuditable
     public void UpdateOrderItem(int productId, int quantityChange, decimal productPrice, IStockInfo stockInfo)
     {
         if (Status != OrderStatus.Pending && Status != OrderStatus.Confirmed)
-            throw new BusinessException(ErrorCodes.OrderCannotAddOrRemoveItemInCurrentStatus, "OrderCannotAddOrRemoveItemInCurrentStatus");
+            throw new BusinessException(DomainErrors.Order.CannotAddOrRemoveItemInCurrentStatus(Status));
 
         var existingItem = _items.FirstOrDefault(x => x.ProductId == productId);
 
@@ -182,7 +184,7 @@ public class Order : IEntityId<long>, IAuditable
             }
             else
             {
-                existingItem.UpdateQuantity(newQuantity, stockInfo);
+                existingItem.UpdateQuantity(newQuantity, productId, stockInfo);
             }
         }
         else
@@ -190,7 +192,7 @@ public class Order : IEntityId<long>, IAuditable
             if (quantityChange > 0)
             {
                 if (productPrice <= 0)
-                    throw new BusinessException(ErrorCodes.OrderItemPriceInvalid, "OrderItemPriceInvalid");
+                    throw new BusinessException(DomainErrors.Product.PricePositive());
 
                 var newItem = OrderItem.Create(productId, quantityChange, productPrice, stockInfo);
                 _items.Add(newItem);
@@ -206,7 +208,7 @@ public class Order : IEntityId<long>, IAuditable
     public void AddOrderItem(OrderItem item, IStockInfo stockInfo)
     {
         if (!stockInfo.IsStockQuantityAvailable(item.Quantity))
-            throw new BusinessException(ErrorCodes.ProductStockQuantityNotAvailable, "ProductStockQuantityNotAvailable");
+            throw new BusinessException(DomainErrors.Product.StockNotAvailable(item.ProductId, item.Quantity));
 
         _items.Add(item);
 
@@ -223,7 +225,7 @@ public class Order : IEntityId<long>, IAuditable
     public void UpdateOrderItemQuantity(long orderItemId, int newQuantity, IStockInfo stockInfo)
     {
         var orderItem = _items.FirstOrDefault(x => x.Id == orderItemId);
-        orderItem.UpdateQuantity(newQuantity, stockInfo);
+        orderItem.UpdateQuantity(newQuantity, orderItem.ProductId, stockInfo);
 
         RecalculateTotalAmount();
     }

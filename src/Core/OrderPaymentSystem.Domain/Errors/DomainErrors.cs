@@ -1,4 +1,5 @@
 ﻿using OrderPaymentSystem.Domain.Constants;
+using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 
@@ -8,6 +9,9 @@ public static class DomainErrors
 {
     public static class General
     {
+        public static Error QuantityPositive()
+            => new(ErrorCodes.QuantityPositive, ErrorMessage.QuantityPositive);
+
         public static Error InternalServerError() 
             => new(ErrorCodes.InternalServerError, ErrorMessage.InternalServerError);
 
@@ -50,6 +54,9 @@ public static class DomainErrors
 
     public static class Role
     {
+        public static Error InvalidId()
+            => new(ErrorCodes.InvalidRoleId, ErrorMessage.InvalidRoleId);
+
         public static Error AlreadyExists(string name)
             => new(ErrorCodes.RoleAlreadyExist, string.Format(ErrorMessage.RoleAlreadyExist, name));
 
@@ -78,6 +85,9 @@ public static class DomainErrors
 
     public static class Product
     {
+        public static Error InvalidId()
+            => new(ErrorCodes.InvalidProductId, ErrorMessage.InvalidProductId);
+
         public static Error NotFound(int id) 
             => new(ErrorCodes.ProductNotFound, string.Format(ErrorMessage.ProductNotFound, id));
 
@@ -87,8 +97,8 @@ public static class DomainErrors
         public static Error NameEmpty() 
             => new(ErrorCodes.ProductNameEmpty, ErrorMessage.ProductNameEmpty);
 
-        public static Error PricePositive(decimal price) 
-            => new(ErrorCodes.ProductPricePositive, string.Format(ErrorMessage.ProductPricePositive, price));
+        public static Error PricePositive() 
+            => new(ErrorCodes.ProductPricePositive, ErrorMessage.ProductPricePositive);
 
         public static Error StockNotAvailable(int requested, int id) 
             => new(ErrorCodes.ProductStockQuantityNotAvailable,
@@ -102,12 +112,14 @@ public static class DomainErrors
     {
         public static Error NotFound(long id) 
             => new(ErrorCodes.BasketItemNotFound, string.Format(ErrorMessage.BasketItemNotFound, id));
-        public static Error QuantityPositive() 
-            => new(ErrorCodes.QuantityCannotBeZeroOrNegative, ErrorMessage.QuantityPositive);
+        
     }
 
     public static class Order
     {
+        public static Error EmptyPaymentId()
+            => new(ErrorCodes.OrderEmptyPaymentId, ErrorMessage.EmptyPaymentId);
+
         public static Error NotFound(long id) 
             => new(ErrorCodes.OrderNotFound, string.Format(ErrorMessage.OrderNotFound, id));
 
@@ -121,7 +133,7 @@ public static class DomainErrors
             => new(ErrorCodes.OrderDeliveryAddressRequired, ErrorMessage.OrderDeliveryAddressRequired);
 
         public static Error StatusChangeNotAllowed(string from, string to) 
-            => new(ErrorCodes.OrderCannotBeInStatusWhenDelivered,
+            => new(ErrorCodes.OrderStatusChangeNotAllowed,
                 string.Format(ErrorMessage.OrderStatusChangeNotAllowed, from, to));
 
         public static Error CannotBeShipped(string reason) 
@@ -130,22 +142,26 @@ public static class DomainErrors
 
         public static Error CannotBeConfirmedWithoutPayment()
             => new(ErrorCodes.OrderCannotBeConfirmedWithoutPayment,
-                string.Format(ErrorMessage.OrderCann, reason));
+                string.Format(ErrorMessage.OrderCannotBeConfirmedWithoutPayment));
 
         public static Error CannotBeConfirmed(string currentStatus) 
             => new(ErrorCodes.OrderCannotBeConfirmedInvalidStatus,
                 string.Format(ErrorMessage.OrderCannotBeConfirmed, currentStatus));
 
-        public static Error InvalidPaymentId() 
-            => new(ErrorCodes.InvalidPaymentId, ErrorMessage.InvalidPaymentId);
-
         public static Error CannotRemoveNonExistingItem() 
             => new(ErrorCodes.OrderCannotRemoveNonExistingItem,
                 ErrorMessage.OrderCannotRemoveNonExistingItem);
+
+        public static Error CannotAddOrRemoveItemInCurrentStatus(OrderStatus status)
+            => new(ErrorCodes.OrderCannotAddOrRemoveItemInCurrentStatus,
+                string.Format(ErrorMessage.OrderCannotAddOrRemoveItemInCurrentStatus, status));
     }
 
     public static class Payment
     {
+        public static Error InvalidId()
+            => new(ErrorCodes.InvalidPaymentId, ErrorMessage.InvalidPaymentId);
+
         public static Error NotFound(long id) 
             => new(ErrorCodes.PaymentNotFound, string.Format(ErrorMessage.PaymentNotFound, id));
 
@@ -158,8 +174,8 @@ public static class DomainErrors
         public static Error AmountPositive() 
             => new(ErrorCodes.PaymentAmountPositive, ErrorMessage.PaymentAmountPositive);
 
-        public static Error InvalidStatus(string status) 
-            => new(ErrorCodes.PaymentInvalidStatus, string.Format(ErrorMessage.PaymentInvalidStatus, status));
+        public static Error InvalidStatus(string from, string to) 
+            => new(ErrorCodes.PaymentInvalidStatus, string.Format(ErrorMessage.PaymentInvalidStatus, from, to));
 
         public static Error NotEnoughAmount(decimal paid, decimal required) 
             => new(ErrorCodes.PaymentNotEnoughAmount, string.Format(ErrorMessage.PaymentNotEnoughAmount,

@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Errors;
+using OrderPaymentSystem.Domain.Interfaces.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -55,13 +56,13 @@ public class Product : IEntityId<int>, IAuditable, IStockInfo
     /// <param name="description">Описание товара</param>
     /// <param name="price">Стоимость единицы товара</param>
     /// <returns>Созданный товар</returns>
-    public static Product Create(string name, string description, decimal price, int stockQuantity)
+    public static Product Create(string name, string description, decimal price, int stockQuantity) //TODO вынести првоерки в отдельный метод
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new BusinessException(2001, "Product name cannot be empty.");
+            throw new BusinessException(DomainErrors.Product.NameEmpty());
 
         if (price <= 0)
-            throw new BusinessException(2002, "Product price must be positive.");
+            throw new BusinessException(DomainErrors.Product.PricePositive());
 
         return new Product
         {
@@ -82,10 +83,10 @@ public class Product : IEntityId<int>, IAuditable, IStockInfo
     public void UpdateDetails(string name, string description, decimal newPrice, int stockQuantity)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new BusinessException(2003, "Product name cannot be empty.");
+            throw new BusinessException(DomainErrors.Product.NameEmpty());
 
         if (newPrice <= 0)
-            throw new BusinessException(2004, "Product price must be positive.");
+            throw new BusinessException(DomainErrors.Product.PricePositive());
 
         Name = name;
         Description = description;
@@ -100,7 +101,7 @@ public class Product : IEntityId<int>, IAuditable, IStockInfo
     public void ChangePrice(decimal newPrice)
     {
         if (newPrice <= 0)
-            throw new BusinessException(2005, "Product price must be positive.");
+            throw new BusinessException(DomainErrors.Product.PricePositive());
 
         Price = newPrice;
     }
@@ -114,12 +115,12 @@ public class Product : IEntityId<int>, IAuditable, IStockInfo
     {
         if (quantityToReduce <= 0)
         {
-            throw new BusinessException(20055, "Stock quantity must be positive.");
+            throw new BusinessException(DomainErrors.Product.StockPositive());
         }
 
         if (StockQuantity < quantityToReduce)
         {
-            throw new BusinessException(20055, "Not enough stock quantity.");
+            throw new BusinessException(DomainErrors.Product.StockNotAvailable(quantityToReduce, Id));
         }
 
         StockQuantity -= quantityToReduce;

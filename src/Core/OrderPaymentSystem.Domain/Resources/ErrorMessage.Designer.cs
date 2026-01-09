@@ -115,6 +115,15 @@ namespace OrderPaymentSystem.Domain.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на У заказа нет платежа.
+        /// </summary>
+        public static string EmptyPaymentId {
+            get {
+                return ResourceManager.GetString("EmptyPaymentId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Внутренняя ошибка сервера.
         /// </summary>
         public static string InternalServerError {
@@ -138,6 +147,15 @@ namespace OrderPaymentSystem.Domain.Resources {
         public static string InvalidPaymentId {
             get {
                 return ResourceManager.GetString("InvalidPaymentId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Не валидный Id товара.
+        /// </summary>
+        public static string InvalidProductId {
+            get {
+                return ResourceManager.GetString("InvalidProductId", resourceCulture);
             }
         }
         
@@ -192,6 +210,15 @@ namespace OrderPaymentSystem.Domain.Resources {
         public static string NotEnoughPayFunds {
             get {
                 return ResourceManager.GetString("NotEnoughPayFunds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Нельзя менять элементы товара в статусе {0}.
+        /// </summary>
+        public static string OrderCannotAddOrRemoveItemInCurrentStatus {
+            get {
+                return ResourceManager.GetString("OrderCannotAddOrRemoveItemInCurrentStatus", resourceCulture);
             }
         }
         
@@ -331,7 +358,7 @@ namespace OrderPaymentSystem.Domain.Resources {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на Платёж уже находится в статусе {0}.
+        ///   Ищет локализованную строку, похожую на Невозможно поменять статус платежа с {0} на {1}.
         /// </summary>
         public static string PaymentInvalidStatus {
             get {
