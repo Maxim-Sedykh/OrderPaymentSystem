@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
+using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.Role;
+using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Specifications;
@@ -18,15 +20,18 @@ public class RoleService : IRoleService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ILogger<RoleService> _logger;
+    private readonly ICacheService _cacheService;
 
     public RoleService(
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        ILogger<RoleService> logger)
+        ILogger<RoleService> logger,
+        ICacheService cacheService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _logger = logger;
+        _cacheService = cacheService;
     }
 
     /// <inheritdoc/>
@@ -46,6 +51,8 @@ public class RoleService : IRoleService
         await _unitOfWork.Roles.CreateAsync(role, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
+        await _cacheService.RemoveAsync(CacheKeys.Role.All, ct);
+
         return DataResult<RoleDto>.Success(_mapper.Map<RoleDto>(role));
     }
 
@@ -63,6 +70,8 @@ public class RoleService : IRoleService
 
         _unitOfWork.Roles.Remove(role);
         await _unitOfWork.SaveChangesAsync(ct);
+
+        await _cacheService.RemoveAsync(CacheKeys.Role.All, ct);
 
         return BaseResult.Success();
     }
@@ -91,13 +100,17 @@ public class RoleService : IRoleService
 
         await _unitOfWork.SaveChangesAsync(ct);
 
+        await _cacheService.RemoveAsync(CacheKeys.Role.All, ct);
+
         return DataResult<RoleDto>.Success(_mapper.Map<RoleDto>(role));
     }
 
     /// <inheritdoc/>
     public async Task<CollectionResult<RoleDto>> GetAllAsync(CancellationToken ct = default)
     {
-        var roles = await _unitOfWork.Roles.GetListProjectedAsync<RoleDto>(ct: ct);
+        var roles = await _cacheService.GetOrCreateAsync(CacheKeys.Role.All,
+            async (token) => await _unitOfWork.Roles.GetListProjectedAsync<RoleDto>(ct: token),
+            ct: ct);
 
         if (roles.Count == 0)
         {

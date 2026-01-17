@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.Token;
+using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Settings;
@@ -27,10 +29,12 @@ public class UserTokenService : IUserTokenService
     private readonly string _audience;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
+    private readonly ICacheService _cacheService;
 
     public UserTokenService(
         IOptions<JwtSettings> options,
         IUnitOfWork unitOfWork,
+        ICacheService cacheService,
         TimeProvider timeProvider = null)
     {
         _jwtKey = options.Value.JwtKey;
@@ -38,6 +42,7 @@ public class UserTokenService : IUserTokenService
         _audience = options.Value.Audience;
         _unitOfWork = unitOfWork;
         _timeProvider = timeProvider ?? TimeProvider.System;
+        _cacheService = cacheService;
     }
 
     /// <inheritdoc/>
@@ -146,7 +151,9 @@ public class UserTokenService : IUserTokenService
             return DataResult<User>.Failure(DomainErrors.General.InvalidToken());
         }
 
-        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(login).ForAuth(), ct);
+        var user = await _cacheService.GetOrCreateAsync(CacheKeys.User.Auth(login),
+            async (token) => await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(login).ForAuth(), token),
+            ct: ct);
 
         if (user?.UserToken == null)
         {

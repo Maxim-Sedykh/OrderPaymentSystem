@@ -9,18 +9,18 @@ namespace OrderPaymentSystem.DAL.Cache;
 /// <summary>
 /// Реализация сервиса для работы с распределенным кэшем
 /// </summary>
-public sealed class DistributedCacheService : ICacheService
+public sealed class RedisCacheService : ICacheService
 {
     private readonly IDistributedCache _cache;
-    private readonly ILogger<DistributedCacheService> _logger;
+    private readonly ILogger<RedisCacheService> _logger;
     private readonly JsonSerializerOptions _jsonSerializerOptions;
 
     /// <summary>
-    /// Создает экземпляр <see cref="DistributedCacheService"/>
+    /// Создает экземпляр <see cref="RedisCacheService"/>
     /// </summary>
-    public DistributedCacheService(
+    public RedisCacheService(
         IDistributedCache cache,
-        ILogger<DistributedCacheService> logger)
+        ILogger<RedisCacheService> logger)
     {
         _cache = cache;
         _logger = logger;

@@ -10,6 +10,8 @@ namespace OrderPaymentSystem.Domain.Entities;
 /// </summary>
 public class Role : IEntityId<int>
 {
+    public const string DefaultUserRoleName = "User";
+
     /// <summary>
     /// Id роли
     /// </summary>

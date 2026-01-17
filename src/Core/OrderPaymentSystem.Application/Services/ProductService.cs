@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
+using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.Product;
+using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Specifications;
@@ -18,15 +20,18 @@ public class ProductService : IProductService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly ILogger<ProductService> _logger;
+    private readonly ICacheService _cacheService;
 
     public ProductService(
         IUnitOfWork unitOfWork,
         IMapper mapper,
-        ILogger<ProductService> logger)
+        ILogger<ProductService> logger,
+        ICacheService cacheService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _logger = logger;
+        _cacheService = cacheService;
     }
 
     /// <inheritdoc/>
@@ -43,6 +48,8 @@ public class ProductService : IProductService
 
         await _unitOfWork.Products.CreateAsync(product, ct);
         await _unitOfWork.SaveChangesAsync(ct);
+
+        await _cacheService.RemoveAsync(CacheKeys.Product.All, ct);
 
         _logger.LogInformation("Product created successfully: {ProductName} (ID: {ProductId})",
             dto.Name, product.Id);
@@ -63,6 +70,9 @@ public class ProductService : IProductService
         _unitOfWork.Products.Remove(product);
         await _unitOfWork.SaveChangesAsync(ct);
 
+        await _cacheService.RemoveAsync(CacheKeys.Product.All, ct);
+        await _cacheService.RemoveAsync(CacheKeys.Product.ById(id), ct);
+
         _logger.LogInformation("Product deleted successfully: {ProductName} (ID: {ProductId})",
             product.Name, product.Id);
 
@@ -72,8 +82,9 @@ public class ProductService : IProductService
     /// <inheritdoc/>
     public async Task<DataResult<ProductDto>> GetByIdAsync(int id, CancellationToken ct = default)
     {
-        var product = await _unitOfWork.Products
-            .GetProjectedAsync<ProductDto>(ProductSpecs.ById(id), ct);
+        var product = await _cacheService.GetOrCreateAsync(CacheKeys.Product.ById(id),
+            async (token) => await _unitOfWork.Products.GetProjectedAsync<ProductDto>(ProductSpecs.ById(id), token),
+            ct: ct);
 
         if (product == null)
         {
@@ -86,10 +97,10 @@ public class ProductService : IProductService
     /// <inheritdoc/>
     public async Task<CollectionResult<ProductDto>> GetAllAsync(CancellationToken ct = default)
     {
-        var products = await _unitOfWork.Products
-            .GetListProjectedAsync<ProductDto>(ct: ct);
-
-        return CollectionResult<ProductDto>.Success(products);
+        return CollectionResult<ProductDto>.Success(
+            await _cacheService.GetOrCreateAsync(CacheKeys.Product.All,
+                async (token) => await _unitOfWork.Products.GetListProjectedAsync<ProductDto>(ct: token),
+                ct: ct));
     }
 
     /// <inheritdoc/>
@@ -106,6 +117,9 @@ public class ProductService : IProductService
 
         _unitOfWork.Products.Update(product);
         await _unitOfWork.SaveChangesAsync(ct);
+
+        await _cacheService.RemoveAsync(CacheKeys.Product.All, ct);
+        await _cacheService.RemoveAsync(CacheKeys.Product.ById(id), ct);
 
         var updatedProduct = _mapper.Map<ProductDto>(product);
 

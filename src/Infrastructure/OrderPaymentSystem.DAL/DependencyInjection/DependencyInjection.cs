@@ -69,7 +69,7 @@ public static class DependencyInjection
 
     private static void InitCaching(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<ICacheService, DistributedCacheService>();
+        services.AddScoped<ICacheService, RedisCacheService>();
 
         var redisConfig = configuration.GetSection(nameof(RedisSettings));
         services.AddStackExchangeRedisCache(options =>

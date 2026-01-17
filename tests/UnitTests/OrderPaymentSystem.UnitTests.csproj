@@ -23,4 +23,9 @@
 	<ProjectReference Include="..\..\src\Core\OrderPaymentSystem.Application\OrderPaymentSystem.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Configurations\" />
+    <Folder Include="ProductTests\" />
+  </ItemGroup>
+
 </Project>

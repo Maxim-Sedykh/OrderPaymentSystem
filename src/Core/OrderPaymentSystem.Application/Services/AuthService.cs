@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.Auth;
 using OrderPaymentSystem.Application.DTOs.Token;
 using OrderPaymentSystem.Application.Interfaces.Auth;
@@ -19,7 +20,6 @@ namespace OrderPaymentSystem.Application.Services;
 public class AuthService : IAuthService
 {
     private const int TokenLifeTimeInDays = 7;
-    private const string DefaultUserRoleName = "User";
 
     private readonly ILogger<AuthService> _logger;
     private readonly IUserTokenService _userTokenService;
@@ -82,6 +82,8 @@ public class AuthService : IAuthService
 
         await _unitOfWork.SaveChangesAsync(ct);
 
+        await _cacheService.RemoveAsync(CacheKeys.User.Auth(dto.Login), ct);
+
         var result = new TokenDto()
         {
             AccessToken = accessToken,
@@ -94,11 +96,6 @@ public class AuthService : IAuthService
     /// <inheritdoc/>
     public async Task<BaseResult> RegisterAsync(RegisterUserDto dto, CancellationToken ct = default)
     {
-        if (dto.Password != dto.PasswordConfirm)
-        {
-            return BaseResult.Failure(DomainErrors.User.PasswordMismatch());
-        }
-
         var exists = await _unitOfWork.Users.AnyAsync(UserSpecs.ByLogin(dto.Login), ct);
 
         if (exists)
@@ -108,10 +105,9 @@ public class AuthService : IAuthService
 
         await using var transaction = await _unitOfWork.BeginTransactionAsync(ct);
 
-        User user;
         try
         {
-            user = User.Create(
+            var user = User.Create(
                 dto.Login,
                 _passwordHasher.Hash(dto.Password)
             );
@@ -121,7 +117,7 @@ public class AuthService : IAuthService
             await _unitOfWork.SaveChangesAsync(ct);
 
             var roleId = await _unitOfWork.Roles.GetValueAsync(
-                RoleSpecs.ByName(DefaultUserRoleName),
+                RoleSpecs.ByName(Role.DefaultUserRoleName),
                 x => x.Id,
                 ct);
 
@@ -130,7 +126,7 @@ public class AuthService : IAuthService
                 await transaction.RollbackAsync(ct);
                 _logger.LogError("default User role not found during registration for user: {Login}", dto.Login);
 
-                return BaseResult.Failure(DomainErrors.Role.NotFoundByName(DefaultUserRoleName));
+                return BaseResult.Failure(DomainErrors.Role.NotFoundByName(Role.DefaultUserRoleName));
             }
 
             var userRole = UserRole.Create(user.Id, roleId);

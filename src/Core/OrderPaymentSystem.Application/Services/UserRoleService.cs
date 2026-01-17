@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.UserRole;
+using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Specifications;
@@ -16,13 +18,16 @@ public class UserRoleService : IUserRoleService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RoleService> _logger;
+    private readonly ICacheService _cacheService;
 
     public UserRoleService(
         IUnitOfWork unitOfWork,
-        ILogger<RoleService> logger)
+        ILogger<RoleService> logger,
+        ICacheService cacheService)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _cacheService = cacheService;
     }
 
     /// <inheritdoc/>
@@ -59,6 +64,8 @@ public class UserRoleService : IUserRoleService
         await _unitOfWork.UserRoles.CreateAsync(userRole, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
+        await _cacheService.RemoveAsync(CacheKeys.User.Roles(dto.UserId), ct);
+
         return DataResult<UserRoleDto>.Success(new UserRoleDto(user.Login, role.Name));
     }
 
@@ -75,8 +82,10 @@ public class UserRoleService : IUserRoleService
 
         var userRole = await _unitOfWork.UserRoles.GetFirstOrDefaultAsync(UserRoleSpecs.ByUserIdRoleId(user.Id, role.Id), ct);
 
-        _unitOfWork.UserRoles.Remove(userRole!);
+        _unitOfWork.UserRoles.Remove(userRole);
         await _unitOfWork.SaveChangesAsync(ct);
+
+        await _cacheService.RemoveAsync(CacheKeys.User.Roles(userId), ct);
 
         return DataResult<UserRoleDto>.Success(new UserRoleDto(user.Login, role.Name));
     }
@@ -125,6 +134,8 @@ public class UserRoleService : IUserRoleService
 
             await transaction.CommitAsync(ct);
 
+            await _cacheService.RemoveAsync(CacheKeys.User.Roles(userId), ct);
+
             return DataResult<UserRoleDto>.Success(new UserRoleDto(user.Login, newRole.Name));
         }
         catch (Exception ex)
@@ -138,10 +149,9 @@ public class UserRoleService : IUserRoleService
 
     public async Task<CollectionResult<string>> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
     {
-        var userRoles = await _unitOfWork.Roles.GetListValuesAsync(
-            RoleSpecs.ByUserId(userId),
-            x => x.Name,
-            ct);
+        var userRoles = await _cacheService.GetOrCreateAsync(CacheKeys.User.Roles(userId),
+            async (token) => await _unitOfWork.Roles.GetListValuesAsync(RoleSpecs.ByUserId(userId), x => x.Name, token),
+            ct: ct);
 
         if (userRoles.Count == 0)
         {
