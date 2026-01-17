@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Application.DTOs.Payment;
-using OrderPaymentSystem.Application.Extensions;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
+using OrderPaymentSystem.Application.Specifications;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Result;
@@ -22,41 +21,40 @@ public class PaymentService : IPaymentService
         _mapper = mapper;
     }
 
-    public async Task<BaseResult> CompletePaymentAsync(long paymentId, decimal amountPaid, decimal cashChange, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> CompletePaymentAsync(long paymentId, CompletePaymentDto dto, CancellationToken ct = default)
     {
-        var payment = await _unitOfWork.Payments.GetByIdAsync(paymentId, cancellationToken);
+        var payment = await _unitOfWork.Payments.GetFirstOrDefaultAsync(PaymentSpecs.ById(paymentId), ct);
         if (payment == null)
         {
             return BaseResult.Failure(DomainErrors.Payment.NotFound(paymentId));
         }
 
-        payment.ProcessPayment(amountPaid, cashChange);
+        payment.ProcessPayment(dto.AmountPaid, dto.CashChange);
 
         _unitOfWork.Payments.Update(payment);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();
     }
 
-    public async Task<BaseResult> CreateAsync(CreatePaymentDto dto, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> CreateAsync(CreatePaymentDto dto, CancellationToken ct = default)
     {
-        var (orderExists, paymentExists) = await IsExistsPaymentAndOrderAsync(dto.OrderId, cancellationToken);
+        var (orderExists, paymentExists) = await IsExistsPaymentAndOrderAsync(dto.OrderId, ct);
         if (!orderExists) return BaseResult.Failure(DomainErrors.Order.NotFound(dto.OrderId));
         if (paymentExists) return BaseResult.Failure(DomainErrors.Payment.AlreadyExists(dto.OrderId));
 
         var payment = Payment.Create(dto.OrderId, dto.AmountToPay, dto.Method);
 
-        await _unitOfWork.Payments.CreateAsync(payment, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Payments.CreateAsync(payment, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();
     }
 
-    public async Task<DataResult<PaymentDto>> GetByIdAsync(long paymentId, CancellationToken cancellationToken = default)
+    public async Task<DataResult<PaymentDto>> GetByIdAsync(long paymentId, CancellationToken ct = default)
     {
-        var payment = await _unitOfWork.Payments.GetByIdQuery(paymentId)
-            .AsProjected<Payment, PaymentDto>(_mapper)
-            .FirstOrDefaultAsync(cancellationToken);
+        var payment = await _unitOfWork.Payments
+            .GetProjectedAsync<PaymentDto>(PaymentSpecs.ById(paymentId), ct);
 
         if (payment == null)
         {
@@ -66,20 +64,19 @@ public class PaymentService : IPaymentService
         return DataResult<PaymentDto>.Success(payment);
     }
 
-    public async Task<CollectionResult<PaymentDto>> GetByOrderIdAsync(long orderId, CancellationToken cancellationToken = default)
+    public async Task<CollectionResult<PaymentDto>> GetByOrderIdAsync(long orderId, CancellationToken ct = default)
     {
-        var payments = await _unitOfWork.Payments.GetByOrderIdQuery(orderId)
-            .AsProjected<Payment, PaymentDto>(_mapper)
-            .ToArrayAsync(cancellationToken);
+        var payments = await _unitOfWork.Payments
+            .GetListProjectedAsync<PaymentDto>(PaymentSpecs.ByOrderId(orderId), ct);
 
         return CollectionResult<PaymentDto>.Success(payments);
     }
 
-    private async Task<(bool orderExists, bool paymentExists)> IsExistsPaymentAndOrderAsync(long orderId, CancellationToken cancellationToken = default)
+    private async Task<(bool orderExists, bool paymentExists)> IsExistsPaymentAndOrderAsync(long orderId, CancellationToken ct = default)
     {
-        var orderExistsTask = _unitOfWork.Orders.ExistsByIdAsync(orderId, cancellationToken);
+        var orderExistsTask = _unitOfWork.Orders.AnyAsync(OrderSpecs.ById(orderId), ct);
 
-        var paymentExistsTask = _unitOfWork.Payments.ExistsByOrderIdAsync(orderId, cancellationToken);
+        var paymentExistsTask = _unitOfWork.Payments.AnyAsync(PaymentSpecs.ByOrderId(orderId), ct);
 
         await Task.WhenAll(orderExistsTask, paymentExistsTask);
 

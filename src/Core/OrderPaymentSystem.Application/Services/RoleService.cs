@@ -1,14 +1,11 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs.Role;
-using OrderPaymentSystem.Application.Extensions;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Domain.Constants;
+using OrderPaymentSystem.Application.Specifications;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Services;
@@ -35,10 +32,9 @@ public class RoleService : IRoleService
     /// <inheritdoc/>
     public async Task<DataResult<RoleDto>> CreateAsync(
         CreateRoleDto dto,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct = default)
     {
-        var roleExists = await _unitOfWork.Roles.GetQueryable()
-            .AnyAsync(x => x.Name == dto.Name, cancellationToken);
+        var roleExists = await _unitOfWork.Roles.AnyAsync(RoleSpecs.ByName(dto.Name), ct);
 
         if (roleExists)
         {
@@ -47,8 +43,8 @@ public class RoleService : IRoleService
 
         var role = Role.Create(dto.Name);
 
-        await _unitOfWork.Roles.CreateAsync(role, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Roles.CreateAsync(role, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return DataResult<RoleDto>.Success(_mapper.Map<RoleDto>(role));
     }
@@ -56,9 +52,9 @@ public class RoleService : IRoleService
     /// <inheritdoc/>
     public async Task<BaseResult> DeleteByIdAsync(
         int id,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct = default)
     {
-        var role = await _unitOfWork.Roles.GetByIdAsync(id, cancellationToken);
+        var role = await _unitOfWork.Roles.GetFirstOrDefaultAsync(RoleSpecs.ById(id), ct);
 
         if (role == null)
         {
@@ -66,7 +62,7 @@ public class RoleService : IRoleService
         }
 
         _unitOfWork.Roles.Remove(role);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();
     }
@@ -75,9 +71,9 @@ public class RoleService : IRoleService
     public async Task<DataResult<RoleDto>> UpdateAsync(
         int id,
         UpdateRoleDto dto,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct = default)
     {
-        var role = await _unitOfWork.Roles.GetByIdAsync(id, cancellationToken);
+        var role = await _unitOfWork.Roles.GetFirstOrDefaultAsync(RoleSpecs.ById(id), ct);
 
         if (role == null)
         {
@@ -91,21 +87,19 @@ public class RoleService : IRoleService
 
         role.UpdateName(dto.Name);
 
-        var updatedRole = _unitOfWork.Roles.Update(role);
+        _unitOfWork.Roles.Update(role);
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
-        return DataResult<RoleDto>.Success(_mapper.Map<RoleDto>(updatedRole));
+        return DataResult<RoleDto>.Success(_mapper.Map<RoleDto>(role));
     }
 
     /// <inheritdoc/>
-    public async Task<CollectionResult<RoleDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<CollectionResult<RoleDto>> GetAllAsync(CancellationToken ct = default)
     {
-        var roles = await _unitOfWork.Roles.GetAllQuery()
-            .AsProjected<Role, RoleDto>(_mapper)
-            .ToArrayAsync(cancellationToken);
+        var roles = await _unitOfWork.Roles.GetListProjectedAsync<RoleDto>(ct: ct);
 
-        if (roles.Length == 0)
+        if (roles.Count == 0)
         {
             _logger.LogWarning("Roles not found in database");
 

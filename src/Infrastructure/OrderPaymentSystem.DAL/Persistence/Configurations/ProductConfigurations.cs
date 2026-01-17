@@ -4,7 +4,7 @@ using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
 
-public class ProductConfiguration : IEntityTypeConfiguration<Product>
+internal class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
 	public void Configure(EntityTypeBuilder<Product> builder)
 	{

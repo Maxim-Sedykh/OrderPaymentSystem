@@ -5,6 +5,7 @@ using OrderPaymentSystem.Application.Interfaces.Auth;
 using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
+using OrderPaymentSystem.Application.Specifications;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Result;
@@ -48,9 +49,9 @@ public class AuthService : IAuthService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<TokenDto>> LoginAsync(LoginUserDto dto, CancellationToken cancellationToken = default)
+    public async Task<DataResult<TokenDto>> LoginAsync(LoginUserDto dto, CancellationToken ct = default)
     {
-        var user = await _unitOfWork.Users.GetWithRolesAndTokenByLoginAsync(dto.Login, cancellationToken);
+        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(dto.Login), ct);
         if (user == null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
         {
             return DataResult<TokenDto>.Failure(DomainErrors.User.InvalidCredentials());
@@ -70,7 +71,7 @@ public class AuthService : IAuthService
         {
             var newUserToken = UserToken.Create(user.Id, refreshToken, refreshTokenExpire);
 
-            await _unitOfWork.UserToken.CreateAsync(newUserToken, cancellationToken);
+            await _unitOfWork.UserToken.CreateAsync(newUserToken, ct);
         }
         else
         {
@@ -79,7 +80,7 @@ public class AuthService : IAuthService
             _unitOfWork.UserToken.Update(user.UserToken);
         }
 
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         var result = new TokenDto()
         {
@@ -91,21 +92,21 @@ public class AuthService : IAuthService
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult> RegisterAsync(RegisterUserDto dto, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> RegisterAsync(RegisterUserDto dto, CancellationToken ct = default)
     {
         if (dto.Password != dto.PasswordConfirm)
         {
             return BaseResult.Failure(DomainErrors.User.PasswordMismatch());
         }
 
-        var exists = await _unitOfWork.Users.ExistsByLoginAsync(dto.Login, cancellationToken);
+        var exists = await _unitOfWork.Users.AnyAsync(UserSpecs.ByLogin(dto.Login), ct);
 
         if (exists)
         {
             return BaseResult.Failure(DomainErrors.User.AlreadyExist(dto.Login));
         }
 
-        await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await using var transaction = await _unitOfWork.BeginTransactionAsync(ct);
 
         User user;
         try
@@ -115,31 +116,34 @@ public class AuthService : IAuthService
                 _passwordHasher.Hash(dto.Password)
             );
 
-            await _unitOfWork.Users.CreateAsync(user, cancellationToken);
+            await _unitOfWork.Users.CreateAsync(user, ct);
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(ct);
 
-            var roleId = await _unitOfWork.Roles.GetRoleIdByNameAsync(DefaultUserRoleName);
+            var roleId = await _unitOfWork.Roles.GetValueAsync(
+                RoleSpecs.ByName(DefaultUserRoleName),
+                x => x.Id,
+                ct);
 
             if (roleId == 0)
             {
-                await transaction.RollbackAsync(cancellationToken);
+                await transaction.RollbackAsync(ct);
                 _logger.LogError("default User role not found during registration for user: {Login}", dto.Login);
 
                 return BaseResult.Failure(DomainErrors.Role.NotFoundByName(DefaultUserRoleName));
             }
 
             var userRole = UserRole.Create(user.Id, roleId);
-            await _unitOfWork.UserRoles.CreateAsync(userRole, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.UserRoles.CreateAsync(userRole, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
 
-            await transaction.CommitAsync(cancellationToken);
+            await transaction.CommitAsync(ct);
 
             return BaseResult.Success();
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            await transaction.RollbackAsync(ct);
             _logger.LogError(ex, "Error during registration for user: {Login}", dto.Login);
 
             return BaseResult.Failure(DomainErrors.General.InternalServerError());

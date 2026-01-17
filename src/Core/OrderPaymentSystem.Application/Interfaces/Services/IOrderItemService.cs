@@ -13,32 +13,32 @@ public interface IOrderItemService
     /// Создать элемент заказа
     /// </summary>
     /// <param name="dto"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="ct"></param>
     /// <returns></returns>
-    Task<DataResult<OrderItemDto>> CreateAsync(CreateOrderItemDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<OrderItemDto>> CreateAsync(CreateOrderItemDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// Обновить количество товара в элементе заказа
     /// </summary>
     /// <param name="orderItemId"></param>
     /// <param name="dto"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="ct"></param>
     /// <returns></returns>
-    Task<DataResult<OrderItemDto>> UpdateQuantityAsync(long orderItemId, UpdateQuantityDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<OrderItemDto>> UpdateQuantityAsync(long orderItemId, UpdateQuantityDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// Удалить элемент заказа по Id
     /// </summary>
     /// <param name="orderItemId"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="ct"></param>
     /// <returns></returns>
-    Task<BaseResult> DeleteByIdAsync(long orderItemId, CancellationToken cancellationToken = default);
+    Task<BaseResult> DeleteByIdAsync(long orderItemId, CancellationToken ct = default);
 
     /// <summary>
     /// Получить элементы заказа по его идентификатору
     /// </summary>
     /// <param name="orderId"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="ct"></param>
     /// <returns></returns>
-    Task<CollectionResult<OrderItemDto>> GetByOrderIdAsync(long orderId, CancellationToken cancellationToken = default);
+    Task<CollectionResult<OrderItemDto>> GetByOrderIdAsync(long orderId, CancellationToken ct = default);
 }

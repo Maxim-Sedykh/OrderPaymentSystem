@@ -1,4 +1,7 @@
-﻿namespace OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
+﻿using OrderPaymentSystem.Shared.Specifications;
+using System.Linq.Expressions;
+
+namespace OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
 
 /// <summary>
 /// Интерфейс для generic репозитория. Абстракции над DbContext
@@ -6,26 +9,44 @@
 /// <typeparam name="TEntity">Тип сущности</typeparam>
 public interface IBaseRepository<TEntity>
 {
-    /// <summary>
-    /// Получить все сущности в виде <see cref="IQueryable"/>
-    /// </summary>
-    /// <returns><see cref="IQueryable{T}"/></returns>
-    IQueryable<TEntity> GetQueryable();
+    Task<bool> AnyAsync(ISpecification<TEntity> spec, CancellationToken ct = default);
+
+    Task<TEntity> GetFirstOrDefaultAsync(ISpecification<TEntity> spec, CancellationToken ct = default);
+
+    Task<List<TEntity>> GetListBySpecAsync(ISpecification<TEntity> spec, CancellationToken ct = default);
+
+    Task<TResult> GetProjectedAsync<TResult>(
+        ISpecification<TEntity> spec,
+        CancellationToken ct = default);
+
+    Task<List<TResult>> GetListProjectedAsync<TResult>(
+        ISpecification<TEntity> spec = null,
+        CancellationToken ct = default);
+
+    Task<List<TValue>> GetListValuesAsync<TValue>(
+        ISpecification<TEntity> spec,
+        Expression<Func<TEntity, TValue>> selector,
+        CancellationToken ct = default);
+
+    Task<TValue> GetValueAsync<TValue>(
+        ISpecification<TEntity> spec,
+        Expression<Func<TEntity, TValue>> selector,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Создать сущность в БД
     /// </summary>
     /// <param name="entity">Сущность</param>
-    /// <param name="cancellationToken">Токен для отмены операции</param>
+    /// <param name="ct">Токен для отмены операции</param>
     /// <returns>Созданную сущность</returns>
-    Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default);
+    Task<TEntity> CreateAsync(TEntity entity, CancellationToken ct = default);
 
     /// <summary>
     /// Пометить сущность как Modified
     /// </summary>
     /// <param name="entity">Сущность</param>
     /// <returns>Сущность</returns>
-    TEntity Update(TEntity entity);
+    void Update(TEntity entity);
 
     /// <summary>
     /// Пометить сущность как Deleted

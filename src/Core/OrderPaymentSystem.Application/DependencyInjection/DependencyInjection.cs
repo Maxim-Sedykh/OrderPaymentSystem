@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Interfaces.Validators;
 using OrderPaymentSystem.Application.Mapping;
 using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
@@ -10,7 +9,6 @@ using OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Product;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Role;
 using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
-using OrderPaymentSystem.Application.Validations.Validators;
 
 namespace OrderPaymentSystem.Application.DependencyInjection;
 
@@ -26,8 +24,6 @@ public static class DependencyInjection
         InitServices(services);
 
         InitFluentValidators(services);
-
-        InitEntityValidators(services);
     }
 
     private static void InitServices(this IServiceCollection services)
@@ -61,14 +57,14 @@ public static class DependencyInjection
             typeof(CreateProductValidator),
             typeof(UpdateProductValidator),
             typeof(CreatePaymentValidator),
-            typeof(UpdatePaymentValidator),
+            typeof(CompletePaymentValidator),
             typeof(UpdateOrderValidation),
-            typeof(CreateOrderValidation),
+            typeof(CreateOrderValidator),
             typeof(LoginUserValidator),
-            typeof(RegisterUserValidation),
-            typeof(CreateRoleValidation),
+            typeof(RegisterUserValidator),
+            typeof(CreateRoleValidator),
             typeof(DeleteUserRoleValidation),
-            typeof(UpdateUserRoleValidation),
+            typeof(UpdateUserRoleValidator),
             typeof(UpdateRoleValidator)
         };
 
@@ -76,12 +72,5 @@ public static class DependencyInjection
         {
             services.AddValidatorsFromAssembly(validatorType.Assembly);
         }
-    }
-
-    public static void InitEntityValidators(this IServiceCollection services)
-    {
-        services.AddScoped<IAuthValidator, AuthValidator>();
-        services.AddScoped<IRoleValidator, RoleValidator>();
-        services.AddScoped<IOrderItemValidator, OrderItemValidator>();
     }
 }

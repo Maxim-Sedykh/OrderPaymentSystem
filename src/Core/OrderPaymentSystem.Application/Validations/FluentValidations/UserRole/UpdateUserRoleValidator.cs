@@ -3,9 +3,9 @@ using OrderPaymentSystem.Application.DTOs.UserRole;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
 
-public class UpdateUserRoleValidation : AbstractValidator<UpdateUserRoleDto>
+public class UpdateUserRoleValidator : AbstractValidator<UpdateUserRoleDto>
 {
-    public UpdateUserRoleValidation()
+    public UpdateUserRoleValidator()
     {
         RuleFor(x => x.ToRoleId)
             .NotEmpty().WithMessage("Идентификатор для начальной роли должен быть указан");

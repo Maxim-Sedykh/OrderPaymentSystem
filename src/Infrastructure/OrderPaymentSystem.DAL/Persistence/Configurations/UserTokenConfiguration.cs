@@ -4,7 +4,7 @@ using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
 
-public class UserTokenConfiguration : IEntityTypeConfiguration<UserToken>
+internal class UserTokenConfiguration : IEntityTypeConfiguration<UserToken>
 {
     public void Configure(EntityTypeBuilder<UserToken> builder)
     {

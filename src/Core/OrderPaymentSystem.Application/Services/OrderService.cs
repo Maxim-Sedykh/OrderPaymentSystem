@@ -2,15 +2,15 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs.Order;
-using OrderPaymentSystem.Application.DTOs.OrderItem;
-using OrderPaymentSystem.Application.Extensions;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
+using OrderPaymentSystem.Application.Specifications;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 using OrderPaymentSystem.Shared.Result;
+using Order = OrderPaymentSystem.Domain.Entities.Order;
 
 namespace OrderPaymentSystem.Application.Services;
 
@@ -29,19 +29,20 @@ public class OrderService : IOrderService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<BaseResult> CompleteProcessingAsync(long orderId, long paymentId, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> CompleteProcessingAsync(long orderId, long paymentId, CancellationToken ct = default)
     {
-        await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await using var transaction = await _unitOfWork.BeginTransactionAsync(ct);
 
         try
         {
-            var order = await _unitOfWork.Orders.GetByIdWithItemsAndProductsAsync(orderId, cancellationToken);
+            var spec = OrderSpecs.ById(orderId).ForShip();
+            var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(spec, ct);
             if (order == null)
             {
                 return BaseResult.Failure(DomainErrors.Order.NotFound(orderId));
             }
 
-            var payment = await _unitOfWork.Payments.GetByIdAsync(paymentId, cancellationToken);
+            var payment = await _unitOfWork.Payments.GetFirstOrDefaultAsync(PaymentSpecs.ById(paymentId), ct);
             if (payment == null)
             {
                 return BaseResult.Failure(DomainErrors.Payment.NotFound(paymentId));
@@ -62,9 +63,9 @@ public class OrderService : IOrderService
 
             _unitOfWork.Orders.Update(order);
 
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.SaveChangesAsync(ct);
 
-            await transaction.CommitAsync(cancellationToken);
+            await transaction.CommitAsync(ct);
 
             return BaseResult.Success();
         }
@@ -72,7 +73,7 @@ public class OrderService : IOrderService
         {
             _logger.LogError(ex, "Concurrency conflict during stock reduction for Order: {OrderId}", orderId);
 
-            await transaction.RollbackAsync(cancellationToken);
+            await transaction.RollbackAsync(ct);
 
             return BaseResult.Failure(DomainErrors.General.ConcurrencyConflict());
         }
@@ -80,19 +81,19 @@ public class OrderService : IOrderService
         {
             _logger.LogError(ex, "Unknown error when completing the order");
 
-            await transaction.RollbackAsync(cancellationToken);
+            await transaction.RollbackAsync(ct);
 
             return BaseResult.Failure(DomainErrors.General.InternalServerError());
         }
     }
 
-    public async Task<DataResult<OrderDto>> CreateAsync(Guid userId, CreateOrderDto dto, CancellationToken cancellationToken = default)
+    public async Task<DataResult<OrderDto>> CreateAsync(Guid userId, CreateOrderDto dto, CancellationToken ct = default)
     {
         var orderItems = new List<OrderItem>();
         var productIds = dto.OrderItems.Select(x => x.ProductId);
 
         var productsDict = await _unitOfWork.Products
-            .GetProductsAsDictionaryByIdAsync(productIds, cancellationToken);
+            .GetProductsAsDictionaryByIdAsync(productIds, ct);
 
         foreach (var itemDto in dto.OrderItems)
         {
@@ -106,17 +107,16 @@ public class OrderService : IOrderService
 
         var order = Order.Create(userId, dto.DeliveryAddress, orderItems);
 
-        await _unitOfWork.Orders.CreateAsync(order, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Orders.CreateAsync(order, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return DataResult<OrderDto>.Success(_mapper.Map<OrderDto>(order));
     }
 
-    public async Task<DataResult<OrderDto>> GetByIdAsync(long orderId, CancellationToken cancellationToken = default)
+    public async Task<DataResult<OrderDto>> GetByIdAsync(long orderId, CancellationToken ct = default)
     {
-        var order = await _unitOfWork.Orders.GetByIdQuery(orderId)
-            .AsProjected<Order, OrderDto>(_mapper)
-            .FirstOrDefaultAsync(cancellationToken);
+        var order = await _unitOfWork.Orders
+            .GetProjectedAsync<OrderDto>(OrderSpecs.ById(orderId), ct);
 
         if (order == null)
         {
@@ -126,18 +126,17 @@ public class OrderService : IOrderService
         return DataResult<OrderDto>.Success(order);
     }
 
-    public async Task<CollectionResult<OrderDto>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<CollectionResult<OrderDto>> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
     {
-        var orders = await _unitOfWork.Orders.GetByUserIdQuery(userId)
-            .AsProjected<Order, OrderDto>(_mapper)
-            .ToArrayAsync(cancellationToken);
+        var orders = await _unitOfWork.Orders
+            .GetListProjectedAsync<OrderDto>(OrderSpecs.ByUserId(userId), ct);
 
         return CollectionResult<OrderDto>.Success(orders);
     }
 
-    public async Task<BaseResult> ShipOrderAsync(long orderId, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> ShipOrderAsync(long orderId, CancellationToken ct = default)
     {
-        var order = await _unitOfWork.Orders.GetByIdWithItemsAndProductsAndPaymentsAsync(orderId, cancellationToken);
+        var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(orderId).ForShip(), ct);
 
         if (order == null)
         {
@@ -160,50 +159,51 @@ public class OrderService : IOrderService
         order.ShipOrder();
 
         _unitOfWork.Orders.Update(order);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();
     }
 
-    public async Task<BaseResult> UpdateBulkOrderItemsAsync(long orderId, List<UpdateOrderItemDto> updateDtos, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> UpdateBulkOrderItemsAsync(long orderId, UpdateBulkOrderItemsDto dto, CancellationToken ct = default)
     {
-        var order = await _unitOfWork.Orders.GetByIdWithItemsAsync(orderId, cancellationToken);
+        var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(orderId).WithItems(),
+            ct);
         if (order == null)
         {
             return BaseResult.Failure(DomainErrors.Order.NotFound(orderId));
         }
 
-        var productIds = updateDtos.Select(a => a.ProductId).Distinct().ToList();
+        var productIds = dto.Items.Select(a => a.ProductId).Distinct().ToList();
 
-        var productsDict = await _unitOfWork.Products.GetProductsAsDictionaryByIdAsync(productIds, cancellationToken);
+        var productsDict = await _unitOfWork.Products.GetProductsAsDictionaryByIdAsync(productIds, ct);
 
-        foreach (var update in updateDtos)
+        foreach (var newItem in dto.Items)
         {
             try
             {
-                if (!productsDict.TryGetValue(update.ProductId, out var product))
+                if (!productsDict.TryGetValue(newItem.ProductId, out var product))
                 {
-                    return BaseResult.Failure(DomainErrors.Product.NotFound(update.ProductId));
+                    return BaseResult.Failure(DomainErrors.Product.NotFound(newItem.ProductId));
                 }
-                order.UpdateOrderItem(update.ProductId, update.NewQuantity, product.Price, product);
+                order.UpdateOrderItem(newItem.ProductId, newItem.NewQuantity, product.Price, product);
             }
             catch (BusinessException ex)
             {
-                _logger.LogError(ex, $"Product with id {update.ProductId} ended");
+                _logger.LogError(ex, $"Product with id {newItem.ProductId} ended");
 
-                return BaseResult.Failure(DomainErrors.Product.StockNotAvailable(update.ProductId, update.NewQuantity));
+                return BaseResult.Failure(DomainErrors.Product.StockNotAvailable(newItem.ProductId, newItem.NewQuantity));
             }
         }
 
         _unitOfWork.Orders.Update(order);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();
     }
 
-    public async Task<BaseResult> UpdateStatusAsync(long orderId, UpdateOrderStatusDto dto, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> UpdateStatusAsync(long orderId, UpdateOrderStatusDto dto, CancellationToken ct = default)
     {
-        var order = await _unitOfWork.Orders.GetByIdAsync(orderId, cancellationToken);
+        var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(orderId), ct);
         if (order == null)
         {
             return BaseResult.Failure(DomainErrors.Order.NotFound(orderId));
@@ -212,7 +212,7 @@ public class OrderService : IOrderService
         order.UpdateStatus(dto.NewStatus);
 
         _unitOfWork.Orders.Update(order);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();
     }

@@ -5,9 +5,9 @@ using OrderPaymentSystem.Domain.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.DAL.Persistence.Repositories;
 
-public class BasketItemRepository : BaseRepository<BasketItem>, IBasketItemRepository
+internal class BasketItemRepository : BaseRepository<BasketItem>, IBasketItemRepository
 {
-    public BasketItemRepository(ApplicationDbContext dbContext) : base(dbContext) { }
+    internal BasketItemRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 
     public async Task<BasketItem> GetByIdAsync(long id, CancellationToken cancellationToken = default)
     {

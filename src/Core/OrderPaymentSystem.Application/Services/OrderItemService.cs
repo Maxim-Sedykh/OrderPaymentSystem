@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs;
 using OrderPaymentSystem.Application.DTOs.OrderItem;
-using OrderPaymentSystem.Application.Extensions;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
+using OrderPaymentSystem.Application.Specifications;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Result;
@@ -31,9 +30,9 @@ public class OrderItemService : IOrderItemService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<OrderItemDto>> CreateAsync(CreateOrderItemDto dto, CancellationToken cancellationToken = default)
+    public async Task<DataResult<OrderItemDto>> CreateAsync(CreateOrderItemDto dto, CancellationToken ct = default)
     {
-        var (order, product) = await GetOrderAndProductAsync(dto.OrderId, dto.ProductId, cancellationToken);
+        var (order, product) = await GetOrderAndProductAsync(dto.OrderId, dto.ProductId, ct);
         if (order == null)
             return DataResult<OrderItemDto>.Failure(DomainErrors.Order.NotFound(dto.OrderId));
         if (product == null)
@@ -44,25 +43,25 @@ public class OrderItemService : IOrderItemService
         order.AddOrderItem(orderItem, product);
 
         _unitOfWork.Orders.Update(order);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return DataResult<OrderItemDto>.Success(_mapper.Map<OrderItemDto>(orderItem));
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult> DeleteByIdAsync(long orderItemId, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> DeleteByIdAsync(long id, CancellationToken ct = default)
     {
-        var orderItem = await _unitOfWork.OrderItems.GetByIdAsync(orderItemId, cancellationToken);
+        var orderItem = await _unitOfWork.OrderItems.GetFirstOrDefaultAsync(OrderItemSpecs.ById(id), ct);
         if (orderItem == null)
         {
-            return BaseResult.Failure(DomainErrors.Order.ItemNotFound(orderItemId));
+            return BaseResult.Failure(DomainErrors.Order.ItemNotFound(id));
         }
 
-        var order = await _unitOfWork.Orders.GetByIdWithItemsAsync(orderItem.OrderId, cancellationToken);
+        var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(orderItem.OrderId).WithItems(), ct);
 
         if (order == null)
         {
-            _logger.LogError("Matched order not found for order item with id: {OrderItemId}", orderItemId);
+            _logger.LogError("Matched order not found for order item with id: {OrderItemId}", id);
 
             return BaseResult.Failure(DomainErrors.Order.NotFound(orderItem.OrderId));
         }
@@ -70,32 +69,31 @@ public class OrderItemService : IOrderItemService
         order.RemoveOrderItem(orderItem);
 
         _unitOfWork.Orders.Update(order);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();
     }
 
     /// <inheritdoc/>
-    public async Task<CollectionResult<OrderItemDto>> GetByOrderIdAsync(long orderId, CancellationToken cancellationToken = default)
+    public async Task<CollectionResult<OrderItemDto>> GetByOrderIdAsync(long orderId, CancellationToken ct = default)
     {
-        var orderItems = await _unitOfWork.OrderItems.GetByOrderId(orderId)
-            .AsProjected<OrderItem, OrderItemDto>(_mapper)
-            .ToArrayAsync(cancellationToken);
+        var orderItems = await _unitOfWork.OrderItems
+            .GetListProjectedAsync<OrderItemDto>(OrderItemSpecs.ByOrderId(orderId), ct);
 
         return CollectionResult<OrderItemDto>.Success(orderItems);
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<OrderItemDto>> UpdateQuantityAsync(long orderItemId, UpdateQuantityDto dto, CancellationToken cancellationToken = default)
+    public async Task<DataResult<OrderItemDto>> UpdateQuantityAsync(long orderItemId, UpdateQuantityDto dto, CancellationToken ct = default)
     {
-        var orderItem = await _unitOfWork.OrderItems.GetByIdWithProductAsync(orderItemId, cancellationToken);
+        var orderItem = await _unitOfWork.OrderItems.GetFirstOrDefaultAsync(OrderItemSpecs.ById(orderItemId).WithProduct(), ct);
 
         if (orderItem == null)
         {
             return DataResult<OrderItemDto>.Failure(DomainErrors.Order.ItemNotFound(orderItemId));
         }
 
-        var order = await _unitOfWork.Orders.GetByIdWithItemsAsync(orderItem.OrderId, cancellationToken);
+        var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(orderItem.OrderId).WithItems(), ct);
 
         if (order == null)
         {
@@ -106,7 +104,7 @@ public class OrderItemService : IOrderItemService
         order.UpdateOrderItemQuantity(orderItemId, dto.NewQuantity, orderItem.Product);
 
         _unitOfWork.Orders.Update(order);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         var updatedOrderItem = order.Items.FirstOrDefault(oi => oi.Id == orderItemId);
         if (updatedOrderItem == null)
@@ -123,12 +121,14 @@ public class OrderItemService : IOrderItemService
     /// </summary>
     /// <param name="orderId">Id заказа</param>
     /// <param name="productId">Id товара</param>
-    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <param name="ct">Токен отмены операции</param>
     /// <returns>Заказ и товар</returns>
-    private async Task<(Order order, Product product)> GetOrderAndProductAsync(long orderId, int productId, CancellationToken cancellationToken)
+    private async Task<(Order order, Product product)> GetOrderAndProductAsync(long orderId, int productId, CancellationToken ct)
     {
-        var orderTask = _unitOfWork.Orders.GetByIdWithItemsAsync(orderId, cancellationToken);
-        var productTask = _unitOfWork.Products.GetByIdAsync(productId, asNoTracking: true, cancellationToken);
+        var orderTask = _unitOfWork.Orders
+            .GetFirstOrDefaultAsync(OrderSpecs.ById(orderId).WithItems(), ct);
+        var productTask = _unitOfWork.Products
+            .GetFirstOrDefaultAsync(ProductSpecs.ByIdNoTracking(productId), ct);
 
         await Task.WhenAll(orderTask, productTask);
 

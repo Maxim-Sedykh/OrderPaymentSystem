@@ -16,21 +16,14 @@ namespace OrderPaymentSystem.Api.Controllers;
 public class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
-    private readonly UpdateProductValidator _updateProductValidator;
-    private readonly CreateProductValidator _createProductValidator;
 
     /// <summary>
     /// Конструктор контроллера для работы с товарами
     /// </summary>
     /// <param name="productService"></param>
-    /// <param name="updateProductValidator"></param>
-    /// <param name="createProductValidator"></param>
-    public ProductController(IProductService productService, UpdateProductValidator updateProductValidator,
-        CreateProductValidator createProductValidator)
+    public ProductController(IProductService productService)
     {
         _productService = productService;
-        _updateProductValidator = updateProductValidator;
-        _createProductValidator = createProductValidator;
     }
 
     /// <summary>
@@ -106,10 +99,6 @@ public class ProductController : ControllerBase
         {
             return NoContent();
         }
-        if (response.Error.Code == (int)ErrorCodes.ProductNotFound)
-        {
-            return NotFound(ErrorCodes.ProductNotFound.ToString());
-        }
         return BadRequest(response.Error);
     }
 
@@ -136,13 +125,6 @@ public class ProductController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _createProductValidator.ValidateAsync(dto, cancellationToken);
-
-        if (!validationResult.IsValid)
-        {
-            return UnprocessableEntity(validationResult.Errors);
-        }
-
         var response = await _productService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
@@ -177,21 +159,10 @@ public class ProductController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ProductDto>> UpdateProduct(int id, UpdateProductDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _updateProductValidator.ValidateAsync(dto, cancellationToken);
-
-        if (!validationResult.IsValid)
-        {
-            return UnprocessableEntity(validationResult.Errors);
-        }
-
         var response = await _productService.UpdateAsync(id, dto, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);
-        }
-        if (response.Error.Code == (int)ErrorCodes.ProductNotFound)
-        {
-            return NotFound(ErrorCodes.ProductNotFound.ToString());
         }
 
         return BadRequest(response.Error);

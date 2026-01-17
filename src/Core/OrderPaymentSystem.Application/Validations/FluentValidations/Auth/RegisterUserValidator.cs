@@ -3,9 +3,9 @@ using OrderPaymentSystem.Application.DTOs.Auth;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
 
-public class RegisterUserValidation : AbstractValidator<RegisterUserDto>
+public class RegisterUserValidator : AbstractValidator<RegisterUserDto>
 {
-    public RegisterUserValidation()
+    public RegisterUserValidator()
     {
         RuleFor(x => x.Login)
             .NotEmpty().WithMessage("Логин пользователя должен быть указан")

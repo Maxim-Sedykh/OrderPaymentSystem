@@ -151,6 +151,15 @@ namespace OrderPaymentSystem.Domain.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Не валидный Id заказа.
+        /// </summary>
+        public static string InvalidOrderId {
+            get {
+                return ResourceManager.GetString("InvalidOrderId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Не валидный Id платежа.
         /// </summary>
         public static string InvalidPaymentId {

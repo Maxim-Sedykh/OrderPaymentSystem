@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.DTOs.Role;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Role;
+using OrderPaymentSystem.Domain.Constants;
 using System.Net.Mime;
 
 namespace OrderPaymentSystem.Api.Controllers;
@@ -19,22 +20,14 @@ namespace OrderPaymentSystem.Api.Controllers;
 public class RoleController : ControllerBase
 {
     private readonly IRoleService _roleService;
-    private readonly CreateRoleValidation _createRoleValidation;
-    private readonly UpdateRoleValidator _updateRoleValidator;
 
     /// <summary>
     /// Конструктор для работы с ролями
     /// </summary>
     /// <param name="roleService">Сервис для работы с ролями</param>
-    /// <param name="createRoleValidation">Валидатор создания роли</param>
-    /// <param name="updateRoleValidator">Валидатор роли</param>
-    public RoleController(IRoleService roleService,
-        CreateRoleValidation createRoleValidation,
-        UpdateRoleValidator updateRoleValidator)
+    public RoleController(IRoleService roleService)
     {
         _roleService = roleService;
-        _createRoleValidation = createRoleValidation;
-        _updateRoleValidator = updateRoleValidator;
     }
 
     /// <summary>
@@ -57,13 +50,6 @@ public class RoleController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RoleDto>> CreateRole(CreateRoleDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _createRoleValidation.ValidateAsync(dto, cancellationToken);
-
-        if (!validationResult.IsValid)
-        {
-            return UnprocessableEntity(validationResult.Errors);
-        }
-
         var response = await _roleService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
@@ -95,20 +81,10 @@ public class RoleController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RoleDto>> UpdateRole(int id, UpdateRoleDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _updateRoleValidator.ValidateAsync(dto, cancellationToken);
-
-        if (!validationResult.IsValid)
-        {
-            return UnprocessableEntity(validationResult.Errors);
-        }
-
         var response = await _roleService.UpdateAsync(id, dto, cancellationToken);
 
         if (response.IsSuccess)
             return Ok(response.Data);
-
-        if (response.Error.Code == (int)ErrorCodes.RoleNotFound)
-            return NotFound();
 
         return BadRequest(response.Error);
     }
@@ -131,7 +107,7 @@ public class RoleController : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<RoleDto>> DeleteRole(long id, CancellationToken cancellationToken)
+    public async Task<ActionResult<RoleDto>> DeleteRole(int id, CancellationToken cancellationToken)
     {
         var response = await _roleService.DeleteByIdAsync(id, cancellationToken);
         if (response.IsSuccess)

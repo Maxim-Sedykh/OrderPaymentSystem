@@ -11,31 +11,31 @@ public interface IRoleService
     /// <summary>
     /// Получение всех ролей
     /// </summary>
-    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <param name="ct">Токен отмены операции</param>
     /// <returns></returns>
-    Task<CollectionResult<RoleDto>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<CollectionResult<RoleDto>> GetAllAsync(CancellationToken ct = default);
 
     /// <summary>
     /// Добавление роли
     /// </summary>
     /// <param name="dto"></param>
-    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <param name="ct">Токен отмены операции</param>
     /// <returns></returns>
-    Task<DataResult<RoleDto>> CreateAsync(CreateRoleDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<RoleDto>> CreateAsync(CreateRoleDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// Удаление роли по идентификатору
     /// </summary>
     /// <param name="id"></param>
-    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <param name="ct">Токен отмены операции</param>
     /// <returns></returns>
-    Task<BaseResult> DeleteByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<BaseResult> DeleteByIdAsync(int id, CancellationToken ct = default);
 
     /// <summary>
     /// Обновление роли
     /// </summary>
     /// <param name="dto"></param>
-    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <param name="ct">Токен отмены операции</param>
     /// <returns></returns>
-    Task<DataResult<RoleDto>> UpdateAsync(int id, UpdateRoleDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<RoleDto>> UpdateAsync(int id, UpdateRoleDto dto, CancellationToken ct = default);
 }

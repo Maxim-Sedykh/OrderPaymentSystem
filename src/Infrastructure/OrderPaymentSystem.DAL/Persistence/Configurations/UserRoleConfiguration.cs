@@ -4,7 +4,7 @@ using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
 
-public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
+internal class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
 {
     public void Configure(EntityTypeBuilder<UserRole> builder) { }
 }

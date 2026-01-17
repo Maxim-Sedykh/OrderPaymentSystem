@@ -5,7 +5,7 @@ using OrderPaymentSystem.Domain.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.DAL.Persistence.Repositories;
 
-public class OrderItemRepository : BaseRepository<OrderItem>, IOrderItemRepository
+internal class OrderItemRepository : BaseRepository<OrderItem>, IOrderItemRepository
 {
     public OrderItemRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 

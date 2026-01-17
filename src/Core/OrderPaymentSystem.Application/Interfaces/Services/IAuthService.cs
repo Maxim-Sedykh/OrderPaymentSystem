@@ -14,12 +14,12 @@ public interface IAuthService
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<BaseResult> RegisterAsync(RegisterUserDto dto, CancellationToken cancellationToken = default);
+    Task<BaseResult> RegisterAsync(RegisterUserDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// Авторизация пользователя
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<TokenDto>> LoginAsync(LoginUserDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<TokenDto>> LoginAsync(LoginUserDto dto, CancellationToken ct = default);
 }

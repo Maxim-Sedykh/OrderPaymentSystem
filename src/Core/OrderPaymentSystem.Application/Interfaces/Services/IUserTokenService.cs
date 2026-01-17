@@ -28,7 +28,7 @@ public interface IUserTokenService
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<DataResult<TokenDto>> RefreshAsync(TokenDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<TokenDto>> RefreshAsync(TokenDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// Получение основных клаймов из пользователя

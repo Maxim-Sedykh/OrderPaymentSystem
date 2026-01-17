@@ -19,22 +19,14 @@ namespace OrderPaymentSystem.Api.Controllers;
 public class UserRoleController : ControllerBase
 {
     private readonly IUserRoleService _userRoleService;
-    private readonly UpdateUserRoleValidation _updateUserRoleValidation;
-    private readonly CreateUserRoleValidation _createUserRoleValidation;
 
     /// <summary>
     /// Конструктор контроллера для работы с ролями пользователя
     /// </summary>
     /// <param name="userRoleService">Сервис для работы с ролями и пользователями</param>
-    /// <param name="updateUserRoleValidation">Валидатор для обновления роли для пользователя</param>
-    /// <param name="createUserRoleValidation">Валидатор для добавления роли к пользователю</param>
-    public UserRoleController(IUserRoleService userRoleService,
-        UpdateUserRoleValidation updateUserRoleValidation,
-        CreateUserRoleValidation createUserRoleValidation)
+    public UserRoleController(IUserRoleService userRoleService)
     {
         _userRoleService = userRoleService;
-        _updateUserRoleValidation = updateUserRoleValidation;
-        _createUserRoleValidation = createUserRoleValidation;
     }
 
     /// <summary>
@@ -58,12 +50,6 @@ public class UserRoleController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserRoleDto>> AddRoleForUser(CreateUserRoleDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _createUserRoleValidation.ValidateAsync(dto, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return UnprocessableEntity(validationResult.Errors);
-        }
-
         var response = await _userRoleService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
@@ -116,12 +102,6 @@ public class UserRoleController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserRoleDto>> UpdateRoleForUser(Guid userId, UpdateUserRoleDto dto, CancellationToken cancellationToken)
     {
-        var validationResult = await _updateUserRoleValidation.ValidateAsync(dto, cancellationToken);
-        if (!validationResult.IsValid)
-        {
-            return UnprocessableEntity(validationResult.Errors);
-        }
-
         var response = await _userRoleService.UpdateAsync(userId, dto, cancellationToken);
         if (response.IsSuccess)
         {
@@ -144,10 +124,6 @@ public class UserRoleController : ControllerBase
         if (response.IsSuccess)
         {
             return Ok(response.Data);
-        }
-        if (response.Error.Code == (int)ErrorCodes.UserNotFound)
-        {
-            return NotFound(ErrorCodes.UserNotFound.ToString());
         }
         return BadRequest(response.Error);
     }

@@ -1,5 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Mapster;
+using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
+using OrderPaymentSystem.Shared.Specifications;
+using System.Linq.Expressions;
+using System.Threading;
 
 namespace OrderPaymentSystem.DAL.Persistence.Repositories.Base;
 
@@ -18,24 +22,74 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         _table = _dbContext.Set<TEntity>();
     }
 
-    /// <inheritdoc/>
-    public IQueryable<TEntity> GetQueryable()
+    public async Task<TResult> GetProjectedAsync<TResult>(
+        ISpecification<TEntity> spec,
+        CancellationToken cancellationToken = default)
     {
-        return _table.AsQueryable();
+        return await SpecificationEvaluator<TEntity>
+            .GetQuery(_table, spec)
+            .ProjectToType<TResult>()
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<TEntity> GetFirstOrDefaultAsync(ISpecification<TEntity> spec, CancellationToken ct = default)
+    {
+        return await SpecificationEvaluator<TEntity>
+            .GetQuery(_table, spec)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<List<TEntity>> GetListBySpecAsync(ISpecification<TEntity> spec, CancellationToken ct = default)
+    {
+        return await SpecificationEvaluator<TEntity>
+            .GetQuery(_table, spec)
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<TValue>> GetListValuesAsync<TValue>(
+        ISpecification<TEntity> spec,
+        Expression<Func<TEntity, TValue>> selector,
+        CancellationToken ct = default)
+    {
+        return await SpecificationEvaluator<TEntity>
+            .GetQuery(_table, spec)
+            .Select(selector)
+            .ToListAsync(ct);
+    }
+
+    public async Task<TValue> GetValueAsync<TValue>(
+        ISpecification<TEntity> spec,
+        Expression<Func<TEntity, TValue>> selector,
+        CancellationToken ct = default)
+    {
+        return await SpecificationEvaluator<TEntity>
+            .GetQuery(_table, spec)
+            .Select(selector)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<List<TResult>> GetListProjectedAsync<TResult>(
+        ISpecification<TEntity> spec = null,
+        CancellationToken cancellationToken = default)
+    {
+        return await SpecificationEvaluator<TEntity>
+            .GetQuery(_table, spec)
+            .ProjectToType<TResult>()
+            .ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public async Task<int> SaveChangesAsync(CancellationToken ct = default)
     {
-        return await _dbContext.SaveChangesAsync(cancellationToken);
+        return await _dbContext.SaveChangesAsync(ct);
     }
 
     /// <inheritdoc/>
-    public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken cancellationToken = default)
+    public async Task<TEntity> CreateAsync(TEntity entity, CancellationToken ct = default)
     {
         ValidateEntityOnNull(entity);
 
-        await _table.AddAsync(entity, cancellationToken);
+        await _table.AddAsync(entity, ct);
 
         return entity;
     }
@@ -49,13 +103,11 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
     }
 
     /// <inheritdoc/>
-    public TEntity Update(TEntity entity)
+    public void Update(TEntity entity)
     {
         ValidateEntityOnNull(entity);
 
         _table.Update(entity);
-
-        return entity;
     }
 
     /// <inheritdoc/>
@@ -72,6 +124,13 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         ValidateEntitiesOnNull(entities);
 
         _table.UpdateRange(entities);
+    }
+
+    public async Task<bool> AnyAsync(ISpecification<TEntity> spec, CancellationToken ct = default)
+    {
+        return await SpecificationEvaluator<TEntity>
+            .GetQuery(_table, spec)
+            .AnyAsync(ct);
     }
 
     /// <summary>

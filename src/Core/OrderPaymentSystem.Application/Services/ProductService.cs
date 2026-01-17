@@ -1,20 +1,17 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs.Product;
-using OrderPaymentSystem.Application.Extensions;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Domain.Constants;
+using OrderPaymentSystem.Application.Specifications;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Services;
 
 /// <summary>
-/// Сервис отвечающий за работу с доменной части товаров (Product)
+/// Сервис отвечающий за работу с товарами (Product)
 /// </summary>
 public class ProductService : IProductService
 {
@@ -34,9 +31,9 @@ public class ProductService : IProductService
 
     /// <inheritdoc/>
     public async Task<BaseResult> CreateAsync(CreateProductDto dto,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct = default)
     {
-        var productExists = await _unitOfWork.Products.ExistsByNameAsync(dto.Name, cancellationToken);
+        var productExists = await _unitOfWork.Products.AnyAsync(ProductSpecs.ByName(dto.Name), ct);
         if (productExists)
         {
             return BaseResult.Failure(DomainErrors.Product.AlreadyExist(dto.Name));
@@ -44,8 +41,8 @@ public class ProductService : IProductService
 
         var product = Product.Create(dto.Name, dto.Description, dto.Price, dto.StockQuantity);
 
-        await _unitOfWork.Products.CreateAsync(product, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.Products.CreateAsync(product, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         _logger.LogInformation("Product created successfully: {ProductName} (ID: {ProductId})",
             dto.Name, product.Id);
@@ -54,9 +51,9 @@ public class ProductService : IProductService
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult> DeleteByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<BaseResult> DeleteByIdAsync(int id, CancellationToken ct = default)
     {
-        var product = await _unitOfWork.Products.GetByIdAsync(id, cancellationToken: cancellationToken);
+        var product = await _unitOfWork.Products.GetFirstOrDefaultAsync(ProductSpecs.ById(id), ct);
 
         if (product == null)
         {
@@ -64,7 +61,7 @@ public class ProductService : IProductService
         }
 
         _unitOfWork.Products.Remove(product);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         _logger.LogInformation("Product deleted successfully: {ProductName} (ID: {ProductId})",
             product.Name, product.Id);
@@ -73,11 +70,10 @@ public class ProductService : IProductService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<ProductDto>> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<DataResult<ProductDto>> GetByIdAsync(int id, CancellationToken ct = default)
     {
-        var product = await _unitOfWork.Products.GetByIdQuery(id)
-            .AsProjected<Product, ProductDto>(_mapper)
-            .FirstOrDefaultAsync(cancellationToken);
+        var product = await _unitOfWork.Products
+            .GetProjectedAsync<ProductDto>(ProductSpecs.ById(id), ct);
 
         if (product == null)
         {
@@ -88,19 +84,18 @@ public class ProductService : IProductService
     }
 
     /// <inheritdoc/>
-    public async Task<CollectionResult<ProductDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    public async Task<CollectionResult<ProductDto>> GetAllAsync(CancellationToken ct = default)
     {
-        var products = await _unitOfWork.Products.GetAllQuery()
-            .AsProjected<Product, ProductDto>(_mapper)
-            .ToArrayAsync(cancellationToken);
+        var products = await _unitOfWork.Products
+            .GetListProjectedAsync<ProductDto>(ct: ct);
 
         return CollectionResult<ProductDto>.Success(products);
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<ProductDto>> UpdateAsync(int id, UpdateProductDto dto, CancellationToken cancellationToken = default)
+    public async Task<DataResult<ProductDto>> UpdateAsync(int id, UpdateProductDto dto, CancellationToken ct = default)
     {
-        var product = await _unitOfWork.Products.GetByIdAsync(id, cancellationToken: cancellationToken);
+        var product = await _unitOfWork.Products.GetFirstOrDefaultAsync(ProductSpecs.ById(id), ct);
 
         if (product == null)
         {
@@ -110,7 +105,7 @@ public class ProductService : IProductService
         product.UpdateDetails(dto.Name, dto.Description, dto.Price, dto.StockQuantity);
 
         _unitOfWork.Products.Update(product);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         var updatedProduct = _mapper.Map<ProductDto>(product);
 

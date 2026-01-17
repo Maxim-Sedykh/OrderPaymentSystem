@@ -1,8 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs.UserRole;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
+using OrderPaymentSystem.Application.Specifications;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Result;
@@ -28,24 +28,27 @@ public class UserRoleService : IUserRoleService
     /// <inheritdoc/>
     public async Task<DataResult<UserRoleDto>> CreateAsync(
         CreateUserRoleDto dto,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct = default)
     {
-        var user = await _unitOfWork.Users.GetByIdWithRolesAsync(dto.UserId, cancellationToken);
+        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ById(dto.UserId).WithRoles(), ct);
 
         if (user == null)
         {
             return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(dto.UserId));
         }
 
-        var userRoleIds = await _unitOfWork.Roles.GetByUserIdQuery(user.Id)
-            .Select(x => x.Id)
-            .ToHashSetAsync(cancellationToken);
+        var userRoleIds = await _unitOfWork.Roles
+            .GetListValuesAsync(
+            RoleSpecs.ByUserId(dto.UserId),
+            x => x.Id,
+            ct);
+
         if (userRoleIds.Contains(dto.RoleId))
         {
             return DataResult<UserRoleDto>.Failure(DomainErrors.Role.UserAlreadyHasRole(dto.RoleId));
         }
 
-        var role = await _unitOfWork.Roles.GetByIdAsync(dto.RoleId, cancellationToken);
+        var role = await _unitOfWork.Roles.GetFirstOrDefaultAsync(RoleSpecs.ById(dto.RoleId), ct);
         if (role == null)
         {
             return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundById(dto.RoleId));
@@ -53,8 +56,8 @@ public class UserRoleService : IUserRoleService
 
         var userRole = UserRole.Create(user.Id, role.Id);
 
-        await _unitOfWork.UserRoles.CreateAsync(userRole, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.UserRoles.CreateAsync(userRole, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return DataResult<UserRoleDto>.Success(new UserRoleDto(user.Login, role.Name));
     }
@@ -63,17 +66,17 @@ public class UserRoleService : IUserRoleService
     public async Task<DataResult<UserRoleDto>> DeleteAsync(
         Guid userId,
         int roleId,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct = default)
     {
-        var user = await _unitOfWork.Users.GetByIdWithRolesAsync(userId, cancellationToken);
+        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ById(userId).WithRoles(), ct);
         var role = user?.Roles.FirstOrDefault(x => x.Id == roleId);
         if (user == null) return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(userId));
         if (role == null) return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundById(roleId));
 
-        var userRole = await _unitOfWork.UserRoles.GetByUserIdAndRoleIdAsync(user.Id, role.Id, cancellationToken);
+        var userRole = await _unitOfWork.UserRoles.GetFirstOrDefaultAsync(UserRoleSpecs.ByUserIdRoleId(user.Id, role.Id), ct);
 
         _unitOfWork.UserRoles.Remove(userRole!);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return DataResult<UserRoleDto>.Success(new UserRoleDto(user.Login, role.Name));
     }
@@ -82,9 +85,9 @@ public class UserRoleService : IUserRoleService
     public async Task<DataResult<UserRoleDto>> UpdateAsync(
         Guid userId,
         UpdateUserRoleDto dto,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct = default)
     {
-        var user = await _unitOfWork.Users.GetByIdWithRolesAsync(userId, cancellationToken);
+        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ById(userId).WithRoles(), ct);
         if (user == null)
         {
             return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(userId));
@@ -96,7 +99,7 @@ public class UserRoleService : IUserRoleService
             return DataResult<UserRoleDto>.Failure(DomainErrors.Role.UserRoleNotFound(dto.FromRoleId));
         }
 
-        var newRole = await _unitOfWork.Roles.GetByIdAsync(dto.ToRoleId, cancellationToken);
+        var newRole = await _unitOfWork.Roles.GetFirstOrDefaultAsync(RoleSpecs.ById(dto.ToRoleId), ct);
         if (newRole == null)
         {
             return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundById(dto.ToRoleId));
@@ -107,39 +110,40 @@ public class UserRoleService : IUserRoleService
             return DataResult<UserRoleDto>.Failure(DomainErrors.Role.UserAlreadyHasRole(newRole.Id));
         }
 
-        await using var transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        await using var transaction = await _unitOfWork.BeginTransactionAsync(ct);
 
         try
         {
-            var userRole = await _unitOfWork.UserRoles.GetByUserIdAndRoleIdAsync(user.Id, currentRole.Id, cancellationToken);
+            var userRole = await _unitOfWork.UserRoles.GetFirstOrDefaultAsync(UserRoleSpecs.ByUserIdRoleId(user.Id, currentRole.Id), ct);
 
             _unitOfWork.UserRoles.Remove(userRole);
 
             var newUserRole = UserRole.Create(user.Id, newRole.Id);
 
-            await _unitOfWork.UserRoles.CreateAsync(newUserRole, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.UserRoles.CreateAsync(newUserRole, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
 
-            await transaction.CommitAsync(cancellationToken);
+            await transaction.CommitAsync(ct);
 
             return DataResult<UserRoleDto>.Success(new UserRoleDto(user.Login, newRole.Name));
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync(cancellationToken);
+            await transaction.RollbackAsync(ct);
             _logger.LogError(ex, "Error while updating role for user");
 
             return DataResult<UserRoleDto>.Failure(DomainErrors.General.InternalServerError());
         }
     }
 
-    public async Task<CollectionResult<string>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    public async Task<CollectionResult<string>> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
     {
-        var userRoles = await _unitOfWork.Roles.GetByUserIdQuery(userId)
-            .Select(x => x.Name)
-            .ToArrayAsync(cancellationToken);
+        var userRoles = await _unitOfWork.Roles.GetListValuesAsync(
+            RoleSpecs.ByUserId(userId),
+            x => x.Name,
+            ct);
 
-        if (userRoles.Length == 0)
+        if (userRoles.Count == 0)
         {
             _logger.LogWarning($"User with id {userId} has no roles");
 

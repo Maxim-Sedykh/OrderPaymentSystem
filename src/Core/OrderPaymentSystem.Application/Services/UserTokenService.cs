@@ -4,6 +4,7 @@ using OrderPaymentSystem.Application.DTOs.Token;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Settings;
+using OrderPaymentSystem.Application.Specifications;
 using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
@@ -89,9 +90,9 @@ public class UserTokenService : IUserTokenService
     /// <inheritdoc/>
     public async Task<DataResult<TokenDto>> RefreshAsync(
         TokenDto dto,
-        CancellationToken cancellationToken = default)
+        CancellationToken ct = default)
     {
-        var userResult = await GetValidUserForRefreshAsync(dto, cancellationToken);
+        var userResult = await GetValidUserForRefreshAsync(dto, ct);
         if (!userResult.IsSuccess)
         {
             return DataResult<TokenDto>.Failure(userResult.Error);
@@ -108,7 +109,7 @@ public class UserTokenService : IUserTokenService
         );
 
         _unitOfWork.Users.Update(user);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         var tokenDto = new TokenDto
         {
@@ -123,11 +124,11 @@ public class UserTokenService : IUserTokenService
     /// Получает и валидирует пользователя для обновления токена
     /// </summary>
     /// <param name="dto">DTO с токенами</param>
-    /// <param name="cancellationToken">Токен отмены</param>
+    /// <param name="ct">Токен отмены</param>
     /// <returns>Валидный пользователь или ошибка</returns>
     private async Task<DataResult<User>> GetValidUserForRefreshAsync(
         TokenDto dto,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         ClaimsPrincipal claimsPrincipal;
         try
@@ -145,7 +146,7 @@ public class UserTokenService : IUserTokenService
             return DataResult<User>.Failure(DomainErrors.General.InvalidToken());
         }
 
-        var user = await _unitOfWork.Users.GetWithRolesAndTokenByLoginAsync(login, cancellationToken);
+        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(login).ForAuth(), ct);
 
         if (user?.UserToken == null)
         {

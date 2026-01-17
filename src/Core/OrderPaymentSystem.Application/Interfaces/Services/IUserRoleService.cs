@@ -12,33 +12,33 @@ public interface IUserRoleService
     /// Добавление роли для пользователя
     /// </summary>
     /// <param name="dto"></param>
-    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <param name="ct">Токен отмены операции</param>
     /// <returns></returns>
-    Task<DataResult<UserRoleDto>> CreateAsync(CreateUserRoleDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<UserRoleDto>> CreateAsync(CreateUserRoleDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// Удаление роли у пользователя
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="roleId"></param>
-    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <param name="ct">Токен отмены операции</param>
     /// <returns></returns>
-    Task<DataResult<UserRoleDto>> DeleteAsync(Guid userId, int roleId, CancellationToken cancellationToken = default);
+    Task<DataResult<UserRoleDto>> DeleteAsync(Guid userId, int roleId, CancellationToken ct = default);
 
     /// <summary>
     /// Обновление роли у пользователя
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="dto"></param>
-    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <param name="ct">Токен отмены операции</param>
     /// <returns></returns>
-    Task<DataResult<UserRoleDto>> UpdateAsync(Guid userId, UpdateUserRoleDto dto, CancellationToken cancellationToken = default);
+    Task<DataResult<UserRoleDto>> UpdateAsync(Guid userId, UpdateUserRoleDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// Получение ролей пользователя
     /// </summary>
     /// <param name="userId">Идентификатор пользователя</param>
-    /// <param name="cancellationToken">Токен отмены операции</param>
+    /// <param name="ct">Токен отмены операции</param>
     /// <returns></returns>
-    Task<CollectionResult<string>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<CollectionResult<string>> GetByUserIdAsync(Guid userId, CancellationToken ct = default);
 }

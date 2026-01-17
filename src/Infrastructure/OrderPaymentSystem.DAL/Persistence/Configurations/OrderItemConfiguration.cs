@@ -4,7 +4,7 @@ using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
 
-public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
+internal class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
 {
     public void Configure(EntityTypeBuilder<OrderItem> builder)
     {

@@ -297,4 +297,7 @@
   <data name="UserRoleNotFound" xml:space="preserve">
     <value>У пользователя роль с Id {0} не найдена</value>
   </data>
+  <data name="InvalidOrderId" xml:space="preserve">
+    <value>Не валидный Id заказа</value>
+  </data>
 </root>
