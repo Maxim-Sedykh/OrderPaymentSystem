@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using OrderPaymentSystem.DAL.Persistence.Repositories.Base;
+﻿using OrderPaymentSystem.DAL.Persistence.Repositories.Base;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 

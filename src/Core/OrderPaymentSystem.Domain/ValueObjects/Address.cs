@@ -1,6 +1,5 @@
 ﻿using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
-using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Domain.ValueObjects;
 

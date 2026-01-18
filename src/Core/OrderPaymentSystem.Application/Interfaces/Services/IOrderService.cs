@@ -1,5 +1,4 @@
 ﻿using OrderPaymentSystem.Application.DTOs.Order;
-using OrderPaymentSystem.Application.DTOs.OrderItem;
 using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Interfaces.Services;

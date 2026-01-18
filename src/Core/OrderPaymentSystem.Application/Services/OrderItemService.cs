@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MapsterMapper;
 using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs;
 using OrderPaymentSystem.Application.DTOs.OrderItem;
@@ -25,8 +25,8 @@ public class OrderItemService : IOrderItemService
         ILogger logger)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _logger = logger;
+        _mapper = mapper;
     }
 
     /// <inheritdoc/>

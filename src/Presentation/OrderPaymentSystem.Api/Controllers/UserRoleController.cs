@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.DTOs.UserRole;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
 using System.Net.Mime;
 
 namespace OrderPaymentSystem.Api.Controllers;

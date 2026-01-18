@@ -38,7 +38,7 @@ public class Payment : IEntityId<long>, IAuditable
     /// <summary>
     /// Способ оплаты
     /// </summary>
-    public PaymentMethod PaymentMethod { get; protected set; }
+    public PaymentMethod Method { get; protected set; }
 
     /// <summary>
     /// Текущий статус платежа
@@ -78,7 +78,7 @@ public class Payment : IEntityId<long>, IAuditable
             Id = default,
             OrderId = orderId,
             AmountToPay = amountToPay,
-            PaymentMethod = method,
+            Method = method,
             Status = PaymentStatus.Pending
         };
     }

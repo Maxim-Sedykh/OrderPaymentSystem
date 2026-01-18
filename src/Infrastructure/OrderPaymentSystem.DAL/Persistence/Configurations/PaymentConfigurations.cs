@@ -22,7 +22,7 @@ internal class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 			.HasColumnType("decimal(18,2)")
 			.IsRequired(false);
 
-		builder.Property(p => p.PaymentMethod)
+		builder.Property(p => p.Method)
 			.IsRequired()
 			.HasConversion<string>();
 

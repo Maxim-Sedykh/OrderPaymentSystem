@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.DTOs.Auth;
 using OrderPaymentSystem.Application.DTOs.Token;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
 
 namespace OrderPaymentSystem.Api.Controllers;
 
@@ -36,7 +35,7 @@ public class AuthController : ControllerBase
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <returns></returns>
     [HttpPost("register")]
-    public async Task<ActionResult<UserDto>> Register(RegisterUserDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult> Register(RegisterUserDto dto, CancellationToken cancellationToken)
     {
         var response = await _authService.RegisterAsync(dto, cancellationToken);
         if (response.IsSuccess)

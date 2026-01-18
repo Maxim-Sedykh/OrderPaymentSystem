@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Mapster;
+using MapsterMapper;
+using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Services;
-using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.DependencyInjection;
 
@@ -15,7 +15,7 @@ public static class DependencyInjection
     {
         InitServices(services);
 
-        services.AddScoped<ISpecification<Order>, BaseSpecification<Order>();
+        InitMapsterMapping(services);
     }
 
     private static void InitServices(this IServiceCollection services)
@@ -27,5 +27,13 @@ public static class DependencyInjection
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IBasketItemService, BasketItemService>();
+    }
+
+    private static void InitMapsterMapping(this IServiceCollection services)
+    {
+        var config = TypeAdapterConfig.GlobalSettings;
+
+        services.AddSingleton(config);
+        services.AddScoped<IMapper, ServiceMapper>();
     }
 }

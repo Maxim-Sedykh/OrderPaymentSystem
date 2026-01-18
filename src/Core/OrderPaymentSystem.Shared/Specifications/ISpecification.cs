@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text;
+﻿using System.Linq.Expressions;
 
-namespace OrderPaymentSystem.Shared.Specifications
+namespace OrderPaymentSystem.Shared.Specifications;
+
+public interface ISpecification<T>
 {
-    public interface ISpecification<T>
-    {
-        Expression<Func<T, bool>> Criteria { get; }
+    Expression<Func<T, bool>> Criteria { get; }
 
-        List<Func<IQueryable<T>, IQueryable<T>>> IncludeActions { get; }
+    List<Func<IQueryable<T>, IQueryable<T>>> IncludeActions { get; }
 
-        bool IsAsNoTracking { get; }
-    }
+    bool IsAsNoTracking { get; }
 }

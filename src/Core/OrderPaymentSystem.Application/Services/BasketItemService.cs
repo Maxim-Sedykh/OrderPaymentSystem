@@ -1,4 +1,4 @@
-﻿using Mapster;
+﻿using MapsterMapper;
 using OrderPaymentSystem.Application.DTOs;
 using OrderPaymentSystem.Application.DTOs.Basket;
 using OrderPaymentSystem.Application.Interfaces.Databases;
@@ -15,8 +15,7 @@ public class BasketItemService : IBasketItemService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
-    public BasketItemService(IUnitOfWork unitOfWork,
-        IMapper mapper)
+    public BasketItemService(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
@@ -35,7 +34,7 @@ public class BasketItemService : IBasketItemService
         await _unitOfWork.BasketItems.CreateAsync(basketItem, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
-        return DataResult<BasketItemDto>.Success(basketItem.Adapt<BasketItemDto>());
+        return DataResult<BasketItemDto>.Success(_mapper.Map<BasketItemDto>(basketItem));
     }
 
     public async Task<BaseResult> DeleteByIdAsync(long basketItemId, CancellationToken ct = default)

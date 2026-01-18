@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs.Order;
@@ -16,16 +16,17 @@ namespace OrderPaymentSystem.Application.Services;
 
 public class OrderService : IOrderService
 {
-    private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
     private readonly ILogger<OrderService> _logger;
 
-    public OrderService(IMapper mapper,
+    public OrderService(
         ILogger<OrderService> logger,
+        IMapper mapper,
         IUnitOfWork unitOfWork)
     {
-        _mapper = mapper;
         _logger = logger;
+        _mapper = mapper;
         _unitOfWork = unitOfWork;
     }
 

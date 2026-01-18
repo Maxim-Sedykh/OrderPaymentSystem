@@ -9,6 +9,6 @@ public class PaymentDto
     public decimal AmountToPay { get; set; }
     public decimal? AmountPayed { get; set; }
     public decimal? CashChange { get; set; }
-    public PaymentMethod PaymentMethod { get; set; }
+    public PaymentMethod Method { get; set; }
     public PaymentStatus Status { get; set; }
 }

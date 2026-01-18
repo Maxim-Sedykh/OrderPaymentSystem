@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MapsterMapper;
 using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.Role;
@@ -18,20 +18,20 @@ namespace OrderPaymentSystem.Application.Services;
 public class RoleService : IRoleService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
     private readonly ILogger<RoleService> _logger;
     private readonly ICacheService _cacheService;
+    private readonly IMapper _mapper;
 
     public RoleService(
         IUnitOfWork unitOfWork,
-        IMapper mapper,
         ILogger<RoleService> logger,
-        ICacheService cacheService)
+        ICacheService cacheService,
+        IMapper mapper)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _logger = logger;
         _cacheService = cacheService;
+        _mapper = mapper;
     }
 
     /// <inheritdoc/>

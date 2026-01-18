@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.DTOs.Role;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Validations.FluentValidations.Role;
-using OrderPaymentSystem.Domain.Constants;
 using System.Net.Mime;
 
 namespace OrderPaymentSystem.Api.Controllers;
@@ -15,9 +13,9 @@ namespace OrderPaymentSystem.Api.Controllers;
 [Authorize(Roles = "Admin")]
 [Consumes(MediaTypeNames.Application.Json)]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/roles")]
+[Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
-public class RoleController : ControllerBase
+public class RolesController : ControllerBase
 {
     private readonly IRoleService _roleService;
 
@@ -25,7 +23,7 @@ public class RoleController : ControllerBase
     /// Конструктор для работы с ролями
     /// </summary>
     /// <param name="roleService">Сервис для работы с ролями</param>
-    public RoleController(IRoleService roleService)
+    public RolesController(IRoleService roleService)
     {
         _roleService = roleService;
     }

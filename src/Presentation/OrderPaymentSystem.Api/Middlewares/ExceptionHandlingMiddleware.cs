@@ -2,7 +2,6 @@
 using OrderPaymentSystem.Shared.Exceptions;
 using OrderPaymentSystem.Shared.Result;
 using System.Diagnostics;
-using System.Net;
 using System.Net.Mime;
 using ILogger = Serilog.ILogger;
 

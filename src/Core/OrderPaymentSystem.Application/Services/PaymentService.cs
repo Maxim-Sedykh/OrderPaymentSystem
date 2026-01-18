@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using OrderPaymentSystem.Application.DTOs.Payment;
+﻿using OrderPaymentSystem.Application.DTOs.Payment;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Specifications;
@@ -12,13 +11,10 @@ namespace OrderPaymentSystem.Application.Services;
 public class PaymentService : IPaymentService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
 
-    public PaymentService(IUnitOfWork unitOfWork,
-        IMapper mapper)
+    public PaymentService(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
     }
 
     public async Task<BaseResult> CompletePaymentAsync(long paymentId, CompletePaymentDto dto, CancellationToken ct = default)

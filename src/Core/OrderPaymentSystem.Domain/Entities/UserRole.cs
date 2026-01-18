@@ -1,5 +1,4 @@
-﻿using OrderPaymentSystem.Domain.Constants;
-using OrderPaymentSystem.Domain.Errors;
+﻿using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;

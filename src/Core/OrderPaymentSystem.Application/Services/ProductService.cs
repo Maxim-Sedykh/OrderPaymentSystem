@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MapsterMapper;
 using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.Product;
@@ -18,20 +18,20 @@ namespace OrderPaymentSystem.Application.Services;
 public class ProductService : IProductService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IMapper _mapper;
     private readonly ILogger<ProductService> _logger;
     private readonly ICacheService _cacheService;
+    private readonly IMapper _mapper;
 
     public ProductService(
         IUnitOfWork unitOfWork,
-        IMapper mapper,
         ILogger<ProductService> logger,
-        ICacheService cacheService)
+        ICacheService cacheService,
+        IMapper mapper)
     {
         _unitOfWork = unitOfWork;
-        _mapper = mapper;
         _logger = logger;
         _cacheService = cacheService;
+        _mapper = mapper;
     }
 
     /// <inheritdoc/>
@@ -121,8 +121,6 @@ public class ProductService : IProductService
         await _cacheService.RemoveAsync(CacheKeys.Product.All, ct);
         await _cacheService.RemoveAsync(CacheKeys.Product.ById(id), ct);
 
-        var updatedProduct = _mapper.Map<ProductDto>(product);
-
-        return DataResult<ProductDto>.Success(updatedProduct);
+        return DataResult<ProductDto>.Success(_mapper.Map<ProductDto>(product));
     }
 }

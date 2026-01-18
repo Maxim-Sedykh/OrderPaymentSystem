@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
 using OrderPaymentSystem.Shared.Specifications;
 using System.Linq.Expressions;
-using System.Threading;
 
 namespace OrderPaymentSystem.DAL.Persistence.Repositories.Base;
 

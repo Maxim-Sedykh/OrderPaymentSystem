@@ -1,14 +1,13 @@
 ﻿using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Shared.Specifications;
 
-namespace OrderPaymentSystem.Application.Specifications
-{
-    public static class PaymentSpecs
-    {
-        public static BaseSpecification<Payment> ById(long id)
-            => new(x => x.Id == id);
+namespace OrderPaymentSystem.Application.Specifications;
 
-        public static BaseSpecification<Payment> ByOrderId(long orderId)
-            => new(x => x.OrderId == orderId);
-    }
+public static class PaymentSpecs
+{
+    public static BaseSpecification<Payment> ById(long id)
+        => new(x => x.Id == id);
+
+    public static BaseSpecification<Payment> ByOrderId(long orderId)
+        => new(x => x.OrderId == orderId);
 }
