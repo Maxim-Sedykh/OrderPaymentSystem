@@ -23,12 +23,10 @@ public interface IUnitOfWork
     /// </summary>
     /// <param name="ct">Токен для отмены операции</param>
     /// <returns>Количество обработанных кортежей в таблицах</returns>
-    Task<int> SaveChangesAsync(CancellationToken ct = default);
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Создать экземпляр транзакции.
+    /// Начинает новую транзакцию
     /// </summary>
-    /// <param name="ct">Токен для отмены операции</param>
-    /// <returns><see cref="IDbContextTransaction"/></returns>
-    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken ct = default);
+    Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
 }

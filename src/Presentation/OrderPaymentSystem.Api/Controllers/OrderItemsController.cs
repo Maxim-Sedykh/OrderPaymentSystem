@@ -1,7 +1,6 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.DTOs;
-using OrderPaymentSystem.Application.DTOs.Basket;
 using OrderPaymentSystem.Application.DTOs.OrderItem;
 using OrderPaymentSystem.Application.Interfaces.Services;
 
@@ -9,7 +8,7 @@ namespace OrderPaymentSystem.Api.Controllers;
 
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/v{version:apiVersion}/orders")]
 public class OrderItemsController : ControllerBase
 {
     private readonly IOrderItemService _orderItemService;
@@ -19,10 +18,21 @@ public class OrderItemsController : ControllerBase
         _orderItemService = orderItemService;
     }
 
-    [HttpPost]
-    public async Task<ActionResult<OrderItemDto>> Create(CreateOrderItemDto dto, CancellationToken cancellationToken)
+    [HttpPost("{orderId}/items")]
+    public async Task<ActionResult<OrderItemDto>> Create(long orderId, CreateOrderItemDto dto, CancellationToken cancellationToken)
     {
-        var response = await _orderItemService.CreateAsync(dto, cancellationToken);
+        var response = await _orderItemService.CreateAsync(orderId, dto, cancellationToken);
+        if (response.IsSuccess)
+        {
+            return CreatedAtAction(nameof(GetByOrderId), response.Data.OrderId, response.Data);
+        }
+        return BadRequest(response.Error);
+    }
+
+    [HttpPatch("items/{id}")]
+    public async Task<ActionResult<OrderItemDto>> UpdateQuantity(long id, UpdateQuantityDto dto, CancellationToken cancellationToken)
+    {
+        var response = await _orderItemService.UpdateQuantityAsync(id, dto, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);
@@ -30,21 +40,10 @@ public class OrderItemsController : ControllerBase
         return BadRequest(response.Error);
     }
 
-    [HttpPatch("/{orderItemId}")]
-    public async Task<ActionResult<BasketItemDto>> UpdateQuantity(long orderItemId, UpdateQuantityDto dto, CancellationToken cancellationToken)
+    [HttpDelete("items/{id}")]
+    public async Task<ActionResult> DeleteById(long id, CancellationToken cancellationToken)
     {
-        var response = await _orderItemService.UpdateQuantityAsync(orderItemId, dto, cancellationToken);
-        if (response.IsSuccess)
-        {
-            return Ok(response.Data);
-        }
-        return BadRequest(response.Error);
-    }
-
-    [HttpDelete("/{basketItemId}")]
-    public async Task<ActionResult> DeleteById(long orderItemId, CancellationToken cancellationToken)
-    {
-        var response = await _orderItemService.DeleteByIdAsync(orderItemId, cancellationToken);
+        var response = await _orderItemService.DeleteByIdAsync(id, cancellationToken);
         if (response.IsSuccess)
         {
             return NoContent();
@@ -52,8 +51,8 @@ public class OrderItemsController : ControllerBase
         return BadRequest(response.Error);
     }
 
-    [HttpGet("/{orderId}")]
-    public async Task<ActionResult<BasketItemDto[]>> GetByOrderId(long orderId, CancellationToken cancellationToken = default)
+    [HttpGet("{orderId}/items")]
+    public async Task<ActionResult<IEnumerable<OrderItemDto>>> GetByOrderId(long orderId, CancellationToken cancellationToken = default)
     {
         var response = await _orderItemService.GetByOrderIdAsync(orderId, cancellationToken);
         if (response.IsSuccess)

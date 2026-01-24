@@ -8,9 +8,6 @@ public class CreateOrderItemValidator : AbstractValidator<CreateOrderItemDto>
 {
     public CreateOrderItemValidator()
     {
-        RuleFor(x => x.OrderId)
-            .NotEmpty().WithMessage(ErrorMessage.InvalidOrderId);
-
         RuleFor(x => x.ProductId)
             .NotEmpty().WithMessage(ErrorMessage.InvalidProductId);
 

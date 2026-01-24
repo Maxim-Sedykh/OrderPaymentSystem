@@ -19,6 +19,5 @@ public static class CacheKeys
     public static class User
     {
         public static string Roles(Guid userId) => $"user_roles_{userId}";
-        public static string Auth(string login) => $"user_auth_{login}";
     }
 }

@@ -8,17 +8,18 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
 	public void Configure(EntityTypeBuilder<Product> builder)
 	{
-        builder
-		 .Property(p => p.RowVersion)
-		.IsRowVersion();
-
         builder.HasKey(p => p.Id);
+        builder.HasIndex(p => p.Name);
 
-		builder.Property(p => p.Name)
+        builder
+			.Property(p => p.RowVersion)
+			.IsRowVersion();
+
+        builder.Property(p => p.Name)
 			.IsRequired()
 			.HasMaxLength(100);
 
-		builder.Property(p => p.Description)
+        builder.Property(p => p.Description)
 			.HasMaxLength(1000)
 			.IsRequired(false);
 

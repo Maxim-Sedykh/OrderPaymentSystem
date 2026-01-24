@@ -28,12 +28,10 @@ public class UserTokenService : IUserTokenService
     private readonly string _audience;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
-    private readonly ICacheService _cacheService;
 
     public UserTokenService(
         IOptions<JwtSettings> options,
         IUnitOfWork unitOfWork,
-        ICacheService cacheService,
         TimeProvider timeProvider = null)
     {
         _jwtKey = options.Value.JwtKey;
@@ -41,7 +39,6 @@ public class UserTokenService : IUserTokenService
         _audience = options.Value.Audience;
         _unitOfWork = unitOfWork;
         _timeProvider = timeProvider ?? TimeProvider.System;
-        _cacheService = cacheService;
     }
 
     /// <inheritdoc/>
@@ -150,9 +147,7 @@ public class UserTokenService : IUserTokenService
             return DataResult<User>.Failure(DomainErrors.General.InvalidToken());
         }
 
-        var user = await _cacheService.GetOrCreateAsync(CacheKeys.User.Auth(login),
-            async (token) => await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(login).ForAuth(), token),
-            ct: ct);
+        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(login).ForAuth(), ct);
 
         if (user?.UserToken == null)
         {

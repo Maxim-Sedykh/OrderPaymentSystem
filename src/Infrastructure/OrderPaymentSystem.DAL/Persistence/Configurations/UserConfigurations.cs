@@ -11,6 +11,7 @@ internal class UserConfigurations : IEntityTypeConfiguration<User>
 		builder.HasKey(u => u.Id);
 
 		builder.Property(x => x.Id).ValueGeneratedOnAdd();
+        builder.HasIndex(x => x.Login).IsUnique();
         builder.Property(x => x.Login).IsRequired().HasMaxLength(50);
         builder.Property(x => x.PasswordHash).IsRequired();
 

@@ -59,7 +59,7 @@ public class AuthController : ControllerBase
         {
             return Ok(response.Data);
         }
-        return BadRequest(response.Error);
+        return Unauthorized(response.Error);
     }
 
     /// <summary>

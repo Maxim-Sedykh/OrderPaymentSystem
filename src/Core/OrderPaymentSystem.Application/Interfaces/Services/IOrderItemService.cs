@@ -15,7 +15,7 @@ public interface IOrderItemService
     /// <param name="dto"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    Task<DataResult<OrderItemDto>> CreateAsync(CreateOrderItemDto dto, CancellationToken ct = default);
+    Task<DataResult<OrderItemDto>> CreateAsync(long orderId, CreateOrderItemDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// Обновить количество товара в элементе заказа

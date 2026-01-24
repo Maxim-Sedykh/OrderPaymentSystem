@@ -3,7 +3,6 @@ using OrderPaymentSystem.Shared.Exceptions;
 using OrderPaymentSystem.Shared.Result;
 using System.Diagnostics;
 using System.Net.Mime;
-using ILogger = Serilog.ILogger;
 
 namespace OrderPaymentSystem.Api.Middlewares;
 
@@ -13,7 +12,7 @@ namespace OrderPaymentSystem.Api.Middlewares;
 /// <summary>
 /// Единый обработчик ошибок (глобальный try - catch)
 /// </summary>
-public class ExceptionHandlingMiddleware(ILogger logger, RequestDelegate next)
+public class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> logger, RequestDelegate next)
 {
     /// <summary>
     /// Выполнить глобальную обработку ошибок асинхронно
@@ -43,7 +42,7 @@ public class ExceptionHandlingMiddleware(ILogger logger, RequestDelegate next)
     /// <param name="exception">Исключение</param>
     private async Task HandleExceptionAsync(HttpContext httpContext, Exception exception)
     {
-        logger.Error(exception, exception.Message);
+        logger.LogError(exception, exception.Message);
 
         var errorMessage = exception.Message;
         var response = exception switch

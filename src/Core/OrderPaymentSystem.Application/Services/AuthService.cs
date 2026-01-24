@@ -25,7 +25,6 @@ public class AuthService : IAuthService
     private readonly IUserTokenService _userTokenService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly ICacheService _cacheService;
 
     /// <summary>
     /// Конструктор сервиса авторизации и аутентификации
@@ -38,20 +37,18 @@ public class AuthService : IAuthService
         ILogger<AuthService> logger,
         IUserTokenService userTokenService,
         IUnitOfWork unitOfWork,
-        IPasswordHasher passwordHasher,
-        ICacheService cacheService)
+        IPasswordHasher passwordHasher)
     {
         _logger = logger;
         _userTokenService = userTokenService;
         _unitOfWork = unitOfWork;
         _passwordHasher = passwordHasher;
-        _cacheService = cacheService;
     }
 
     /// <inheritdoc/>
     public async Task<DataResult<TokenDto>> LoginAsync(LoginUserDto dto, CancellationToken ct = default)
     {
-        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(dto.Login), ct);
+        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(dto.Login).ForAuth(), ct);
         if (user == null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
         {
             return DataResult<TokenDto>.Failure(DomainErrors.User.InvalidCredentials());
@@ -81,8 +78,6 @@ public class AuthService : IAuthService
         }
 
         await _unitOfWork.SaveChangesAsync(ct);
-
-        await _cacheService.RemoveAsync(CacheKeys.User.Auth(dto.Login), ct);
 
         var result = new TokenDto()
         {

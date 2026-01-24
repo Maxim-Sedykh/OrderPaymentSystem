@@ -9,7 +9,7 @@ namespace OrderPaymentSystem.Api.Controllers;
 
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/v{version:apiVersion}/basket")]
 public class BasketItemsController : PrincipalAccessController
 {
     private readonly IBasketItemService _basketItemService;
@@ -25,12 +25,12 @@ public class BasketItemsController : PrincipalAccessController
         var response = await _basketItemService.CreateAsync(AuthorizedUserId, dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response.Data);
+            return CreatedAtAction(nameof(GetByUserId), response.Data);
         }
         return BadRequest(response.Error);
     }
 
-    [HttpPatch("/{basketItemId}")]
+    [HttpPatch("{basketItemId}")]
     public async Task<ActionResult<BasketItemDto>> UpdateQuantity(long basketItemId, UpdateQuantityDto dto, CancellationToken cancellationToken)
     {
         var response = await _basketItemService.UpdateQuantityAsync(basketItemId, dto, cancellationToken);
@@ -41,7 +41,7 @@ public class BasketItemsController : PrincipalAccessController
         return BadRequest(response.Error);
     }
 
-    [HttpDelete("/{basketItemId}")]
+    [HttpDelete("{basketItemId}")]
     public async Task<ActionResult> DeleteById(long basketItemId, CancellationToken cancellationToken)
     {
         var response = await _basketItemService.DeleteByIdAsync(basketItemId, cancellationToken);
@@ -53,7 +53,7 @@ public class BasketItemsController : PrincipalAccessController
     }
 
     [HttpGet]
-    public async Task<ActionResult<BasketItemDto[]>> GetByUserId(CancellationToken cancellationToken = default)
+    public async Task<ActionResult<IEnumerable<BasketItemDto>>> GetByUserId(CancellationToken cancellationToken = default)
     {
         var response = await _basketItemService.GetByUserIdAsync(AuthorizedUserId, cancellationToken);
         if (response.IsSuccess)

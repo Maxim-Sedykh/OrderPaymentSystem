@@ -13,6 +13,8 @@
   </Folder>
   </Folder>
   <Folder Name="/deploy/">
+    <File Path=".env" />
+    <File Path=".env.template" />
     <File Path="deploy/prometheus.yml" />
     <Project Path="deploy/docker-compose.dcproj">
       <Build />

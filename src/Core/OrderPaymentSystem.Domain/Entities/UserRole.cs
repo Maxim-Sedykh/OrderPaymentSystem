@@ -16,7 +16,7 @@ public class UserRole
     /// <summary>
     /// Id роли
     /// </summary>
-    public long RoleId { get; protected set; }
+    public int RoleId { get; protected set; }
 
     protected UserRole() { }
 
@@ -26,7 +26,7 @@ public class UserRole
     /// <param name="userId">Id пользователя</param>
     /// <param name="roleId">Id роли</param>
     /// <returns>Результат создания</returns>
-    public static UserRole Create(Guid userId, long roleId)
+    public static UserRole Create(Guid userId, int roleId)
     {
         if (userId == default)
             throw new BusinessException(DomainErrors.User.InvalidId());

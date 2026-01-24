@@ -28,7 +28,7 @@ public class ProductController : ControllerBase
     /// <summary>
     /// Получение товара по ID
     /// </summary>
-    /// <param name="productId"></param>
+    /// <param name="id"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// 
@@ -40,12 +40,12 @@ public class ProductController : ControllerBase
     /// </remarks>
     /// <response code="200">Если товар был получен</response>
     /// <response code="400">Если товар не был получен</response>
-    [HttpGet("{productId}")]
+    [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProductDto>> GetProduct(int productId, CancellationToken cancellationToken)
+    public async Task<ActionResult<ProductDto>> GetById(int id, CancellationToken cancellationToken)
     {
-        var response = await _productService.GetByIdAsync(productId, cancellationToken);
+        var response = await _productService.GetByIdAsync(id, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);
@@ -62,7 +62,7 @@ public class ProductController : ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProductDto[]>> GetAllProducts(CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<ProductDto>>> GetAll(CancellationToken cancellationToken)
     {
         var response = await _productService.GetAllAsync(cancellationToken);
         if (response.IsSuccess)
@@ -91,7 +91,7 @@ public class ProductController : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProductDto>> DeleteProduct(int id, CancellationToken cancellationToken)
+    public async Task<ActionResult> DeleteProduct(int id, CancellationToken cancellationToken)
     {
         var response = await _productService.DeleteByIdAsync(id, cancellationToken);
         if (response.IsSuccess)
@@ -122,7 +122,7 @@ public class ProductController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult> Create(CreateProductDto dto, CancellationToken cancellationToken)
     {
         var response = await _productService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)

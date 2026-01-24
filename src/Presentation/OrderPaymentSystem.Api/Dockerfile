@@ -8,10 +8,12 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["OrderPaymentSystem.Api/OrderPaymentSystem.Api.csproj", "OrderPaymentSystem.Api/"]
-COPY ["OrderPaymentSystem.DAL/OrderPaymentSystem.DAL.csproj", "OrderPaymentSystem.DAL/"]
-COPY ["OrderPaymentSystem.Domain/OrderPaymentSystem.Domain.csproj", "OrderPaymentSystem.Domain/"]
-COPY ["OrderPaymentSystem.Application/OrderPaymentSystem.Application.csproj", "OrderPaymentSystem.Application/"]
+COPY ["../../OrderPaymentSystem.Api.sln", "./"]
+COPY ["../../OrderPaymentSystem.DAL/OrderPaymentSystem.DAL.csproj", "OrderPaymentSystem.DAL/"]
+COPY ["../../OrderPaymentSystem.Domain/OrderPaymentSystem.Domain.csproj", "OrderPaymentSystem.Domain/"]
+COPY ["../../OrderPaymentSystem.Application/OrderPaymentSystem.Application.csproj", "OrderPaymentSystem.Application/"]
+COPY ["../../OrderPaymentSystem.Shared/OrderPaymentSystem.Shared.csproj", "OrderPaymentSystem.Shared/"]
+COPY ["OrderPaymentSystem.Api.csproj", "OrderPaymentSystem.Api/"]
 RUN dotnet restore "./OrderPaymentSystem.Api/OrderPaymentSystem.Api.csproj"
 COPY . .
 WORKDIR "/src/OrderPaymentSystem.Api"

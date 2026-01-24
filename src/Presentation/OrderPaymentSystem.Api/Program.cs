@@ -1,14 +1,18 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Api;
 using OrderPaymentSystem.Api.Middlewares;
 using OrderPaymentSystem.Application.DependencyInjection;
 using OrderPaymentSystem.Application.Settings;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
 using OrderPaymentSystem.DAL.DependencyInjection;
+using OrderPaymentSystem.DAL.Persistence;
 using OrderPaymentSystem.Domain.Settings;
 using Prometheus;
 using Serilog;
+using Serilog.Sinks.Elasticsearch;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args); //TODO сделать почище program.cs
 
@@ -25,14 +29,45 @@ builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddAuthenticationAndAuthorization(builder);
 builder.Services.AddSwagger();
-builder.Services.AddHttpContextAccessor();
 
-builder.Host.UseSerilog((context, configuration) => configuration.ReadFrom.Configuration(context.Configuration));
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .WriteTo.Console()
+    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(builder.Configuration["ElasticConfiguration:Uri"]))
+    {
+        AutoRegisterTemplate = true,
+        IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
+        NumberOfReplicas = 1,
+        NumberOfShards = 2
+    })
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 builder.Services.AddDataAccessLayer(builder.Configuration);
 builder.Services.AddApplication();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        if (context.Database.GetPendingMigrations().Any())
+        {
+            context.Database.Migrate();
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ошибка при применении миграций БД.");
+    }
+}
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 

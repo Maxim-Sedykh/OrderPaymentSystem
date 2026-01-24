@@ -30,11 +30,11 @@ public class OrderItemService : IOrderItemService
     }
 
     /// <inheritdoc/>
-    public async Task<DataResult<OrderItemDto>> CreateAsync(CreateOrderItemDto dto, CancellationToken ct = default)
+    public async Task<DataResult<OrderItemDto>> CreateAsync(long orderId, CreateOrderItemDto dto, CancellationToken ct = default)
     {
-        var (order, product) = await GetOrderAndProductAsync(dto.OrderId, dto.ProductId, ct);
+        var (order, product) = await GetOrderAndProductAsync(orderId, dto.ProductId, ct);
         if (order == null)
-            return DataResult<OrderItemDto>.Failure(DomainErrors.Order.NotFound(dto.OrderId));
+            return DataResult<OrderItemDto>.Failure(DomainErrors.Order.NotFound(orderId));
         if (product == null)
             return DataResult<OrderItemDto>.Failure(DomainErrors.Product.NotFound(dto.ProductId));
 

@@ -12,13 +12,13 @@ public class BaseResult
     /// <param name="error"></param>
     protected BaseResult(Error error = null)
     {
-        Error = error ?? new Error(500, "Internal server error");
+        Error = error;
     }
 
     /// <summary>
     /// Успешный ли результат
     /// </summary>
-    public bool IsSuccess => Error.Message == null;
+    public bool IsSuccess => Error?.Message == null;
 
     /// <summary>
     /// Ошибка

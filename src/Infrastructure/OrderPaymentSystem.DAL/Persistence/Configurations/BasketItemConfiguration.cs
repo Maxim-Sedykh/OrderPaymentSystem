@@ -9,8 +9,9 @@ internal class BasketItemConfiguration : IEntityTypeConfiguration<BasketItem>
 	public void Configure(EntityTypeBuilder<BasketItem> builder)
 	{
 		builder.HasKey(bi => bi.Id);
+        builder.HasIndex(bi => bi.UserId);
 
-		builder.Property(bi => bi.Quantity)
+        builder.Property(bi => bi.Quantity)
 			.IsRequired();
 
 		builder.Property(bi => bi.CreatedAt)

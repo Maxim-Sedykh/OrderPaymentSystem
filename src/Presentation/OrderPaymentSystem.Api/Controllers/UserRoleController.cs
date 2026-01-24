@@ -52,7 +52,7 @@ public class UserRoleController : ControllerBase
         var response = await _userRoleService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return CreatedAtAction(nameof(AddRoleForUser), response.Data);
+            return Created(string.Empty, response.Data);
         }
         return BadRequest(response.Error);
     }
@@ -117,7 +117,7 @@ public class UserRoleController : ControllerBase
     [HttpGet("{userId}/roles")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<UserRoleDto>> GetUserRoles(Guid userId, CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<string>>> GetUserRoles(Guid userId, CancellationToken cancellationToken)
     {
         var response = await _userRoleService.GetByUserIdAsync(userId, cancellationToken);
         if (response.IsSuccess)

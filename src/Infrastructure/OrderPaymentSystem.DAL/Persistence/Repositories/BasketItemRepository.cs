@@ -6,5 +6,5 @@ namespace OrderPaymentSystem.DAL.Persistence.Repositories;
 
 internal class BasketItemRepository : BaseRepository<BasketItem>, IBasketItemRepository
 {
-    internal BasketItemRepository(ApplicationDbContext dbContext) : base(dbContext) { }
+    public BasketItemRepository(ApplicationDbContext dbContext) : base(dbContext) { }
 }

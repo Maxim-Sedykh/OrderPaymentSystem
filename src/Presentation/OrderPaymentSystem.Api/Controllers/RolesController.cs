@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OrderPaymentSystem.Application.DTOs.Order;
 using OrderPaymentSystem.Application.DTOs.Role;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using System.Net.Mime;
@@ -51,7 +52,7 @@ public class RolesController : ControllerBase
         var response = await _roleService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response.Data);
+            return CreatedAtAction(nameof(GetAllRoles), response.Data);
         }
         return BadRequest(response.Error);
     }
@@ -103,9 +104,9 @@ public class RolesController : ControllerBase
     /// <response code="200">Если роль удалилась</response>
     /// <response code="400">Если роль не была удалена</response>
     [HttpDelete("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<RoleDto>> DeleteRole(int id, CancellationToken cancellationToken)
+    public async Task<ActionResult> DeleteRole(int id, CancellationToken cancellationToken)
     {
         var response = await _roleService.DeleteByIdAsync(id, cancellationToken);
         if (response.IsSuccess)
@@ -122,7 +123,7 @@ public class RolesController : ControllerBase
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<RoleDto[]>> GetAllRoles(CancellationToken cancellationToken)
+    public async Task<ActionResult<IEnumerable<RoleDto>>> GetAllRoles(CancellationToken cancellationToken)
     {
         var response = await _roleService.GetAllAsync(cancellationToken);
         if (response.IsSuccess)
