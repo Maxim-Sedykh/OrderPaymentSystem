@@ -1,0 +1,37 @@
+﻿using OrderPaymentSystem.Application.DTOs.Payment;
+using OrderPaymentSystem.Shared.Result;
+
+namespace OrderPaymentSystem.Application.Interfaces.Services;
+
+/// <summary>
+/// Интерфейс сервиса для работы с платежами
+/// </summary>
+public interface IPaymentService
+{
+    /// <summary>
+    /// Создать платёж
+    /// </summary>
+    /// <param name="dto"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    Task<BaseResult> CreateAsync(CreatePaymentDto dto, CancellationToken ct = default);
+
+    /// <summary>
+    /// Получить платёж по Id
+    /// </summary>
+    /// <param name="paymentId"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    Task<DataResult<PaymentDto>> GetByIdAsync(long paymentId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Получить платёж по идентификатору заказа привязанному к платежу
+    /// </summary>
+    /// <param name="orderId"></param>
+    /// <param name="ct"></param>
+    /// <returns></returns>
+    Task<CollectionResult<PaymentDto>> GetByOrderIdAsync(long orderId, CancellationToken ct = default);
+
+    Task<BaseResult> CompletePaymentAsync(long paymentId, CompletePaymentDto dto, CancellationToken ct = default);
+}
+

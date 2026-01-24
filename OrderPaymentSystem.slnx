@@ -1,20 +1,43 @@
 <Solution>
-  <Folder Name="/Core/">
-    <Project Path="OrderPaymentSystem.Application/OrderPaymentSystem.Application.csproj" />
-    <Project Path="OrderPaymentSystem.Domain/OrderPaymentSystem.Domain.csproj" />
+  <Folder Name="/src/">
+  <Folder Name="/src/Core/">
+    <Project Path="src/Core/OrderPaymentSystem.Domain/OrderPaymentSystem.Domain.csproj" />
+    <Project Path="src/Core/OrderPaymentSystem.Application/OrderPaymentSystem.Application.csproj" />
+    <Project Path="src/Core/OrderPaymentSystem.Shared/OrderPaymentSystem.Shared.csproj" />
   </Folder>
-  <Folder Name="/Infrastructure/">
-    <Project Path="OrderPaymentSystem.DAL/OrderPaymentSystem.DAL.csproj" />
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/OrderPaymentSystem.DAL/OrderPaymentSystem.DAL.csproj" />
   </Folder>
-  <Folder Name="/Presentation/">
-    <Project Path="OrderPaymentSystem.Api/OrderPaymentSystem.Api.csproj" />
+  <Folder Name="/src/Presentation/">
+    <Project Path="src/Presentation/OrderPaymentSystem.Api/OrderPaymentSystem.Api.csproj" />
   </Folder>
-  <Folder Name="/Solution Items/">
-    <File Path="docker-compose.yml" />
-    <File Path="prometheus.yml" />
   </Folder>
-  <Folder Name="/Tests/">
-    <Project Path="OrderPaymentSystem.Benchmarks/OrderPaymentSystem.Benchmarks.csproj" />
-    <Project Path="OrderPaymentSystem.UnitTests/OrderPaymentSystem.Tests.csproj" />
+  <Folder Name="/deploy/">
+    <File Path=".env" />
+    <File Path=".env.template" />
+    <File Path="deploy/prometheus.yml" />
+    <Project Path="deploy/docker-compose.dcproj">
+      <Build />
+    </Project>
+  </Folder>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/OrderPaymentSystem.Benchmarks/OrderPaymentSystem.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/Core/">
+    <Project Path="src/Core/OrderPaymentSystem.Application/OrderPaymentSystem.Application.csproj" />
+    <Project Path="src/Core/OrderPaymentSystem.Domain/OrderPaymentSystem.Domain.csproj" />
+    <Project Path="src/Core/OrderPaymentSystem.Shared/OrderPaymentSystem.Shared.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/OrderPaymentSystem.DAL/OrderPaymentSystem.DAL.csproj" />
+  </Folder>
+  <Folder Name="/src/Presentation/">
+    <Project Path="src/Presentation/OrderPaymentSystem.Api/OrderPaymentSystem.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Architecture/OrderPaymentSystem.ArchitectureTests.csproj" />
+    <Project Path="tests/Functional/OrderPaymentSystem.FunctionalTests.csproj" />
+    <Project Path="tests/Integration/OrderPaymentSystem.IntegrationTests.csproj" />
+    <Project Path="tests/UnitTests/OrderPaymentSystem.UnitTests.csproj" />
   </Folder>
 </Solution>
