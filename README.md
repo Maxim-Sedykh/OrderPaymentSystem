@@ -15,17 +15,15 @@
 
 - ASP.NET Web API для создания RESTful API.
 - Entity Framework для работы с базой данных.
-- AutoMapper для маппинга объектов.
+- Mapster для маппинга объектов.
 - JWT Bearer для аутентификации пользователей.
 - PostgreSQL для хранения данных.
-- Serilog для ведения логов.
+- ELK для ведения логов.
 - FluentValidation для валидации моделей.
 - Docker для контейнеризации
-- RabbitMQ для брокерства сообщений
 - Redis для кэширования
 - xunit и Moq для юнит-тестов
 - Prometheus и Graphana для метрик
-- MediatR для реализации паттерна CQRS
 
 <img src="https://github.com/Maxim-Sedykh/OrderPaymentSystem/assets/125740808/0b3b1f34-43cf-4fa0-8179-23736b5da701" width=100%>
 
