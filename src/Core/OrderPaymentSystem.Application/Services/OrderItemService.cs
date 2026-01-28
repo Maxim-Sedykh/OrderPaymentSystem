@@ -18,11 +18,11 @@ public class OrderItemService : IOrderItemService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    private readonly ILogger _logger;
+    private readonly ILogger<OrderItemService> _logger;
 
     public OrderItemService(IUnitOfWork unitOfWork,
         IMapper mapper,
-        ILogger logger)
+        ILogger<OrderItemService> logger)
     {
         _unitOfWork = unitOfWork;
         _logger = logger;

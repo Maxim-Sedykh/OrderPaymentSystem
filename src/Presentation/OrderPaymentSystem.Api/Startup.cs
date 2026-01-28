@@ -71,14 +71,19 @@ public static class Startup
         services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
         services.AddSwaggerGen(options =>
         {
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
             {
                 In = ParameterLocation.Header,
-                Description = "Введите пожалуйста токен",
+                Description = "Please enter a valid token",
                 Name = "Authorization",
                 Type = SecuritySchemeType.Http,
                 BearerFormat = "JWT",
-                Scheme = "Bearer"
+                Scheme = JwtBearerDefaults.AuthenticationScheme
+            });
+
+            options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+            {
+                [new OpenApiSecuritySchemeReference(JwtBearerDefaults.AuthenticationScheme, document)] = []
             });
 
             var assemblyName = Assembly.GetExecutingAssembly().GetName().Name;

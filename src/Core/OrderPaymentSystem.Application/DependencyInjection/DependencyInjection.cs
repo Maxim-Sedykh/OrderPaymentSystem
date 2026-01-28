@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IUserTokenService, UserTokenService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IOrderItemService, OrderItemService>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IBasketItemService, BasketItemService>();
     }
