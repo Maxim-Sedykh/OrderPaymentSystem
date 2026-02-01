@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Api.Controllers.Abstract;
 using OrderPaymentSystem.Application.DTOs.Order;
-using OrderPaymentSystem.Application.DTOs.OrderItem;
 using OrderPaymentSystem.Application.Interfaces.Services;
 
 namespace OrderPaymentSystem.Api.Controllers;

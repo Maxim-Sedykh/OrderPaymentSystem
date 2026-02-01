@@ -1,7 +1,6 @@
 ﻿using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Shared.Exceptions;
 using OrderPaymentSystem.Shared.Result;
-using System.Diagnostics;
 using System.Net.Mime;
 
 namespace OrderPaymentSystem.Api.Middlewares;
