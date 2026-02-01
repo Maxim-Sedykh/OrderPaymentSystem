@@ -143,6 +143,10 @@ public static class DomainErrors
             => new(ErrorCodes.OrderCannotBeConfirmedWithoutPayment,
                 string.Format(ErrorMessage.OrderCannotBeConfirmedWithoutPayment));
 
+        public static Error CannotBeShippedWithoutPayment()
+            => new(ErrorCodes.OrderCannotBeShippedWithoutPayment,
+                string.Format(ErrorMessage.OrderCannotBeShipped));
+
         public static Error CannotAddOrRemoveItemInCurrentStatus(OrderStatus status)
             => new(ErrorCodes.OrderCannotAddOrRemoveItemInCurrentStatus,
                 string.Format(ErrorMessage.OrderCannotAddOrRemoveItemInCurrentStatus, status));

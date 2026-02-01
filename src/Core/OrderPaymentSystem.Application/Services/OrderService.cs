@@ -130,7 +130,7 @@ public class OrderService : IOrderService
     public async Task<CollectionResult<OrderDto>> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
     {
         var orders = await _unitOfWork.Orders
-            .GetListProjectedAsync<OrderDto>(OrderSpecs.ByUserId(userId), ct);
+            .GetListProjectedAsync<OrderDto>(OrderSpecs.ByUserIdNoTracking(userId), ct);
 
         return CollectionResult<OrderDto>.Success(orders);
     }
@@ -142,6 +142,11 @@ public class OrderService : IOrderService
         if (order == null)
         {
             return BaseResult.Failure(DomainErrors.Order.NotFound(orderId));
+        }
+
+        if (order.Payment == null)
+        {
+            return BaseResult.Failure(DomainErrors.Order.CannotBeConfirmedWithoutPayment());
         }
 
         foreach (var item in order.Items)

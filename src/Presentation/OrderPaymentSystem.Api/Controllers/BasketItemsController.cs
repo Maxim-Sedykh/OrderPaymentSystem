@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Api.Controllers.Abstract;
 using OrderPaymentSystem.Application.DTOs;
@@ -7,6 +8,7 @@ using OrderPaymentSystem.Application.Interfaces.Services;
 
 namespace OrderPaymentSystem.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/basket")]

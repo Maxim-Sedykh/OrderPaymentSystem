@@ -44,7 +44,7 @@ public class UserRoleController : ControllerBase
     /// </remarks>
     /// <response code="200">Если роль для пользователя создалась</response>
     /// <response code="400">Если роль для пользователя не была создана</response>
-    [HttpPost("{userId}/roles")]
+    [HttpPost("roles")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserRoleDto>> AddRoleForUser(CreateUserRoleDto dto, CancellationToken cancellationToken)

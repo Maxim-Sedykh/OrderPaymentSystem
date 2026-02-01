@@ -96,9 +96,10 @@ public static class ErrorCodes
     public const int OrderCannotRemoveItemFromEmptyOrder = 4013;
     public const int OrderCannotRemoveNonExistingItem = 4014;
     public const int OrderCannotBeConfirmedWithoutPayment = 4015;
+    public const int OrderCannotBeShippedWithoutPayment = 4016;
     public const int OrderCannotChangeStatusOfACancelledOrder = 4017;
-    public const int OrderCannotBeConfirmedInvalidStatus = 4017;
-    public const int OrderEmptyPaymentId = 4018;
+    public const int OrderCannotBeConfirmedInvalidStatus = 4018;
+    public const int OrderEmptyPaymentId = 4019;
 
     #endregion
 

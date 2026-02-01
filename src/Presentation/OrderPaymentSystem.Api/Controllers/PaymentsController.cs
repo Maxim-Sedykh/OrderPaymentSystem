@@ -1,10 +1,12 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.DTOs.Payment;
 using OrderPaymentSystem.Application.Interfaces.Services;
 
 namespace OrderPaymentSystem.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
@@ -39,7 +41,7 @@ public class PaymentsController : ControllerBase
         return NotFound(response.Error);
     }
 
-    [HttpGet("{orderId}")]
+    [HttpGet("orders/{orderId}")]
     public async Task<ActionResult<IEnumerable<PaymentDto>>> GetByOrderId(long orderId, CancellationToken cancellationToken)
     {
         var response = await _paymentService.GetByOrderIdAsync(orderId, cancellationToken);

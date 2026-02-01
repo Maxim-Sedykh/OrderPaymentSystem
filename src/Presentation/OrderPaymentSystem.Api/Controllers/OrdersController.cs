@@ -1,12 +1,13 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Api.Controllers.Abstract;
 using OrderPaymentSystem.Application.DTOs.Order;
-using OrderPaymentSystem.Application.DTOs.OrderItem;
 using OrderPaymentSystem.Application.Interfaces.Services;
 
 namespace OrderPaymentSystem.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
@@ -21,10 +22,10 @@ public class OrdersController : PrincipalAccessController
         _orderItemService = orderItemService;
     }
 
-    [HttpGet("{orderId}")]
-    public async Task<ActionResult<OrderDto>> GetById(long orderId, CancellationToken cancellationToken)
+    [HttpGet("{id}")]
+    public async Task<ActionResult<OrderDto>> GetById(long id, CancellationToken cancellationToken)
     {
-        var response = await _orderService.GetByIdAsync(orderId, cancellationToken);
+        var response = await _orderService.GetByIdAsync(id, cancellationToken);
         if (response.IsSuccess)
         {
             return Ok(response.Data);
@@ -38,7 +39,7 @@ public class OrdersController : PrincipalAccessController
         var response = await _orderService.CreateAsync(AuthorizedUserId, dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return CreatedAtAction(nameof(GetById), response.Data.Id, response.Data);
+            return CreatedAtAction(nameof(GetById), new { id = response.Data.Id }, response.Data);
         }
         return BadRequest(response.Error);
     }
@@ -50,17 +51,6 @@ public class OrdersController : PrincipalAccessController
         if (response.IsSuccess)
         {
             return NoContent();
-        }
-        return BadRequest(response.Error);
-    }
-
-    [HttpGet("{id}/items")]
-    public async Task<ActionResult<IEnumerable<OrderItemDto>>> GetByOrderId(long id, CancellationToken cancellationToken = default)
-    {
-        var response = await _orderItemService.GetByOrderIdAsync(id, cancellationToken);
-        if (response.IsSuccess)
-        {
-            return Ok(response.Data);
         }
         return BadRequest(response.Error);
     }

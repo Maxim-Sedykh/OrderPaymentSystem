@@ -1,3 +1,3 @@
 ﻿namespace OrderPaymentSystem.Application.DTOs.Product;
 
-public record ProductDto(long Id, string Name, string Description, decimal Price, DateTime CreatedAt);
+public record ProductDto(long Id, string Name, string Description, decimal Price, int StockQuantity, DateTime CreatedAt);

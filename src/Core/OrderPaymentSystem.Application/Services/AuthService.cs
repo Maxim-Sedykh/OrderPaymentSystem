@@ -1,9 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.Auth;
 using OrderPaymentSystem.Application.DTOs.Token;
 using OrderPaymentSystem.Application.Interfaces.Auth;
-using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Specifications;

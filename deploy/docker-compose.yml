@@ -6,14 +6,19 @@ services:
       dockerfile: src/Presentation/OrderPaymentSystem.Api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_URLS=https://+:8081;http://+:8080
       - ConnectionStrings__PostgresSQL=Host=orderpaymentsystemdb;Port=5432;Database=OrderPaymentSystem;Username=postgres;Password=${POSTGRES_PASSWORD}
       - JwtSettings__JwtKey=${JWT_KEY}
       - Kestrel__Certificates__Development__Password=${KESTREL_CERT_PASSWORD}
       - Elasticsearch__Url=http://elasticsearch:9200
       - RedisSettings__Url=redis:6379
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${HTTPS_PASSWORD}
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
     ports:
       - "5000:8080"
+      - "5001:8081"
+    volumes:
+      - ${USERPROFILE}\.aspnet\https:/https:ro
     depends_on:
       - orderpaymentsystem.db
       - elasticsearch

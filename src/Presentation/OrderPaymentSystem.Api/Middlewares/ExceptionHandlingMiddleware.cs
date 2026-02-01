@@ -1,7 +1,6 @@
 ﻿using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Shared.Exceptions;
 using OrderPaymentSystem.Shared.Result;
-using System.Diagnostics;
 using System.Net.Mime;
 
 namespace OrderPaymentSystem.Api.Middlewares;
@@ -27,10 +26,6 @@ public class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> lo
         }
         catch (Exception ex)
         {
-#if DEBUG
-            Debugger.Break();
-#endif
-
             await HandleExceptionAsync(httpContext, ex);
         }
     }

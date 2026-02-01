@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Interfaces.Repositories;
 

@@ -26,7 +26,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         CancellationToken cancellationToken = default)
     {
         return await SpecificationEvaluator<TEntity>
-            .GetQuery(_table, spec)
+            .GetQuery(_table.AsNoTracking(), spec)
             .ProjectToType<TResult>()
             .FirstOrDefaultAsync(cancellationToken);
     }
@@ -51,7 +51,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         CancellationToken ct = default)
     {
         return await SpecificationEvaluator<TEntity>
-            .GetQuery(_table, spec)
+            .GetQuery(_table.AsNoTracking(), spec)
             .Select(selector)
             .ToListAsync(ct);
     }
@@ -62,7 +62,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         CancellationToken ct = default)
     {
         return await SpecificationEvaluator<TEntity>
-            .GetQuery(_table, spec)
+            .GetQuery(_table.AsNoTracking(), spec)
             .Select(selector)
             .FirstOrDefaultAsync(ct);
     }
@@ -72,7 +72,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         CancellationToken cancellationToken = default)
     {
         return await SpecificationEvaluator<TEntity>
-            .GetQuery(_table, spec)
+            .GetQuery(_table.AsNoTracking(), spec)
             .ProjectToType<TResult>()
             .ToListAsync(cancellationToken);
     }
