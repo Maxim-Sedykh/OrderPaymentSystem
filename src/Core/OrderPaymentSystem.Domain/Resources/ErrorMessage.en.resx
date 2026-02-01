@@ -300,4 +300,7 @@
   <data name="InvalidOrderId" xml:space="preserve">
     <value>Invalid order id</value>
   </data>
+  <data name="OrderCannotBeShippedWithoutPayment" xml:space="preserve">
+    <value>Order cannot be shipped without payment</value>
+  </data>
 </root>

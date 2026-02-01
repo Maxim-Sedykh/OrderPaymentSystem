@@ -300,4 +300,7 @@
   <data name="InvalidOrderId" xml:space="preserve">
     <value>Не валидный Id заказа</value>
   </data>
+  <data name="OrderCannotBeShippedWithoutPayment" xml:space="preserve">
+    <value>Заказ не может быть доставлен без </value>
+  </data>
 </root>

@@ -27,10 +27,6 @@ public class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> lo
         }
         catch (Exception ex)
         {
-#if DEBUG
-            Debugger.Break();
-#endif
-
             await HandleExceptionAsync(httpContext, ex);
         }
     }

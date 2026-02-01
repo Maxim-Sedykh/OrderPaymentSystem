@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.DTOs;
 using OrderPaymentSystem.Application.DTOs.OrderItem;
@@ -6,6 +7,7 @@ using OrderPaymentSystem.Application.Interfaces.Services;
 
 namespace OrderPaymentSystem.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/orders")]
@@ -24,7 +26,7 @@ public class OrderItemsController : ControllerBase
         var response = await _orderItemService.CreateAsync(orderId, dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return CreatedAtAction(nameof(GetByOrderId), response.Data.OrderId, response.Data);
+            return CreatedAtAction(nameof(GetByOrderId), new { orderId = response.Data.OrderId }, response.Data);
         }
         return BadRequest(response.Error);
     }

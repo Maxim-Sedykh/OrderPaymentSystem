@@ -35,11 +35,19 @@ public class PaymentService : IPaymentService
 
     public async Task<BaseResult> CreateAsync(CreatePaymentDto dto, CancellationToken ct = default)
     {
-        var (orderExists, paymentExists) = await IsExistsPaymentAndOrderAsync(dto.OrderId, ct);
-        if (!orderExists) return BaseResult.Failure(DomainErrors.Order.NotFound(dto.OrderId));
-        if (paymentExists) return BaseResult.Failure(DomainErrors.Payment.AlreadyExists(dto.OrderId));
+        var paymentExists = await _unitOfWork.Payments.AnyAsync(PaymentSpecs.ByOrderId(dto.OrderId), ct);
+        if (paymentExists)
+        { 
+            return BaseResult.Failure(DomainErrors.Payment.AlreadyExists(dto.OrderId)); 
+        }
+        
+        var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(dto.OrderId), ct);
+        if (order == null)
+        { 
+            return BaseResult.Failure(DomainErrors.Order.NotFound(dto.OrderId));
+        }
 
-        var payment = Payment.Create(dto.OrderId, dto.AmountToPay, dto.Method);
+        var payment = Payment.Create(dto.OrderId, dto.AmountPayed, order.TotalAmount, dto.Method);
 
         await _unitOfWork.Payments.CreateAsync(payment, ct);
         await _unitOfWork.SaveChangesAsync(ct);
@@ -66,16 +74,5 @@ public class PaymentService : IPaymentService
             .GetListProjectedAsync<PaymentDto>(PaymentSpecs.ByOrderId(orderId), ct);
 
         return CollectionResult<PaymentDto>.Success(payments);
-    }
-
-    private async Task<(bool orderExists, bool paymentExists)> IsExistsPaymentAndOrderAsync(long orderId, CancellationToken ct = default)
-    {
-        var orderExistsTask = _unitOfWork.Orders.AnyAsync(OrderSpecs.ById(orderId), ct);
-
-        var paymentExistsTask = _unitOfWork.Payments.AnyAsync(PaymentSpecs.ByOrderId(orderId), ct);
-
-        await Task.WhenAll(orderExistsTask, paymentExistsTask);
-
-        return (orderExistsTask.Result, paymentExistsTask.Result);
     }
 }

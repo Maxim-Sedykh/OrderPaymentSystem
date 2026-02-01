@@ -67,9 +67,13 @@ public class Payment : IEntityId<long>, IAuditable
     /// <returns>Созданный платёж</returns>
     public static Payment Create(
         long orderId,
+        decimal amountPayed,
         decimal amountToPay,
         PaymentMethod method)
     {
+        if (amountPayed <= 0)
+            throw new BusinessException(DomainErrors.Payment.AmountPositive());
+
         if (amountToPay <= 0)
             throw new BusinessException(DomainErrors.Payment.AmountPositive());
 
@@ -78,6 +82,7 @@ public class Payment : IEntityId<long>, IAuditable
             Id = default,
             OrderId = orderId,
             AmountToPay = amountToPay,
+            AmountPayed = amountPayed,
             Method = method,
             Status = PaymentStatus.Pending
         };

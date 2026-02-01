@@ -125,13 +125,11 @@ public class OrderItemService : IOrderItemService
     /// <returns>Заказ и товар</returns>
     private async Task<(Order order, Product product)> GetOrderAndProductAsync(long orderId, int productId, CancellationToken ct)
     {
-        var orderTask = _unitOfWork.Orders
+        var order = await _unitOfWork.Orders
             .GetFirstOrDefaultAsync(OrderSpecs.ById(orderId).WithItems(), ct);
-        var productTask = _unitOfWork.Products
+        var product = await _unitOfWork.Products
             .GetFirstOrDefaultAsync(ProductSpecs.ByIdNoTracking(productId), ct);
 
-        await Task.WhenAll(orderTask, productTask);
-
-        return (orderTask.Result, productTask.Result);
+        return (order, product);
     }
 }

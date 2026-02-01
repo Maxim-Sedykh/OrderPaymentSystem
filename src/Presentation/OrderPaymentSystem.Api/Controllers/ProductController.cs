@@ -88,7 +88,7 @@ public class ProductController : ControllerBase
     /// </remarks>
     /// <response code="200">Если товар удалился</response>
     /// <response code="400">Если товар не был удалён</response>
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -119,7 +119,7 @@ public class ProductController : ControllerBase
     /// </remarks>
     /// <response code="200">Если товар создался</response>
     /// <response code="400">Если товар не был создан</response>
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -153,7 +153,7 @@ public class ProductController : ControllerBase
     /// </remarks>
     /// <response code="200">Если товар обновился</response>
     /// <response code="400">Если товар не был обновлён</response>
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     [HttpPut("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

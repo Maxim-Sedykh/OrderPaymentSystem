@@ -1,4 +1,5 @@
 ﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OrderPaymentSystem.Application.DTOs.Auth;
 using OrderPaymentSystem.Application.DTOs.Token;
@@ -9,6 +10,7 @@ namespace OrderPaymentSystem.Api.Controllers;
 /// <summary>
 /// Контроллер для работы с авторизацией
 /// </summary>
+[AllowAnonymous]
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/auth")]

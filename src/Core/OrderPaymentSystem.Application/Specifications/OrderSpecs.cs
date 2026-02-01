@@ -15,7 +15,7 @@ public static class OrderSpecs
     public static BaseSpecification<Order> ById(long id)
         => new(x => x.Id == id);
 
-    public static BaseSpecification<Order> ByUserId(Guid id)
+    public static BaseSpecification<Order> ByUserIdNoTracking(Guid id)
     {
         var spec = new BaseSpecification<Order>(x => x.UserId == id);
 
