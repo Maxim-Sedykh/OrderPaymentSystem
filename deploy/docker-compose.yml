@@ -1,13 +1,16 @@
+name: order-payment-system
+
 services:
-  orderpaymentsystem.api:
-    image: orderpaymentsystem.api
+  api:
+    container_name: ops-api
+    image: ops-api:latest
     build:
       context: ../
       dockerfile: src/Presentation/OrderPaymentSystem.Api/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:8081;http://+:8080
-      - ConnectionStrings__PostgresSQL=Host=orderpaymentsystemdb;Port=5432;Database=OrderPaymentSystem;Username=postgres;Password=${POSTGRES_PASSWORD}
+      - ConnectionStrings__PostgresSQL=Host=db;Port=5432;Database=OrderPaymentSystem;Username=postgres;Password=${POSTGRES_PASSWORD}
       - JwtSettings__JwtKey=${JWT_KEY}
       - Kestrel__Certificates__Development__Password=${KESTREL_CERT_PASSWORD}
       - Elasticsearch__Url=http://elasticsearch:9200
@@ -20,14 +23,14 @@ services:
     volumes:
       - ${USERPROFILE}\.aspnet\https:/https:ro
     depends_on:
-      - orderpaymentsystem.db
+      - db
       - elasticsearch
     networks:
       - opsnw
 
-  orderpaymentsystem.db:
+  db:
+    container_name: ops-db
     image: postgres:15
-    container_name: orderpaymentsystemdb
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -41,6 +44,7 @@ services:
       - opsnw
 
   pgadmin:
+    container_name: ops-pgadmin
     image: dpage/pgadmin4
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.ru
@@ -52,8 +56,8 @@ services:
       - opsnw
 
   elasticsearch:
+    container_name: ops-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: elasticsearch
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -66,8 +70,8 @@ services:
       - opsnw
 
   kibana:
+    container_name: ops-kibana
     image: docker.elastic.co/kibana/kibana:8.11.0
-    container_name: kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     ports:
@@ -78,6 +82,7 @@ services:
       - opsnw
 
   prometheus:
+    container_name: ops-prometheus
     image: prom/prometheus
     ports:
       - "9090:9090"
@@ -89,6 +94,7 @@ services:
       - opsnw
     
   grafana:
+    container_name: ops-grafana
     image: grafana/grafana
     ports:
       - "3000:3000"
@@ -103,7 +109,7 @@ services:
 
   redis:
     image: redis:latest
-    container_name: redis
+    container_name: ops-redis
     restart: always
     ports:
       - "6379:6379"
