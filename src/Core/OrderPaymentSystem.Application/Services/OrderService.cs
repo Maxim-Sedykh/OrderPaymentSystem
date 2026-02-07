@@ -62,8 +62,6 @@ public class OrderService : IOrderService
             order.AssignPayment(paymentId);
             order.ConfirmOrder();
 
-            _unitOfWork.Orders.Update(order);
-
             await _unitOfWork.SaveChangesAsync(ct);
 
             await transaction.CommitAsync(ct);
@@ -164,7 +162,6 @@ public class OrderService : IOrderService
 
         order.ShipOrder();
 
-        _unitOfWork.Orders.Update(order);
         await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();
@@ -201,7 +198,6 @@ public class OrderService : IOrderService
             }
         }
 
-        _unitOfWork.Orders.Update(order);
         await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();
@@ -217,7 +213,6 @@ public class OrderService : IOrderService
 
         order.UpdateStatus(dto.NewStatus);
 
-        _unitOfWork.Orders.Update(order);
         await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();

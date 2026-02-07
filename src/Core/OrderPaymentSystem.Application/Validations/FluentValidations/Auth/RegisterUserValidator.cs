@@ -1,5 +1,8 @@
 ﻿using FluentValidation;
 using OrderPaymentSystem.Application.DTOs.Auth;
+using OrderPaymentSystem.Application.Extensions;
+using OrderPaymentSystem.Domain.Errors;
+using static OrderPaymentSystem.Domain.Constants.ValidationConstants.User;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
 
@@ -8,14 +11,25 @@ public class RegisterUserValidator : AbstractValidator<RegisterUserDto>
     public RegisterUserValidator()
     {
         RuleFor(x => x.Login)
-            .NotEmpty().WithMessage("Логин пользователя должен быть указан")
-            .MaximumLength(50).WithMessage("Логин должен быть меньше 50 символов")
-            .MinimumLength(5).WithMessage("Логин должен быть больше 5 символов");
+            .NotEmpty()
+            .WithError(DomainErrors.Validation.Required(nameof(RegisterUserDto.Login)))
+            .MaximumLength(MaxLoginLength)
+            .WithError(DomainErrors.Validation.TooLong(nameof(RegisterUserDto.Login), MaxLoginLength))
+            .MinimumLength(MinLoginLength)
+            .WithError(DomainErrors.Validation.TooShort(nameof(RegisterUserDto.Login), MinLoginLength));
+
         RuleFor(x => x.Password)
-            .NotEmpty().WithMessage("Пароль пользователя должен быть указан")
-            .MaximumLength(50).WithMessage("Пароль должен быть меньше 50 символов")
-            .MinimumLength(5).WithMessage("Пароль должен быть больше 5 символов");
+            .NotEmpty()
+            .WithError(DomainErrors.Validation.Required(nameof(RegisterUserDto.Password)))
+            .MinimumLength(MinPasswordLength)
+            .WithError(DomainErrors.Validation.TooShort(nameof(RegisterUserDto.Password), MinPasswordLength))
+            .MaximumLength(MaxPasswordLength)
+            .WithError(DomainErrors.Validation.TooShort(nameof(RegisterUserDto.Password), MinPasswordLength));
+
         RuleFor(x => x.PasswordConfirm)
-            .NotEmpty().WithMessage("Подтверждение пароля должно быть указано");
+            .NotEmpty()
+            .WithError(DomainErrors.Validation.Required(nameof(RegisterUserDto.PasswordConfirm)))
+            .Equal(x => x.Password)
+            .WithError(DomainErrors.User.PasswordMismatch());
     }
 }

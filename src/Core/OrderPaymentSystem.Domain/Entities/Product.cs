@@ -1,5 +1,6 @@
-﻿using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -7,7 +8,7 @@ namespace OrderPaymentSystem.Domain.Entities;
 /// <summary>
 /// Товар
 /// </summary>
-public class Product : IEntityId<int>, IAuditable, IStockInfo
+public class Product : BaseEntity<int>, IAuditable, IStockInfo
 {
     /// <summary>
     /// Id товара
@@ -47,7 +48,16 @@ public class Product : IEntityId<int>, IAuditable, IStockInfo
 
     public byte[] RowVersion { get; private set; }
 
-    protected Product() { }
+    private Product() { }
+
+    internal Product(int id, string name, string description, decimal price, int stockQuantity)
+        : base(id)
+    {
+        Name = name;
+        Description = description;
+        Price = price;
+        StockQuantity = stockQuantity;
+    }
 
     /// <summary>
     /// Создать товар
@@ -56,13 +66,9 @@ public class Product : IEntityId<int>, IAuditable, IStockInfo
     /// <param name="description">Описание товара</param>
     /// <param name="price">Стоимость единицы товара</param>
     /// <returns>Созданный товар</returns>
-    public static Product Create(string name, string description, decimal price, int stockQuantity) //TODO вынести првоерки в отдельный метод
+    public static Product Create(string name, string description, decimal price, int stockQuantity)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new BusinessException(DomainErrors.Product.NameEmpty());
-
-        if (price <= 0)
-            throw new BusinessException(DomainErrors.Product.PricePositive());
+        Validate(name, price);
 
         return new Product
         {
@@ -82,11 +88,7 @@ public class Product : IEntityId<int>, IAuditable, IStockInfo
     /// <param name="newPrice">Новая стоимость единицы товара</param>
     public void UpdateDetails(string name, string description, decimal newPrice, int stockQuantity)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new BusinessException(DomainErrors.Product.NameEmpty());
-
-        if (newPrice <= 0)
-            throw new BusinessException(DomainErrors.Product.PricePositive());
+        Validate(name, newPrice);
 
         Name = name;
         Description = description;
@@ -124,5 +126,11 @@ public class Product : IEntityId<int>, IAuditable, IStockInfo
         }
 
         StockQuantity -= quantityToReduce;
+    }
+
+    private static void Validate(string name, decimal price)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new BusinessException(DomainErrors.Validation.Required(nameof(name)));
+        if (price <= 0) throw new BusinessException(DomainErrors.Product.PricePositive());
     }
 }

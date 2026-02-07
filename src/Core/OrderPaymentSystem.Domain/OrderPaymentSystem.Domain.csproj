@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+	<InternalsVisibleTo Include="OrderPaymentSystem.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Update="Resources\ErrorMessage.resx">
       <LastGenOutput>ErrorMessage.Designer.cs</LastGenOutput>
       <Generator>PublicResXFileCodeGenerator</Generator>

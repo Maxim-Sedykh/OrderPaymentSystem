@@ -1,27 +1,51 @@
 ﻿using Asp.Versioning;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using OrderPaymentSystem.Api.Swagger;
 using OrderPaymentSystem.Application.Settings;
+using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
+using OrderPaymentSystem.Domain.Settings;
+using Prometheus;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
 using System.Text;
+using OrderPaymentSystem.DAL.DependencyInjection;
+using OrderPaymentSystem.Application.DependencyInjection;
 
-namespace OrderPaymentSystem.Api;
+namespace OrderPaymentSystem.Api.Extensions;
 
 /// <summary>
-/// Класс для подключения сервисов
+/// Здесь будет вся регистрация зависимостей (DI).
 /// </summary>
-public static class Startup
+public static class ServiceCollectionExtensions
 {
-    /// <summary>
-    /// Подключение аутентификации и авторизации
-    /// </summary>
-    /// <param name="services"></param>
-    /// <param name="builder"></param>
-    public static void AddAuthenticationAndAuthorization(this IServiceCollection services, WebApplicationBuilder builder)
+    public static void AddApiInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        // Settings
+        services.Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)));
+        services.Configure<RedisSettings>(configuration.GetSection(nameof(RedisSettings)));
+
+        // Common API
+        services.AddEndpointsApiExplorer();
+        services.AddControllers();
+
+        // Metrics
+        services.UseHttpClientMetrics();
+
+        // Validations
+        services.AddValidatorsFromAssemblyContaining<RegisterUserValidator>();
+        services.AddFluentValidationAutoValidation();
+
+        // Custom Layers
+        services.AddDataAccessLayer(configuration);
+        services.AddApplication();
+    }
+
+    public static void AddAuthConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddAuthorization();
         services.AddAuthentication(options =>
@@ -31,17 +55,16 @@ public static class Startup
             options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
         }).AddJwtBearer(o =>
         {
-            var options = builder.Configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>();
-            var jwtKey = options.JwtKey;
-            var issuer = options.Issuer;
-            var audience = options.Audience;
-            o.Authority = options.Authority;
+            var jwtSettings = configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>()
+                             ?? throw new InvalidOperationException("JwtSettings not found");
+
+            o.Authority = jwtSettings.Authority;
             o.RequireHttpsMetadata = false;
-            o.TokenValidationParameters = new TokenValidationParameters()
+            o.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidIssuer = issuer,
-                ValidAudience = audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.JwtKey)),
                 ValidateAudience = true,
                 ValidateIssuer = true,
                 ValidateLifetime = true,
@@ -50,11 +73,7 @@ public static class Startup
         });
     }
 
-    /// <summary>
-    /// Подключение Swagger
-    /// </summary>
-    /// <param name="services"></param>
-    public static void AddSwagger(this IServiceCollection services)
+    public static void AddSwaggerConfiguration(this IServiceCollection services)
     {
         services.AddApiVersioning(options =>
         {
@@ -86,14 +105,9 @@ public static class Startup
                 [new OpenApiSecuritySchemeReference(JwtBearerDefaults.AuthenticationScheme, document)] = []
             });
 
-            var assemblyName = Assembly.GetExecutingAssembly().GetName().Name;
-            var xmlFileName = $"{assemblyName}.xml";
-            var xmlFilePath = Path.Combine(AppContext.BaseDirectory, xmlFileName);
-
-            if (File.Exists(xmlFilePath))
-            {
-                options.IncludeXmlComments(xmlFilePath);
-            }
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            if (File.Exists(xmlPath)) options.IncludeXmlComments(xmlPath);
         });
     }
 }

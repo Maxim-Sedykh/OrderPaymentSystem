@@ -117,26 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AddressCityEmpty" xml:space="preserve">
-    <value>Город в адресе не может быть пустым</value>
-  </data>
-  <data name="AddressCountryEmpty" xml:space="preserve">
-    <value>Страна в адресе не может быть пустым</value>
-  </data>
-  <data name="AddressStreetEmpty" xml:space="preserve">
-    <value>Улица в адресе не может быть пустым</value>
-  </data>
-  <data name="AddressZipCodeEmpty" xml:space="preserve">
-    <value>Индекс в адресе не может быть пустым</value>
-  </data>
   <data name="BasketItemNotFound" xml:space="preserve">
     <value>Элемент корзины с Id {0} не найден</value>
   </data>
   <data name="ConcurrencyConflict" xml:space="preserve">
     <value>Запись была обновлена другим пользователем, попробуйте ещё раз</value>
-  </data>
-  <data name="EmptyPaymentId" xml:space="preserve">
-    <value>У заказа нет платежа</value>
   </data>
   <data name="InternalServerError" xml:space="preserve">
     <value>Внутренняя ошибка сервера</value>
@@ -144,23 +129,8 @@
   <data name="InvalidClientRequest" xml:space="preserve">
     <value>Не валидный запрос клиента</value>
   </data>
-  <data name="InvalidPaymentId" xml:space="preserve">
-    <value>Не валидный Id платежа</value>
-  </data>
-  <data name="InvalidProductId" xml:space="preserve">
-    <value>Не валидный Id товара</value>
-  </data>
-  <data name="InvalidRoleId" xml:space="preserve">
-    <value>Не валидный Id роли</value>
-  </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>Не валидный токен</value>
-  </data>
-  <data name="InvalidUserId" xml:space="preserve">
-    <value>Не валидный Id пользователя</value>
-  </data>
-  <data name="LoginCannotBeEmpty" xml:space="preserve">
-    <value>Логин пользователя не может быть пустым</value>
   </data>
   <data name="NoChangesFound" xml:space="preserve">
     <value>Изменений не найдено</value>
@@ -252,9 +222,6 @@
   <data name="QuantityPositive" xml:space="preserve">
     <value>Количество товара должно быть не отрицательным</value>
   </data>
-  <data name="RefreshTokenEmpty" xml:space="preserve">
-    <value>Refresh токен не может быть пустым</value>
-  </data>
   <data name="RefreshTokenExpired" xml:space="preserve">
     <value>Время жизни токена истекло</value>
   </data>
@@ -297,7 +264,22 @@
   <data name="UserRoleNotFound" xml:space="preserve">
     <value>У пользователя роль с Id {0} не найдена</value>
   </data>
-  <data name="InvalidOrderId" xml:space="preserve">
-    <value>Не валидный Id заказа</value>
+  <data name="OrderCannotBeShippedWithoutPayment" xml:space="preserve">
+    <value>Заказ не может быть доставлен без платежа</value>
+  </data>
+  <data name="FieldRequired" xml:space="preserve">
+    <value>Поле с названием {0} должно быть заполнено</value>
+  </data>
+  <data name="FieldValueToLong" xml:space="preserve">
+    <value>Значение поля {0} должно быть не более чем {1} символов</value>
+  </data>
+  <data name="FieldValueTooShort" xml:space="preserve">
+    <value>Значение поля {0} должно быть не менее чем {1} символов</value>
+  </data>
+  <data name="FieldInvalidFormat" xml:space="preserve">
+    <value>Поле с названием {0} имеет неподходящий формат</value>
+  </data>
+  <data name="SameRoleSelected" xml:space="preserve">
+    <value>Для изменения роли пользователя выбрана одна и та же роль</value>
   </data>
 </root>

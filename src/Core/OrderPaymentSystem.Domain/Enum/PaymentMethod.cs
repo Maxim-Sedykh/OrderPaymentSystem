@@ -12,4 +12,5 @@ public enum PaymentMethod
     CashOnDelivery = 7,
     Cryptocurrency = 8,
     GiftCard=9,
+    Cash = 10
 }

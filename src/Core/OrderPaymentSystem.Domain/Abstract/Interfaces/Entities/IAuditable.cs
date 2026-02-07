@@ -1,4 +1,4 @@
-﻿namespace OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿namespace OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 
 /// <summary>
 /// Интерфейс для маркировки сущностей, изменение и создание которых нужно отслеживать по времени

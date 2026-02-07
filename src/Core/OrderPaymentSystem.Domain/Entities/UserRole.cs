@@ -29,10 +29,10 @@ public class UserRole
     public static UserRole Create(Guid userId, int roleId)
     {
         if (userId == default)
-            throw new BusinessException(DomainErrors.User.InvalidId());
+            throw new BusinessException(DomainErrors.Validation.Required(nameof(userId)));
 
         if (roleId == default)
-            throw new BusinessException(DomainErrors.Role.InvalidId());
+            throw new BusinessException(DomainErrors.Validation.Required(nameof(roleId)));
 
         return new UserRole { UserId = userId, RoleId = roleId };
     }

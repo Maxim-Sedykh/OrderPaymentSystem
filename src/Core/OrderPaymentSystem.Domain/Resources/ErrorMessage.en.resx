@@ -117,26 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AddressCityEmpty" xml:space="preserve">
-    <value>City cannot be empty</value>
-  </data>
-  <data name="AddressCountryEmpty" xml:space="preserve">
-    <value>Country cannot be empty</value>
-  </data>
-  <data name="AddressStreetEmpty" xml:space="preserve">
-    <value>Street cannot be empty</value>
-  </data>
-  <data name="AddressZipCodeEmpty" xml:space="preserve">
-    <value>Zip code cannot be empty</value>
-  </data>
   <data name="BasketItemNotFound" xml:space="preserve">
     <value>Basket item with Id {0} not found</value>
   </data>
   <data name="ConcurrencyConflict" xml:space="preserve">
     <value>The record was modified by another user. Please try again.</value>
-  </data>
-  <data name="EmptyPaymentId" xml:space="preserve">
-    <value>Order has not payment</value>
   </data>
   <data name="InternalServerError" xml:space="preserve">
     <value>Internal server error</value>
@@ -144,23 +129,8 @@
   <data name="InvalidClientRequest" xml:space="preserve">
     <value>invalid client request</value>
   </data>
-  <data name="InvalidPaymentId" xml:space="preserve">
-    <value>Invalid payment id</value>
-  </data>
-  <data name="InvalidProductId" xml:space="preserve">
-    <value>Invalid product id</value>
-  </data>
-  <data name="InvalidRoleId" xml:space="preserve">
-    <value>Invalid role id</value>
-  </data>
   <data name="InvalidToken" xml:space="preserve">
     <value>invalid token</value>
-  </data>
-  <data name="InvalidUserId" xml:space="preserve">
-    <value>Invalid user id</value>
-  </data>
-  <data name="LoginCannotBeEmpty" xml:space="preserve">
-    <value>Login cannot be empty</value>
   </data>
   <data name="NoChangesFound" xml:space="preserve">
     <value>No changes found</value>
@@ -252,9 +222,6 @@
   <data name="QuantityPositive" xml:space="preserve">
     <value>Quantity must be positive</value>
   </data>
-  <data name="RefreshTokenEmpty" xml:space="preserve">
-    <value>Refresh token cannot be empty</value>
-  </data>
   <data name="RefreshTokenExpired" xml:space="preserve">
     <value>Refresh token is expired</value>
   </data>
@@ -297,10 +264,22 @@
   <data name="UserRoleNotFound" xml:space="preserve">
     <value>User has not role with id {0}</value>
   </data>
-  <data name="InvalidOrderId" xml:space="preserve">
-    <value>Invalid order id</value>
-  </data>
   <data name="OrderCannotBeShippedWithoutPayment" xml:space="preserve">
     <value>Order cannot be shipped without payment</value>
+  </data>
+  <data name="FieldRequired" xml:space="preserve">
+    <value>Field {0} cannot be empty</value>
+  </data>
+  <data name="FieldValueToLong" xml:space="preserve">
+    <value>Value of field {0} must be not greater than {1} symbols</value>
+  </data>
+  <data name="FieldValueTooShort" xml:space="preserve">
+    <value>Value of field {0} must be not shorter than {1} symbols</value>
+  </data>
+  <data name="FieldInvalidFormat" xml:space="preserve">
+    <value>Field {0} has invalid format</value>
+  </data>
+  <data name="SameRoleSelected" xml:space="preserve">
+    <value>For change user role was chosen same role</value>
   </data>
 </root>

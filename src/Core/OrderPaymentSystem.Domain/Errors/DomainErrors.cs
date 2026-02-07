@@ -42,24 +42,12 @@ public static class DomainErrors
         public static Error AlreadyExist(string login) 
             => new(ErrorCodes.UserAlreadyExist, string.Format(ErrorMessage.UserAlreadyExist, login));
 
-        public static Error InvalidId() 
-            => new(ErrorCodes.InvalidUserId, ErrorMessage.InvalidUserId);
-
         public static Error PasswordMismatch() 
             => new(ErrorCodes.PasswordNotEqualsPasswordConfirm, ErrorMessage.PasswordNotEqualsPasswordConfirm);
-
-        public static Error LoginEmpty() 
-            => new(ErrorCodes.LoginCannotBeEmpty, ErrorMessage.LoginCannotBeEmpty);
-
-        public static Error PasswordHashEmpty() 
-            => new(ErrorCodes.PasswordHashCannotBeEmpty, ErrorMessage.PasswordHashCannotBeEmpty);
     }
 
     public static class Role
     {
-        public static Error InvalidId()
-            => new(ErrorCodes.InvalidRoleId, ErrorMessage.InvalidRoleId);
-
         public static Error AlreadyExists(string name)
             => new(ErrorCodes.RoleAlreadyExist, string.Format(ErrorMessage.RoleAlreadyExist, name));
 
@@ -75,30 +63,24 @@ public static class DomainErrors
         public static Error RolesNotFound() 
             => new(ErrorCodes.RolesNotFound, ErrorMessage.RolesNotFound);
 
-        public static Error NameEmpty() 
-            => new(ErrorCodes.RoleNameCannotBeEmpty, ErrorMessage.RoleNameCannotBeEmpty);
-
         public static Error UserAlreadyHasRole(int roleId) 
             => new(ErrorCodes.UserAlreadyExistThisRole,
                 string.Format(ErrorMessage.UserAlreadyExistThisRole, roleId));
 
         public static Error UserRoleNotFound(int roleId)
             => new(ErrorCodes.UserRoleNotFound, string.Format(ErrorMessage.UserRolesNotFound, roleId));
+
+        public static Error SameRoleSelected()
+            => new(ErrorCodes.SameRoleSelected, ErrorMessage.SameRoleSelected);
     }
 
     public static class Product
     {
-        public static Error InvalidId()
-            => new(ErrorCodes.InvalidProductId, ErrorMessage.InvalidProductId);
-
         public static Error NotFound(int id) 
             => new(ErrorCodes.ProductNotFound, string.Format(ErrorMessage.ProductNotFound, id));
 
         public static Error AlreadyExist(string name) 
             => new(ErrorCodes.ProductAlreadyExist, string.Format(ErrorMessage.ProductAlreadyExist, name));
-
-        public static Error NameEmpty() 
-            => new(ErrorCodes.ProductNameEmpty, ErrorMessage.ProductNameEmpty);
 
         public static Error PricePositive() 
             => new(ErrorCodes.ProductPricePositive, ErrorMessage.ProductPricePositive);
@@ -120,9 +102,6 @@ public static class DomainErrors
 
     public static class Order
     {
-        public static Error EmptyPaymentId()
-            => new(ErrorCodes.OrderEmptyPaymentId, ErrorMessage.EmptyPaymentId);
-
         public static Error NotFound(long id) 
             => new(ErrorCodes.OrderNotFound, string.Format(ErrorMessage.OrderNotFound, id));
 
@@ -154,9 +133,6 @@ public static class DomainErrors
 
     public static class Payment
     {
-        public static Error InvalidId()
-            => new(ErrorCodes.InvalidPaymentId, ErrorMessage.InvalidPaymentId);
-
         public static Error NotFound(long id) 
             => new(ErrorCodes.PaymentNotFound, string.Format(ErrorMessage.PaymentNotFound, id));
 
@@ -183,9 +159,6 @@ public static class DomainErrors
 
     public static class Token
     {
-        public static Error RefreshEmpty() 
-            => new(ErrorCodes.RefreshTokenEmpty, ErrorMessage.RefreshTokenEmpty);
-
         public static Error RefreshExpired() 
             => new(ErrorCodes.RefreshTokenExpired, ErrorMessage.RefreshTokenExpired);
 
@@ -193,18 +166,18 @@ public static class DomainErrors
             => new(ErrorCodes.RefreshTokenFuture, ErrorMessage.RefreshTokenFuture);
     }
 
-    public static class Address
+    public static class Validation
     {
-        public static Error StreetEmpty() 
-            => new(ErrorCodes.AddressStreetEmpty, ErrorMessage.AddressStreetEmpty);
+        public static Error Required(string fieldName)
+            => new(ErrorCodes.FieldRequired, string.Format(ErrorMessage.FieldRequired, fieldName));
 
-        public static Error CityEmpty() 
-            => new(ErrorCodes.AddressCityEmpty, ErrorMessage.AddressCityEmpty);
+        public static Error TooLong(string fieldName, int max)
+            => new(ErrorCodes.FieldValueTooLong, string.Format(ErrorMessage.FieldValueToLong, fieldName, max));
 
-        public static Error ZipCodeEmpty() 
-            => new(ErrorCodes.AddressZipCodeEmpty, ErrorMessage.AddressZipCodeEmpty);
+        public static Error TooShort(string fieldName, int min)
+            => new(ErrorCodes.FieldValueTooShort, string.Format(ErrorMessage.FieldValueTooShort, fieldName, min));
 
-        public static Error CountryEmpty() 
-            => new(ErrorCodes.AddressCountryEmpty, ErrorMessage.AddressCountryEmpty);
+        public static Error InvalidFormat(string fieldName)
+            => new(ErrorCodes.InvalidFieldFormat, string.Format(ErrorMessage.FieldInvalidFormat, fieldName));
     }
 }

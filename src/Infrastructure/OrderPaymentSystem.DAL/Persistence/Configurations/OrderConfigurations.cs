@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OrderPaymentSystem.DAL.Persistence.Constants;
 using OrderPaymentSystem.Domain.Entities;
+using static OrderPaymentSystem.Domain.Constants.ValidationConstants.Address;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
 
@@ -12,7 +14,7 @@ internal class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.Property(o => o.TotalAmount)
             .IsRequired()
-            .HasColumnType("decimal(18,2)");
+            .HasColumnType(DbColumnFormats.Decimal18_2);
 
         builder.Property(o => o.Status)
             .IsRequired()
@@ -31,9 +33,9 @@ internal class OrderConfiguration : IEntityTypeConfiguration<Order>
 
         builder.OwnsOne(c => c.DeliveryAddress, a =>
         {
-            a.Property(x => x.Street).IsRequired().HasMaxLength(50);
-            a.Property(x => x.City).IsRequired().HasMaxLength(50);
-            a.Property(x => x.ZipCode).IsRequired().HasMaxLength(50);
+            a.Property(x => x.Street).IsRequired().HasMaxLength(MaxStreetLength);
+            a.Property(x => x.City).IsRequired().HasMaxLength(MaxCityLength);
+            a.Property(x => x.ZipCode).IsRequired().HasMaxLength(MaxZipCodeLength);
         });
 
         builder.Navigation(o => o.DeliveryAddress).IsRequired(false);

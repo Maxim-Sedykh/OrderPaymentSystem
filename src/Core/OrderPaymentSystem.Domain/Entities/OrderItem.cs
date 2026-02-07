@@ -1,5 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -60,11 +60,10 @@ public class OrderItem : IEntityId<long>
     /// <returns>Созданный элемент заказа</returns>
     public static OrderItem Create(int productId, int quantity, decimal productPrice, IStockInfo stockInfo)
     {
-        if (!stockInfo.IsStockQuantityAvailable(quantity))
-            throw new BusinessException(DomainErrors.Product.StockNotAvailable(quantity, productId));
+        Validate(productId, quantity, stockInfo);
 
-        if (quantity <= 0)
-            throw new BusinessException(DomainErrors.General.QuantityPositive());
+        if (productPrice <= 0)
+            throw new BusinessException(DomainErrors.Product.PricePositive());
 
         return new OrderItem
         {
@@ -82,15 +81,26 @@ public class OrderItem : IEntityId<long>
     /// <param name="newQuantity">Новое количество товара</param>
     public void UpdateQuantity(int newQuantity, int productId, IStockInfo productStockInfo)
     {
-        if (!productStockInfo.IsStockQuantityAvailable(newQuantity))
-            throw new BusinessException(DomainErrors.Product.StockNotAvailable(newQuantity, productId));
+        if (Quantity == newQuantity)
+        {
+            return;
+        }
 
-        if (newQuantity <= 0)
-            throw new BusinessException(DomainErrors.General.QuantityPositive());
-
-        if (productStockInfo == null)
-            throw new BusinessException(DomainErrors.General.QuantityPositive());    
+        Validate(productId, newQuantity, productStockInfo);
 
         Quantity = newQuantity;
+        ItemTotalSum = ProductPrice * Quantity;
+    }
+
+    private static void Validate(int productId, int quantity, IStockInfo stockInfo)
+    {
+        if (productId <= 0)
+            throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(productId)));
+
+        if (quantity <= 0)
+            throw new BusinessException(DomainErrors.General.QuantityPositive());
+
+        if (stockInfo == null || !stockInfo.IsStockQuantityAvailable(quantity))
+            throw new BusinessException(DomainErrors.Product.StockNotAvailable(quantity, productId));
     }
 }

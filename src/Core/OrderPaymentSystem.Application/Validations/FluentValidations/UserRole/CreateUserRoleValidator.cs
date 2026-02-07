@@ -1,15 +1,20 @@
 ﻿using FluentValidation;
 using OrderPaymentSystem.Application.DTOs.UserRole;
+using OrderPaymentSystem.Application.Extensions;
+using OrderPaymentSystem.Domain.Errors;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
 
-public class CreateUserRoleValidator : AbstractValidator<CreateUserRoleDto> //TODO заменить хардкод строки на ErrorMessage
+public class CreateUserRoleValidator : AbstractValidator<CreateUserRoleDto>
 {
     public CreateUserRoleValidator()
     {
         RuleFor(x => x.UserId)
-            .NotEmpty().WithMessage("Идентификатор пользователя был пустой");
+            .NotEmpty()
+            .WithError(DomainErrors.Validation.Required(nameof(CreateUserRoleDto.UserId)));
+
         RuleFor(x => x.RoleId)
-            .NotEmpty().WithMessage("Идентификатор для роли должен быть указан");
+            .NotEmpty()
+            .WithError(DomainErrors.Validation.Required(nameof(CreateUserRoleDto.RoleId)));
     }
 }

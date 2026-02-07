@@ -42,7 +42,6 @@ public class OrderItemService : IOrderItemService
 
         order.AddOrderItem(orderItem, product);
 
-        _unitOfWork.Orders.Update(order);
         await _unitOfWork.SaveChangesAsync(ct);
 
         return DataResult<OrderItemDto>.Success(_mapper.Map<OrderItemDto>(orderItem));
@@ -68,7 +67,6 @@ public class OrderItemService : IOrderItemService
 
         order.RemoveOrderItem(orderItem);
 
-        _unitOfWork.Orders.Update(order);
         await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();
@@ -103,7 +101,6 @@ public class OrderItemService : IOrderItemService
 
         order.UpdateOrderItemQuantity(orderItemId, dto.NewQuantity, orderItem.Product);
 
-        _unitOfWork.Orders.Update(order);
         await _unitOfWork.SaveChangesAsync(ct);
 
         var updatedOrderItem = order.Items.FirstOrDefault(oi => oi.Id == orderItemId);

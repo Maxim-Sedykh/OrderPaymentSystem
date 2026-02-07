@@ -27,7 +27,6 @@ public class PaymentService : IPaymentService
 
         payment.ProcessPayment(dto.AmountPaid, dto.CashChange);
 
-        _unitOfWork.Payments.Update(payment);
         await _unitOfWork.SaveChangesAsync(ct);
 
         return BaseResult.Success();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OrderPaymentSystem.Domain.Entities;
+using static OrderPaymentSystem.Domain.Constants.ValidationConstants.User;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
 
@@ -12,7 +13,7 @@ internal class UserConfigurations : IEntityTypeConfiguration<User>
 
 		builder.Property(x => x.Id).ValueGeneratedOnAdd();
         builder.HasIndex(x => x.Login).IsUnique();
-        builder.Property(x => x.Login).IsRequired().HasMaxLength(50);
+        builder.Property(x => x.Login).IsRequired().HasMaxLength(MaxLoginLength);
         builder.Property(x => x.PasswordHash).IsRequired();
 
         builder.HasOne(x => x.UserToken)

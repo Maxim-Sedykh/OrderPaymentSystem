@@ -1,5 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -43,13 +43,9 @@ public class UserToken : IEntityId<long>
     /// <param name="refreshToken">Refresh токен</param>
     /// <param name="expireTime">Время истечения жизни токена</param>
     /// <returns>Результат создания</returns>
-    public static UserToken Create(Guid userId, string refreshToken, DateTime expireTime) //TODO проверки тоже вынести
+    public static UserToken Create(Guid userId, string refreshToken, DateTime expireTime)
     {
-        if (string.IsNullOrWhiteSpace(refreshToken))
-            throw new BusinessException(DomainErrors.Token.RefreshEmpty());
-
-        if (expireTime <= DateTime.UtcNow)
-            throw new BusinessException(DomainErrors.Token.RefreshFuture());
+        Validate(refreshToken, expireTime);
 
         return new UserToken
         {
@@ -68,11 +64,7 @@ public class UserToken : IEntityId<long>
     /// <returns>Результат обновления токена</returns>
     public void UpdateRefreshTokenData(string newRefreshToken, DateTime newExpireTime)
     {
-        if (string.IsNullOrWhiteSpace(newRefreshToken))
-            throw new BusinessException(DomainErrors.Token.RefreshEmpty());
-
-        if (newExpireTime <= DateTime.UtcNow)
-            throw new BusinessException(DomainErrors.Token.RefreshFuture());
+        Validate(newRefreshToken, newExpireTime);
 
         RefreshToken = newRefreshToken;
         RefreshTokenExpireTime = newExpireTime;
@@ -83,4 +75,10 @@ public class UserToken : IEntityId<long>
     /// </summary>
     /// <returns></returns>
     public bool IsExpired() => RefreshTokenExpireTime <= DateTime.UtcNow;
+
+    private static void Validate(string token, DateTime expire)
+    {
+        if (string.IsNullOrWhiteSpace(token)) throw new BusinessException(DomainErrors.Validation.Required(nameof(token)));
+        if (expire <= DateTime.UtcNow) throw new BusinessException(DomainErrors.Token.RefreshFuture());
+    }
 }

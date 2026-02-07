@@ -1,7 +1,7 @@
-﻿using OrderPaymentSystem.Domain.Constants;
+﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Interfaces.Entities;
 using OrderPaymentSystem.Domain.ValueObjects;
 using OrderPaymentSystem.Shared.Exceptions;
 using OrderPaymentSystem.Shared.Extensions;
@@ -80,7 +80,7 @@ public class Order : IEntityId<long>, IAuditable
     /// <returns>Созданный заказ</returns>
     public static Order Create(Guid userId, Address address, IEnumerable<OrderItem> items)
     {
-        if (userId == Guid.Empty) throw new BusinessException(DomainErrors.User.InvalidId());
+        if (userId == Guid.Empty) throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(userId)));
         if (address == null) throw new BusinessException(DomainErrors.Order.DeliveryAddressRequired());
 
         var itemList = items?.ToList();
@@ -106,6 +106,11 @@ public class Order : IEntityId<long>, IAuditable
     /// <param name="newStatus">Новый статус</param>
     public void UpdateStatus(OrderStatus newStatus)
     {
+        if (newStatus == Status)
+        {
+            return;
+        }
+
         if ((Status == OrderStatus.Delivered 
             && newStatus != OrderStatus.Delivered 
             && newStatus != OrderStatus.Refunded)
@@ -123,7 +128,7 @@ public class Order : IEntityId<long>, IAuditable
     public void AssignPayment(long paymentId)
     {
         if (paymentId <= 0)
-            throw new BusinessException(DomainErrors.Payment.InvalidId());
+            throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(paymentId)));
 
         if (PaymentId.HasValue)
             throw new BusinessException(DomainErrors.Payment.AlreadyExists(Id));
@@ -138,10 +143,7 @@ public class Order : IEntityId<long>, IAuditable
     {
         if (Status != OrderStatus.Confirmed)
             throw new BusinessException(DomainErrors.Order.StatusChangeNotAllowed(Status.ToString(), OrderStatus.Shipped.ToString()));
-        if (Items.IsNullOrEmpty())
-            throw new BusinessException(DomainErrors.Order.ItemsEmpty());
-        if (!PaymentId.HasValue)
-            throw new BusinessException(DomainErrors.Order.EmptyPaymentId());
+        EnsureCanProcess();
 
         UpdateStatus(OrderStatus.Shipped);
     }
@@ -149,14 +151,11 @@ public class Order : IEntityId<long>, IAuditable
     /// <summary>
     /// Подтвердить заказ
     /// </summary>
-    public void ConfirmOrder() //TODO вынести в отдельный метод логику с проверками
+    public void ConfirmOrder()
     {
         if (Status != OrderStatus.Pending)
             throw new BusinessException(DomainErrors.Order.StatusChangeNotAllowed(Status.ToString(), OrderStatus.Confirmed.ToString()));
-        if (Items.IsNullOrEmpty())
-            throw new BusinessException(DomainErrors.Order.ItemsEmpty());
-        if (!PaymentId.HasValue)
-            throw new BusinessException(DomainErrors.Order.EmptyPaymentId());
+        EnsureCanProcess();
 
         UpdateStatus(OrderStatus.Confirmed);
     }
@@ -187,21 +186,19 @@ public class Order : IEntityId<long>, IAuditable
                 existingItem.UpdateQuantity(newQuantity, productId, stockInfo);
             }
         }
+        else if (quantityChange > 0)
+        {
+            if (productPrice <= 0)
+                throw new BusinessException(DomainErrors.Product.PricePositive());
+
+            var newItem = OrderItem.Create(productId, quantityChange, productPrice, stockInfo);
+            _items.Add(newItem);
+        }
         else
         {
-            if (quantityChange > 0)
-            {
-                if (productPrice <= 0)
-                    throw new BusinessException(DomainErrors.Product.PricePositive());
-
-                var newItem = OrderItem.Create(productId, quantityChange, productPrice, stockInfo);
-                _items.Add(newItem);
-            }
-            else
-            {
-                throw new BusinessException(ErrorCodes.OrderCannotRemoveNonExistingItem, "OrderCannotRemoveNonExistingItem");
-            }
+            throw new BusinessException(ErrorCodes.OrderCannotRemoveNonExistingItem, "OrderCannotRemoveNonExistingItem");
         }
+
         RecalculateTotalAmount();
     }
 
@@ -242,5 +239,11 @@ public class Order : IEntityId<long>, IAuditable
         }
 
         TotalAmount = _items.Sum(item => item.Quantity * item.ProductPrice);
+    }
+
+    private void EnsureCanProcess()
+    {
+        if (_items.IsNullOrEmpty()) throw new BusinessException(DomainErrors.Order.ItemsEmpty());
+        if (!PaymentId.HasValue) throw new BusinessException(DomainErrors.Validation.Required(nameof(PaymentId)));
     }
 }

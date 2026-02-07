@@ -10,9 +10,9 @@ using OrderPaymentSystem.DAL.Interceptors;
 using OrderPaymentSystem.DAL.Persistence;
 using OrderPaymentSystem.DAL.Persistence.Repositories;
 using OrderPaymentSystem.DAL.Persistence.Repositories.Base;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories.Base;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
-using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
 using OrderPaymentSystem.Domain.Settings;
 
 namespace OrderPaymentSystem.DAL.DependencyInjection;

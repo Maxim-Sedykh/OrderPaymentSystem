@@ -1,6 +1,6 @@
 ﻿using OrderPaymentSystem.DAL.Persistence.Repositories.Base;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.DAL.Persistence.Repositories;
 

@@ -11,10 +11,10 @@ public record Address(
 {
     public static Address TryCreate(string street, string city, string zipCode, string country)
     {
-        if (string.IsNullOrWhiteSpace(street)) throw new BusinessException(DomainErrors.Address.StreetEmpty());
-        if (string.IsNullOrWhiteSpace(city)) throw new BusinessException(DomainErrors.Address.CityEmpty());
-        if (string.IsNullOrWhiteSpace(zipCode)) throw new BusinessException(DomainErrors.Address.ZipCodeEmpty());
-        if (string.IsNullOrWhiteSpace(country)) throw new BusinessException(DomainErrors.Address.CountryEmpty());
+        if (string.IsNullOrWhiteSpace(street)) throw new BusinessException(DomainErrors.Validation.Required(nameof(street)));
+        if (string.IsNullOrWhiteSpace(city)) throw new BusinessException(DomainErrors.Validation.Required(nameof(city)));
+        if (string.IsNullOrWhiteSpace(zipCode)) throw new BusinessException(DomainErrors.Validation.Required(nameof(zipCode)));
+        if (string.IsNullOrWhiteSpace(country)) throw new BusinessException(DomainErrors.Validation.Required(nameof(country)));
 
         return new Address(street, city, zipCode, country);
     }

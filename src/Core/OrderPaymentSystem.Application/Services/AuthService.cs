@@ -46,8 +46,6 @@ public class AuthService : IAuthService
     /// <inheritdoc/>
     public async Task<DataResult<TokenDto>> LoginAsync(LoginUserDto dto, CancellationToken ct = default)
     {
-        throw new Exception("Test elastic");
-
         var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(dto.Login).ForAuth(), ct);
         if (user == null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
         {
@@ -73,8 +71,6 @@ public class AuthService : IAuthService
         else
         {
             user.UserToken.UpdateRefreshTokenData(refreshToken, refreshTokenExpire);
-
-            _unitOfWork.UserToken.Update(user.UserToken);
         }
 
         await _unitOfWork.SaveChangesAsync(ct);

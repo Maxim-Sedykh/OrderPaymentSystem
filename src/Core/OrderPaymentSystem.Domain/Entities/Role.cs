@@ -1,5 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -34,7 +34,7 @@ public class Role : IEntityId<int>
     public static Role Create(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new BusinessException(DomainErrors.Role.NameEmpty());
+            throw new BusinessException(DomainErrors.Validation.Required(nameof(Name)));
 
         return new Role { Id = default, Name = name };
     }
@@ -46,8 +46,13 @@ public class Role : IEntityId<int>
     /// <returns>Результат обновления</returns>
     public void UpdateName(string newName)
     {
+        if (newName == Name)
+        {
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(newName))
-            throw new BusinessException(DomainErrors.Role.NameEmpty());
+            throw new BusinessException(DomainErrors.Validation.Required(nameof(Name)));
 
         Name = newName;
     }

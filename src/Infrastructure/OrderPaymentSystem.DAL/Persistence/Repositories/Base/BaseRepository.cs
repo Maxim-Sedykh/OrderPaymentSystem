@@ -1,6 +1,6 @@
 ﻿using Mapster;
 using Microsoft.EntityFrameworkCore;
-using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories.Base;
 using OrderPaymentSystem.Shared.Specifications;
 using System.Linq.Expressions;
 
@@ -99,14 +99,6 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         ValidateEntityOnNull(entity);
 
         _table.Remove(entity);
-    }
-
-    /// <inheritdoc/>
-    public void Update(TEntity entity)
-    {
-        ValidateEntityOnNull(entity);
-
-        _table.Update(entity);
     }
 
     /// <inheritdoc/>

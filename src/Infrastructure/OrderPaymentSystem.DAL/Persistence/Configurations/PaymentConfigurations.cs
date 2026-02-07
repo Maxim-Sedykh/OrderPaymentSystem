@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using OrderPaymentSystem.DAL.Persistence.Constants;
 using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
@@ -12,14 +13,14 @@ internal class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 
 		builder.Property(p => p.AmountToPay)
 			.IsRequired()
-			.HasColumnType("decimal(18,2)");
+			.HasColumnType(DbColumnFormats.Decimal18_2);
 
 		builder.Property(p => p.AmountPayed)
 			.IsRequired()
-			.HasColumnType("decimal(18,2)");
+			.HasColumnType(DbColumnFormats.Decimal18_2);
 
 		builder.Property(p => p.CashChange)
-			.HasColumnType("decimal(18,2)")
+			.HasColumnType(DbColumnFormats.Decimal18_2)
 			.IsRequired(false);
 
 		builder.Property(p => p.Method)

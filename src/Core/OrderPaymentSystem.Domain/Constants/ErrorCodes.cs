@@ -39,11 +39,7 @@ public static class ErrorCodes
     public const int RoleAlreadyExist = 1012;
     public const int RolesNotFoundByName = 1013;
     public const int RoleNameCannotByEmpty = 1014;
-    public const int InvalidUserId = 1015;
-    public const int InvalidRoleId = 1016;
-    public const int RefreshTokenEmpty = 1017;
     public const int RefreshTokenFuture = 1018;
-    public const int LoginCannotBeEmpty = 1019;
     public const int PasswordHashCannotBeEmpty = 1020;
     public const int RoleNameCannotBeEmpty = 1021;
     public const int RoleNotFoundById = 1022;
@@ -51,7 +47,8 @@ public static class ErrorCodes
     public const int UserNotFoundByLogin = 1024;
     public const int InvalidCredentials = 1025;
     public const int UserRoleNotFound = 1026;
-    
+    public const int SameRoleSelected = 1027;
+
 
     #endregion
 
@@ -62,8 +59,6 @@ public static class ErrorCodes
     public const int ProductAlreadyExist = 2002;
     public const int ProductPriceMustBePositive = 2003;
     public const int ProductStockQuantityNotAvailable = 2004;
-    public const int InvalidProductId = 2005;
-    public const int ProductNameEmpty = 2006;
     public const int ProductPricePositive = 2006;
     public const int StockQuantityPositive = 2006;
 
@@ -99,7 +94,6 @@ public static class ErrorCodes
     public const int OrderCannotBeShippedWithoutPayment = 4016;
     public const int OrderCannotChangeStatusOfACancelledOrder = 4017;
     public const int OrderCannotBeConfirmedInvalidStatus = 4018;
-    public const int OrderEmptyPaymentId = 4019;
 
     #endregion
 
@@ -122,7 +116,6 @@ public static class ErrorCodes
     public const int PaymentAmountMismatched = 6006;
     public const int PaymentOrderNotAssociated = 6007;
     public const int PaymentInsufficientFunds = 6008;
-    public const int InvalidPaymentId = 6009;
     public const int PaymentAmountPositive = 6010;
     public const int PaymentInvalidStatus = 6011;
     public const int PaymentNotEnoughAmount = 6012;
@@ -130,12 +123,12 @@ public static class ErrorCodes
 
     #endregion
 
-    #region Ошибки адресов
+    #region Валидация
 
-    public const int AddressStreetEmpty = 7001;
-    public const int AddressCityEmpty = 7002;
-    public const int AddressZipCodeEmpty = 7003;
-    public const int AddressCountryEmpty = 7004;
+    public const int FieldRequired = 8001;
+    public const int FieldValueTooLong = 8002;
+    public const int FieldValueTooShort = 8003;
+    public const int InvalidFieldFormat = 8004;
 
     #endregion
 }

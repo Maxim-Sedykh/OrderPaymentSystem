@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using OrderPaymentSystem.Application.Interfaces.Databases;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.DAL.Persistence.Repositories.Base;
 

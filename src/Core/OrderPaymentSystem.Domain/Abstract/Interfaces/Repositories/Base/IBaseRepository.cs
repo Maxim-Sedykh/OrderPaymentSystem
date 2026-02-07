@@ -1,7 +1,7 @@
 ﻿using OrderPaymentSystem.Shared.Specifications;
 using System.Linq.Expressions;
 
-namespace OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
+namespace OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories.Base;
 
 /// <summary>
 /// Интерфейс для generic репозитория. Абстракции над DbContext
@@ -40,13 +40,6 @@ public interface IBaseRepository<TEntity>
     /// <param name="ct">Токен для отмены операции</param>
     /// <returns>Созданную сущность</returns>
     Task<TEntity> CreateAsync(TEntity entity, CancellationToken ct = default);
-
-    /// <summary>
-    /// Пометить сущность как Modified
-    /// </summary>
-    /// <param name="entity">Сущность</param>
-    /// <returns>Сущность</returns>
-    void Update(TEntity entity);
 
     /// <summary>
     /// Пометить сущность как Deleted

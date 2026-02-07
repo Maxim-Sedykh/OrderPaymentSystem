@@ -96,8 +96,6 @@ public class RoleService : IRoleService
 
         role.UpdateName(dto.Name);
 
-        _unitOfWork.Roles.Update(role);
-
         await _unitOfWork.SaveChangesAsync(ct);
 
         await _cacheService.RemoveAsync(CacheKeys.Role.All, ct);

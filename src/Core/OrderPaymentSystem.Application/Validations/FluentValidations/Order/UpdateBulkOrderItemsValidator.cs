@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using OrderPaymentSystem.Application.DTOs.Order;
-using OrderPaymentSystem.Domain.Resources;
+using OrderPaymentSystem.Application.Extensions;
+using OrderPaymentSystem.Domain.Errors;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Order;
 
@@ -9,7 +10,8 @@ internal class UpdateBulkOrderItemsValidator : AbstractValidator<UpdateBulkOrder
     public UpdateBulkOrderItemsValidator()
     {
         RuleFor(x => x.Items)
-            .NotEmpty().WithMessage(ErrorMessage.OrderItemsEmpty);
+            .NotEmpty()
+            .WithError(DomainErrors.Order.ItemsEmpty());
 
         RuleForEach(x => x.Items).SetValidator(new UpdateOrderItemValidator());
     }

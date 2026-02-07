@@ -1,6 +1,8 @@
 ﻿using FluentValidation;
 using OrderPaymentSystem.Application.DTOs.Product;
-using OrderPaymentSystem.Domain.Resources;
+using OrderPaymentSystem.Application.Extensions;
+using OrderPaymentSystem.Domain.Errors;
+using static OrderPaymentSystem.Domain.Constants.ValidationConstants.Product;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Product;
 
@@ -9,18 +11,23 @@ public class CreateProductValidator : AbstractValidator<CreateProductDto>
     public CreateProductValidator()
     {
         RuleFor(x => x.Name)
-            .NotEmpty().WithMessage(ErrorMessage.ProductNameEmpty)
-            .MinimumLength(3).WithMessage("Name of product no less than 100 symbols")
-            .MaximumLength(100).WithMessage("Name of product no longer 100 symbols");
+            .NotEmpty()
+            .WithError(DomainErrors.Validation.Required(nameof(CreateProductDto.Name)))
+            .MinimumLength(MinNameLength)
+            .WithError(DomainErrors.Validation.TooShort(nameof(CreateProductDto.Name), MinNameLength))
+            .MaximumLength(MaxNameLength)
+            .WithError(DomainErrors.Validation.TooLong(nameof(CreateProductDto.Name), MaxNameLength));
 
         RuleFor(x => x.Description)
-            .NotEmpty().WithMessage("Description of product must be not empty")
-            .MaximumLength(1000).WithMessage("Description of product must be no longer than 1000 symbols");
+            .MaximumLength(MaxDescriptionLength)
+            .WithError(DomainErrors.Validation.TooLong(nameof(CreateProductDto.Description), MaxDescriptionLength));
 
         RuleFor(x => x.Price)
-            .GreaterThan(0).WithMessage(ErrorMessage.ProductPricePositive);
+            .GreaterThan(0)
+            .WithError(DomainErrors.Product.PricePositive());
 
         RuleFor(x => x.StockQuantity)
-            .GreaterThan(0).WithMessage(ErrorMessage.StockQuantityPositive);
+            .GreaterThan(0)
+            .WithError(DomainErrors.General.QuantityPositive());
     }
 }

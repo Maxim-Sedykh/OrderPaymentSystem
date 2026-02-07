@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using OrderPaymentSystem.Application.DTOs.UserRole;
+using OrderPaymentSystem.Application.Extensions;
+using OrderPaymentSystem.Domain.Errors;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
 
@@ -7,9 +9,16 @@ public class UpdateUserRoleValidator : AbstractValidator<UpdateUserRoleDto>
 {
     public UpdateUserRoleValidator()
     {
-        RuleFor(x => x.ToRoleId)
-            .NotEmpty().WithMessage("Идентификатор для начальной роли должен быть указан");
+        RuleLevelCascadeMode = CascadeMode.Stop;
+
         RuleFor(x => x.FromRoleId)
-            .NotEmpty().WithMessage("Идентификатор для конечной роли должен быть указан");
+            .NotEmpty()
+            .WithError(DomainErrors.Validation.Required(nameof(UpdateUserRoleDto.FromRoleId)));
+
+        RuleFor(x => x.ToRoleId)
+            .NotEmpty()
+            .WithError(DomainErrors.Validation.Required(nameof(UpdateUserRoleDto.ToRoleId)))
+            .NotEqual(x => x.FromRoleId)
+            .WithError(DomainErrors.Role.SameRoleSelected());
     }
 }

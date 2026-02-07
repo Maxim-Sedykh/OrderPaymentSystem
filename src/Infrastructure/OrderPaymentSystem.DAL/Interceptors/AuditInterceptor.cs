@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using OrderPaymentSystem.Domain.Interfaces.Entities;
 using System.Reflection;
 using OrderPaymentSystem.DAL.Extensions;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 
 namespace OrderPaymentSystem.DAL.Interceptors;
 

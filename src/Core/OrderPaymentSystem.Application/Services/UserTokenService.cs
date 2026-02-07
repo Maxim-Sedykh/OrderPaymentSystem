@@ -107,7 +107,6 @@ public class UserTokenService : IUserTokenService
             _timeProvider.GetUtcNow().UtcDateTime.AddDays(7)
         );
 
-        _unitOfWork.Users.Update(user);
         await _unitOfWork.SaveChangesAsync(ct);
 
         var tokenDto = new TokenDto

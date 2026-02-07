@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
-using OrderPaymentSystem.Domain.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 
 namespace OrderPaymentSystem.Application.Interfaces.Databases;
 

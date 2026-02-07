@@ -1,4 +1,4 @@
-﻿namespace OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿namespace OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 
 public interface IStockInfo
 {

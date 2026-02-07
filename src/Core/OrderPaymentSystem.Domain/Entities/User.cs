@@ -1,5 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
 namespace OrderPaymentSystem.Domain.Entities;
@@ -30,13 +30,13 @@ public class User : IEntityId<Guid>, IAuditable
     /// <inheritdoc/>
     public DateTime? UpdatedAt { get; protected set; }
 
-    private readonly List<Role> _roles = new();
+    private readonly List<Role> _roles = [];
     public virtual IReadOnlyCollection<Role> Roles => _roles.AsReadOnly();
 
-    private readonly List<Order> _orders = new();
+    private readonly List<Order> _orders = [];
     public virtual IReadOnlyCollection<Order> Orders => _orders.AsReadOnly();
 
-    private readonly List<BasketItem> _basketItems = new();
+    private readonly List<BasketItem> _basketItems = [];
     public virtual IReadOnlyCollection<BasketItem> BasketItems => _basketItems.AsReadOnly();
 
     /// <summary>
@@ -54,11 +54,7 @@ public class User : IEntityId<Guid>, IAuditable
     /// <returns>Результат создания пользователя</returns>
     public static User Create(string login, string passwordHash)
     {
-        if (string.IsNullOrWhiteSpace(login)) 
-            throw new BusinessException(DomainErrors.User.LoginEmpty());
-
-        if (string.IsNullOrWhiteSpace(passwordHash)) 
-            throw new BusinessException(DomainErrors.User.PasswordHashEmpty());
+        Validate(login, passwordHash);
 
         return new User
         {
@@ -75,9 +71,19 @@ public class User : IEntityId<Guid>, IAuditable
     /// <returns>Результат замены пароля у пользователя</returns>
     public void ChangePassword(string newPasswordHash)
     {
-        if (string.IsNullOrWhiteSpace(newPasswordHash)) 
-            throw new BusinessException(DomainErrors.User.PasswordHashEmpty());
+        if (PasswordHash == newPasswordHash)
+        {
+            return;
+        }
+
+        Validate(Login, newPasswordHash);
 
         PasswordHash = newPasswordHash;
+    }
+
+    private static void Validate(string login, string password)
+    {
+        if (string.IsNullOrWhiteSpace(login)) throw new BusinessException(DomainErrors.Validation.Required(nameof(login)));
+        if (string.IsNullOrWhiteSpace(password)) throw new BusinessException(DomainErrors.Validation.Required(nameof(password)));
     }
 }

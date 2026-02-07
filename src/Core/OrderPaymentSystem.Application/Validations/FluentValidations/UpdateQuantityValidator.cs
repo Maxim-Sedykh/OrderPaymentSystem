@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using OrderPaymentSystem.Application.DTOs;
-using OrderPaymentSystem.Domain.Resources;
+using OrderPaymentSystem.Application.Extensions;
+using OrderPaymentSystem.Domain.Errors;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations;
 
@@ -9,6 +10,7 @@ public class UpdateQuantityValidator : AbstractValidator<UpdateQuantityDto>
     public UpdateQuantityValidator()
     {
         RuleFor(x => x.NewQuantity)
-            .GreaterThan(0).WithMessage(ErrorMessage.QuantityPositive);
+            .GreaterThan(0)
+            .WithError(DomainErrors.General.QuantityPositive());
     }
 }

@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using OrderPaymentSystem.Application.DTOs.Payment;
-using OrderPaymentSystem.Domain.Resources;
+using OrderPaymentSystem.Application.Extensions;
+using OrderPaymentSystem.Domain.Errors;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
 
@@ -10,12 +11,12 @@ public class CompletePaymentValidator : AbstractValidator<CompletePaymentDto>
     {
         RuleFor(x => x.AmountPaid)
             .NotEmpty()
-            .WithMessage(ErrorMessage.PaymentAmountPositive)
+            .WithError(DomainErrors.Payment.AmountPositive())
             .GreaterThan(0)
-            .WithMessage(ErrorMessage.PaymentAmountPositive);
+            .WithError(DomainErrors.Payment.AmountPositive());
 
         RuleFor(x => x.CashChange)
             .GreaterThanOrEqualTo(0)
-            .WithMessage(ErrorMessage.PaymentCashChangeMismatch);
+            .WithError(DomainErrors.Payment.CashChangeMismatch());
     }
 }

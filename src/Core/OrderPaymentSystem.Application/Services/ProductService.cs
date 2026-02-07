@@ -115,7 +115,6 @@ public class ProductService : IProductService
 
         product.UpdateDetails(dto.Name, dto.Description, dto.Price, dto.StockQuantity);
 
-        _unitOfWork.Products.Update(product);
         await _unitOfWork.SaveChangesAsync(ct);
 
         await _cacheService.RemoveAsync(CacheKeys.Product.All, ct);

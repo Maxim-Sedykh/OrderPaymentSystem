@@ -1,7 +1,7 @@
-﻿using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Interfaces.Repositories.Base;
+﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories.Base;
+using OrderPaymentSystem.Domain.Entities;
 
-namespace OrderPaymentSystem.Domain.Interfaces.Repositories;
+namespace OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 
 public interface IProductRepository : IBaseRepository<Product>
 {
