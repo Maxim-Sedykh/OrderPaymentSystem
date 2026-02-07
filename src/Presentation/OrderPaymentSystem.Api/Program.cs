@@ -1,3 +1,6 @@
+using Elastic.Ingest.Elasticsearch;
+using Elastic.Ingest.Elasticsearch.DataStreams;
+using Elastic.Serilog.Sinks;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
@@ -11,8 +14,7 @@ using OrderPaymentSystem.DAL.Persistence;
 using OrderPaymentSystem.Domain.Settings;
 using Prometheus;
 using Serilog;
-using Serilog.Sinks.Elasticsearch;
-using System.Reflection;
+using Serilog.Debugging;
 
 var builder = WebApplication.CreateBuilder(args); //TODO сделать почище program.cs
 
@@ -33,13 +35,12 @@ builder.Services.AddSwagger();
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .Enrich.WithMachineName()
+
     .WriteTo.Console()
-    .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(builder.Configuration["ElasticConfiguration:Uri"]))
+    .WriteTo.Elasticsearch([new Uri(builder.Configuration["ElasticConfiguration:Uri"])], opts =>
     {
-        AutoRegisterTemplate = true,
-        IndexFormat = $"{Assembly.GetExecutingAssembly().GetName().Name?.ToLower().Replace(".", "-")}-{DateTime.UtcNow:yyyy-MM}",
-        NumberOfReplicas = 1,
-        NumberOfShards = 2
+        opts.DataStream = new DataStreamName("logs", "orderpaymentsystem-api", "dev");
+        opts.BootstrapMethod = BootstrapMethod.Silent;
     })
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger();
@@ -50,6 +51,8 @@ builder.Services.AddDataAccessLayer(builder.Configuration);
 builder.Services.AddApplication();
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -95,5 +98,5 @@ app.UseAuthorization();
 
 app.MapMetrics();
 app.MapControllers();
-    
+
 app.Run();
