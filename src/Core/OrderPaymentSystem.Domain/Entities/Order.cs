@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Errors;
@@ -11,7 +12,7 @@ namespace OrderPaymentSystem.Domain.Entities;
 /// <summary>
 /// Заказ пользователя
 /// </summary>
-public class Order : IEntityId<long>, IAuditable
+public class Order : BaseEntity<long>, IAuditable
 {
     /// <summary>
     /// Элементы заказа. Внутренняя коллекция элементов
@@ -19,34 +20,29 @@ public class Order : IEntityId<long>, IAuditable
     private readonly List<OrderItem> _items = [];
 
     /// <summary>
-    /// Id заказа
-    /// </summary>
-    public long Id { get; protected set; }
-
-    /// <summary>
     /// Id пользователя который совершает заказ
     /// </summary>
-    public Guid UserId { get; protected set; }
+    public Guid UserId { get; private set; }
 
     /// <summary>
     /// Id платежа по заказу
     /// </summary>
-    public long? PaymentId { get; protected set; }
+    public long? PaymentId { get; private set; }
 
     /// <summary>
     /// Общая стоимость заказа
     /// </summary>
-    public decimal TotalAmount { get; protected set; }
+    public decimal TotalAmount { get; private set; }
 
     /// <summary>
     /// Статус заказа
     /// </summary>
-    public OrderStatus Status { get; protected set; }
+    public OrderStatus Status { get; private set; }
 
     /// <summary>
     /// Адрес доставки заказа
     /// </summary>
-    public Address DeliveryAddress { get; protected set; }
+    public Address DeliveryAddress { get; private set; }
 
     /// <inheritdoc/>
     public DateTime CreatedAt { get; }
@@ -62,14 +58,47 @@ public class Order : IEntityId<long>, IAuditable
     /// <summary>
     /// Платёж по заказу
     /// </summary>
-    public Payment Payment { get; protected set; }
+    public Payment Payment { get; private set; }
 
     /// <summary>
     /// Пользователь который совершает заказ
     /// </summary>
-    public User User { get; protected set; }
+    public User User { get; private set; }
 
-    protected Order() { }
+    private Order() { }
+
+    private Order(Guid userId, Address address, OrderStatus status) 
+    {
+        UserId = userId;
+        DeliveryAddress = address;
+        Status = status;
+    }
+
+    private Order(long id, Guid userId, Address address, OrderStatus status, decimal totalAmountSum) 
+    {
+        Id = id;
+        UserId = userId;
+        DeliveryAddress = address;
+        Status = status;
+        TotalAmount = totalAmountSum;
+    }
+
+    public static Order CreateExisting(long id, Guid userId, Address address, IEnumerable<OrderItem> items, decimal totalAmount)
+    {
+        if (userId == Guid.Empty) throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(userId)));
+        if (address == null) throw new BusinessException(DomainErrors.Order.DeliveryAddressRequired());
+
+        var itemList = items?.ToList();
+        if (itemList.IsNullOrEmpty())
+            throw new BusinessException(DomainErrors.Order.ItemsEmpty());
+
+        var order = new Order(id, userId, address, OrderStatus.Pending, totalAmount);
+
+        foreach (var item in itemList) order._items.Add(item);
+
+        order.RecalculateTotalAmount();
+        return order;
+    }
 
     /// <summary>
     /// Создать заказ
@@ -87,12 +116,7 @@ public class Order : IEntityId<long>, IAuditable
         if (itemList.IsNullOrEmpty())
             throw new BusinessException(DomainErrors.Order.ItemsEmpty());
 
-        var order = new Order
-        {
-            UserId = userId,
-            DeliveryAddress = address,
-            Status = OrderStatus.Pending
-        };
+        var order = new Order(userId, address, OrderStatus.Pending);
 
         foreach (var item in itemList) order._items.Add(item);
 

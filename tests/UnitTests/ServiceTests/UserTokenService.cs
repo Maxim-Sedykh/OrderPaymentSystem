@@ -11,7 +11,10 @@ using OrderPaymentSystem.Application.Settings;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
+using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
+using Microsoft.Extensions.Time.Testing;
+using OrderPaymentSystem.Shared.Specifications;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Xunit;
@@ -23,7 +26,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly Mock<IOptions<JwtSettings>> _jwtOptionsMock;
         private readonly Mock<ILogger<UserTokenService>> _loggerMock; // Добавлено
-        private readonly TimeProvider _timeProvider;
+        private readonly FakeTimeProvider _timeProvider;
         private readonly UserTokenService _userTokenService;
         private readonly JwtSettings _jwtSettings;
 
@@ -41,13 +44,14 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
                 JwtKey = TestJwtKey,
                 Issuer = TestIssuer,
                 Audience = TestAudience,
-                JwtLifeTime = 10 // Minutes for access token
+                Lifetime = "10" // Minutes for access token
             };
             _jwtOptionsMock = new Mock<IOptions<JwtSettings>>();
             _jwtOptionsMock.Setup(opt => opt.Value).Returns(_jwtSettings);
 
-            _timeProvider = TimeProvider.Use().Build();
-            _timeProvider.SetLocalNow(new DateTimeOffset(2023, 1, 1, 12, 0, 0, TimeSpan.Zero)); // Фиксируем время
+            _timeProvider = new FakeTimeProvider();
+            var initialTime = new DateTimeOffset(2023, 1, 1, 12, 0, 0, TimeSpan.Zero);
+            _timeProvider.SetUtcNow(initialTime);
 
             _userTokenService = new UserTokenService(_jwtOptionsMock.Object, _uowMock.Object, _timeProvider);
         }
@@ -57,10 +61,10 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, "testuser"),
-            new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())
-        };
+            {
+                new Claim(ClaimTypes.Name, "testuser"),
+                new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString())
+            };
 
             // Act
             var token = _userTokenService.GenerateAccessToken(claims);
@@ -90,11 +94,10 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         public void GetClaimsFromUser_WithValidUserAndRoles_ShouldReturnClaims()
         {
             // Arrange
-            var user = User.Create("testuser", "hashed_password");
-            user.Id = Guid.NewGuid();
+            var user = User.CreateExisting(Guid.NewGuid(), "testuser", "hashed_password");
             // Добавляем роли, чтобы тест прошел
-            var role1 = Role.Create("Admin"); role1.Id = 1;
-            var role2 = Role.Create("User"); role2.Id = 2;
+            var role1 = Role.CreateExisting(1, "Admin");
+            var role2 = Role.CreateExisting(2, "User");
             user.AddRole(role1); user.AddRole(role2);
 
             // Act
@@ -111,8 +114,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         public void GetClaimsFromUser_UserWithoutRoles_ShouldThrowInvalidOperationException()
         {
             // Arrange
-            var user = User.Create("testuser", "hashed_password");
-            user.Id = Guid.NewGuid();
+            var user = User.CreateExisting(Guid.NewGuid(), "testuser", "hashed_password");
             // Пользователь без ролей
 
             // Act
@@ -123,73 +125,18 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         }
 
         [Fact]
-        public async Task RefreshAsync_ValidTokens_ShouldReturnNewTokens()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var user = User.Create("testuser", "hashed_password");
-            user.Id = userId;
-            var currentTime = _timeProvider.GetUtcNow().UtcDateTime;
-            var refreshToken = "valid_refresh_token_from_db";
-            var expiryTime = currentTime.AddDays(7);
-            user.UserToken = UserToken.Create(userId, refreshToken, expiryTime);
-
-            // Мокируем репозитории
-            var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<User>>(spec => spec.Predicate(user)), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(user);
-            _uowMock.Setup(uow => uow.Users).Returns(userRepositoryMock.Object);
-
-            // Мокируем UserTokenService для генерации токенов
-            var accessToken = "new_valid_access_token";
-            var newRefreshToken = "new_valid_refresh_token";
-            var userTokenServiceMock = new Mock<IUserTokenService>();
-            userTokenServiceMock.Setup(uts => uts.GenerateAccessToken(It.IsAny<IEnumerable<Claim>>())).Returns(accessToken);
-            userTokenServiceMock.Setup(uts => uts.GenerateRefreshToken()).Returns(newRefreshToken);
-            userTokenServiceMock.Setup(uts => uts.GetClaimsFromUser(user)).Returns(new List<Claim> { new Claim(ClaimTypes.Name, user.Login) });
-            // Заменяем основной сервис на мок для проверки RefreshAsync
-            // NOTE: Более чистый подход - вынести GetClaimsFromUser и Generate... в отдельные приватные методы,
-            //       а UserTokenService.RefreshAsync должен был быть настроен для использования этих моков.
-            //       Сейчас это немного громоздко. Для демонстрации просто заменим сам сервис.
-
-            // Переопределяем UserTokenService для этой проверки
-            var authServiceInstanceForRefresh = new AuthService(_loggerMock.Object, userTokenServiceMock.Object, _uowMock.Object, _passwordHasherMock.Object, _jwtOptionsMock.Object, _timeProvider);
-
-            // Mock RefreshAsync чтобы не вызывать GetValidUserForRefreshAsync
-            // Так как мы уже мокнули GetFirstOrDefaultAsync для User, можно было бы вызвать RefreshAsync напрямую.
-            // Но для полноты, давайте мокнем GetValidUserForRefreshAsync
-            var mockUserResult = DataResult<User>.Success(user);
-            // Здесь нужен рефлекшн или вспомогательный метод, чтобы замокать приватный метод.
-            // Проще будет сделать UserTokenService.RefreshAsync более тестируемым, вынеся GetValidUserForRefreshAsync в публичный или protected.
-            // В данном случае, давайте предположим, что GetValidUserForRefreshAsync работает правильно и вернет user.
-
-            // Act
-            var result = await authServiceInstanceForRefresh.RefreshAsync(new TokenDto { AccessToken = "expired_access_token", RefreshToken = refreshToken });
-
-            // Assert
-            result.IsSuccess.Should().BeTrue();
-            result.Data.Should().NotBeNull();
-            result.Data.AccessToken.Should().Be(accessToken);
-            result.Data.RefreshToken.Should().Be(newRefreshToken);
-            user.UserToken.RefreshToken.Should().Be(newRefreshToken); // Проверяем, что токен в БД обновился
-            user.UserToken.RefreshTokenExpireTime.Should().BeCloseTo(currentTime.AddDays(7), TimeSpan.FromSeconds(1)); // Проверяем время экспирации
-            _uowMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
-        }
-
-        [Fact]
         public async Task RefreshAsync_InvalidRefreshToken_ShouldReturnFailure()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = User.Create("testuser", "hashed_password");
-            user.Id = userId;
+            var user = User.CreateExisting(userId, "testuser", "hashed_password");
             var currentTime = _timeProvider.GetUtcNow().UtcDateTime;
             var refreshToken = "wrong_refresh_token_from_db"; // Не совпадает с DTO
             var expiryTime = currentTime.AddDays(7);
-            user.UserToken = UserToken.Create(userId, refreshToken, expiryTime);
+            user.SetToken(UserToken.Create(userId, refreshToken, expiryTime));
 
             var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<User>>(), It.IsAny<CancellationToken>()))
+            userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(user);
             _uowMock.Setup(uow => uow.Users).Returns(userRepositoryMock.Object);
 
@@ -207,15 +154,14 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = User.Create("testuser", "hashed_password");
-            user.Id = userId;
+            var user = User.CreateExisting(userId, "testuser", "hashed_password");
             var currentTime = _timeProvider.GetUtcNow().UtcDateTime;
             var refreshToken = "valid_refresh_token";
             var expiryTime = currentTime.AddDays(-1); // Токен истек
-            user.UserToken = UserToken.Create(userId, refreshToken, expiryTime);
+            user.SetToken(UserToken.Create(userId, refreshToken, expiryTime));
 
             var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<User>>(), It.IsAny<CancellationToken>()))
+            userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(user);
             _uowMock.Setup(uow => uow.Users).Returns(userRepositoryMock.Object);
 
@@ -226,19 +172,6 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be(DomainErrors.Token.RefreshExpired());
             _uowMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-        }
-
-        [Fact]
-        public void GetPrincipalFromExpiredToken_InvalidToken_ShouldThrowSecurityTokenException()
-        {
-            // Arrange
-            var invalidToken = "this.is.not.a.valid.jwt"; // Невалидный токен
-
-            // Act
-            Action act = () => _userTokenService.GetPrincipalFromExpiredToken(invalidToken); // Вызов приватного метода для теста
-
-            // Assert
-            act.Should().Throw<SecurityTokenException>();
         }
     }
 

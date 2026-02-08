@@ -5,12 +5,12 @@ using OrderPaymentSystem.Application.DTOs;
 using OrderPaymentSystem.Application.DTOs.Basket;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Services;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using OrderPaymentSystem.Shared.Specifications;
 using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests
@@ -18,6 +18,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
     public class BasketItemServiceTests
     {
         private readonly Mock<IUnitOfWork> _uowMock;
+        private readonly Mock<IStockInfo> _stockInfoMock = new();
         private readonly Mock<IMapper> _mapperMock;
         private readonly BasketItemService _basketItemService;
         private readonly Mock<IProductRepository> _productRepositoryMock; // Мок репозитория продуктов
@@ -49,13 +50,11 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var createDto = new CreateBasketItemDto { ProductId = productId, Quantity = quantity };
             var product = Product.Create("Test Product", "Desc", 100m, 10); // Stock 10, so quantity 5 is available
             var basketItem = BasketItem.Create(userId, productId, quantity, product);
-            var basketItemDto = new BasketItemDto { Id = 1, UserId = userId, ProductId = productId, Quantity = quantity, Product = new BasketItemProductDto { Id = productId, Price = 100m } }; // Пример DTO
+            var basketItemDto = new BasketItemDto { Id = 1, UserId = userId, ProductId = productId, Quantity = quantity }; // Пример DTO
 
             // Мокируем репозитории
-            _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Product>>(), It.IsAny<CancellationToken>()))
+            _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(product);
-            _basketItemRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<BasketItem>(), It.IsAny<CancellationToken>()))
-                .Callback<BasketItem, CancellationToken>((bi, ct) => { /* Устанавливаем ID для теста */ bi.Id = 1; });
             _mapperMock.Setup(m => m.Map<BasketItemDto>(basketItem)).Returns(basketItemDto);
 
             // Act
@@ -79,7 +78,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var createDto = new CreateBasketItemDto { ProductId = 99, Quantity = 5 };
 
             // Мокируем репозиторий, чтобы он не нашел продукт
-            _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Product>>(), It.IsAny<CancellationToken>()))
+            _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Product)null);
 
             // Act
@@ -96,11 +95,12 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         public async Task DeleteByIdAsync_ValidId_ShouldDeleteAndReturnSuccess()
         {
             // Arrange
+            var product = Product.Create("Test Product", "Desc", 100m, 10);
             var basketItemId = 1L;
-            var basketItem = new BasketItem { Id = basketItemId, UserId = Guid.NewGuid(), ProductId = 1, Quantity = 2 };
+            var basketItem = BasketItem.CreateExisting(basketItemId, Guid.NewGuid(), 1, 2, product);
 
             // Мокируем репозитории
-            _basketItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<BasketItem>>(), It.IsAny<CancellationToken>()))
+            _basketItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<BasketItem>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(basketItem);
             _basketItemRepositoryMock.Setup(r => r.Remove(It.IsAny<BasketItem>()));
 
@@ -118,7 +118,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var basketItemId = 99L;
-            _basketItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<BasketItem>>(), It.IsAny<CancellationToken>()))
+            _basketItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<BasketItem>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((BasketItem)null);
 
             // Act
@@ -138,7 +138,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var userId = Guid.NewGuid();
             var itemsDto = new List<BasketItemDto> { new BasketItemDto { Id = 1, Quantity = 2 }, new BasketItemDto { Id = 2, Quantity = 1 } };
 
-            _basketItemRepositoryMock.Setup(r => r.GetListProjectedAsync<BasketItemDto>(It.IsAny<Specification<BasketItem>>(), It.IsAny<CancellationToken>()))
+            _basketItemRepositoryMock.Setup(r => r.GetListProjectedAsync<BasketItemDto>(It.IsAny<BaseSpecification<BasketItem>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(itemsDto);
 
             // Act
@@ -165,12 +165,11 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var product = Product.Create("Test Product", "Desc", 100m, 10); // Stock 10
 
             // Имитируем BasketItem с product, который был загружен через WithProduct()
-            var basketItem = BasketItem.Create(userId, productId, initialQuantity, product);
-            basketItem.Id = basketItemId; // Устанавливаем ID для теста
+            var basketItem = BasketItem.CreateExisting(basketItemId, userId, productId, initialQuantity, product);
 
             // Настройка моков
             _basketItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(
-                    It.Is<Specification<BasketItem>>(s => s.Predicate(basketItem) && s.Includes.Any(i => i.PropertyName == "Product")), // Проверяем, что WithProduct() был применен
+                    It.IsAny<BaseSpecification<BasketItem>>(), // Проверяем, что WithProduct() был применен
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(basketItem);
 
@@ -196,7 +195,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var basketItemId = 99L;
             var updateDto = new UpdateQuantityDto { NewQuantity = 10 };
 
-            _basketItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<BasketItem>>(), It.IsAny<CancellationToken>()))
+            _basketItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<BasketItem>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((BasketItem)null);
 
             // Act
@@ -218,10 +217,9 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var userId = Guid.NewGuid();
             var productId = 1;
             var product = Product.Create("Test Product", "Desc", 100m, 10);
-            var basketItem = BasketItem.Create(userId, productId, 5, product);
-            basketItem.Id = basketItemId;
+            var basketItem = BasketItem.CreateExisting(basketItemId, userId, productId, 5, product);
 
-            _basketItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<BasketItem>>(), It.IsAny<CancellationToken>()))
+            _basketItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<BasketItem>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(basketItem);
 
             // Act

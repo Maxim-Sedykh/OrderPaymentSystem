@@ -1,4 +1,5 @@
-﻿using MapsterMapper;
+﻿using FluentAssertions;
+using MapsterMapper;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -9,9 +10,8 @@ using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using OrderPaymentSystem.Domain.ValueObjects;
+using OrderPaymentSystem.Shared.Specifications;
 using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests
@@ -21,6 +21,9 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly Mock<ILogger<OrderItemService>> _loggerMock;
+        private readonly Mock<IProductRepository> _productRepositoryMock;
+        private readonly Mock<IOrderRepository> _orderRepositoryMock;
+        private readonly Mock<IOrderItemRepository> _orderItemRepositoryMock;
         private readonly OrderItemService _orderItemService;
 
         // Секретный ключ для мока транзакции
@@ -31,6 +34,9 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             _uowMock = new Mock<IUnitOfWork>();
             _mapperMock = new Mock<IMapper>();
             _loggerMock = new Mock<ILogger<OrderItemService>>();
+            _orderRepositoryMock = new Mock<IOrderRepository>();
+            _productRepositoryMock = new Mock<IProductRepository>();
+            _orderItemRepositoryMock = new Mock<IOrderItemRepository>();
 
             _uowMock.Setup(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             _uowMock.Setup(uow => uow.BeginTransactionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(_transactionMock.Object);
@@ -48,23 +54,21 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var productPrice = 100m;
             var createDto = new CreateOrderItemDto { ProductId = productId, Quantity = quantity };
 
-            var product = Product.Create("Test Product", "Desc", productPrice, 10);
-            product.Id = productId; // Устанавливаем ID
+            var product = Product.CreateExisting(productId, "Test Product", "Desc", productPrice, 10);
 
-            var order = Order.Create(Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>());
-            order.Id = orderId; // Устанавливаем ID
+            var order = Order.CreateExisting(orderId, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>(), 500m);
 
             var createdOrderItem = OrderItem.Create(productId, quantity, productPrice, product);
             var orderItemDto = new OrderItemDto { Id = 1, OrderId = orderId, ProductId = productId, Quantity = quantity, ItemTotalSum = quantity * productPrice };
 
             // Мокируем репозитории
             var orderRepositoryMock = new Mock<IOrderRepository>();
-            orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<Order>>(s => s.Predicate(order) && s.Includes.Any(i => i.PropertyName == "Items") && s.Includes.Any(i => i.PropertyName == "Product")), It.IsAny<CancellationToken>()))
+            orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Order>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(order);
             _uowMock.Setup(uow => uow.Orders).Returns(orderRepositoryMock.Object);
 
             var productRepositoryMock = new Mock<IProductRepository>();
-            productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Product>>(), It.IsAny<CancellationToken>()))
+            productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(product);
             _uowMock.Setup(uow => uow.Products).Returns(productRepositoryMock.Object);
 
@@ -93,8 +97,8 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var orderId = 99L;
             var createDto = new CreateOrderItemDto { ProductId = 1, Quantity = 3 };
 
-            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Order>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Order)null);
-            _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Product>>(), It.IsAny<CancellationToken>())).ReturnsAsync(Product.Create("P", "D", 100, 10));
+            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Order>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Order)null);
+            _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>())).ReturnsAsync(Product.Create("P", "D", 100, 10));
             _uowMock.Setup(uow => uow.Orders).Returns(_orderRepositoryMock.Object);
             _uowMock.Setup(uow => uow.Products).Returns(_productRepositoryMock.Object);
 
@@ -113,11 +117,10 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var orderId = 1L;
             var createDto = new CreateOrderItemDto { ProductId = 99, Quantity = 3 };
 
-            var order = Order.Create(Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>());
-            order.Id = orderId;
+            var order = Order.CreateExisting(orderId, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>(), 500m);
 
-            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Order>>(), It.IsAny<CancellationToken>())).ReturnsAsync(order);
-            _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Product>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Product)null);
+            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Order>>(), It.IsAny<CancellationToken>())).ReturnsAsync(order);
+            _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Product)null);
             _uowMock.Setup(uow => uow.Orders).Returns(_orderRepositoryMock.Object);
             _uowMock.Setup(uow => uow.Products).Returns(_productRepositoryMock.Object);
 
@@ -136,15 +139,13 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var orderItemId = 1L;
             var orderId = 1L;
             var product = Product.Create("P", "D", 100, 10);
-            var orderItem = OrderItem.Create(1, 2, product.Price, product);
-            orderItem.Id = orderItemId; // Устанавливаем ID
+            var orderItem = OrderItem.CreateExisting(orderItemId, 1, 2, product.Price, product);
 
-            var order = Order.Create(Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem> { orderItem });
-            order.Id = orderId;
+            var order = Order.CreateExisting(orderId, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem> { orderItem }, 500m);
 
             // Мокируем репозитории
-            _orderItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<OrderItem>>(), It.IsAny<CancellationToken>())).ReturnsAsync(orderItem);
-            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Order>>(), It.IsAny<CancellationToken>())).ReturnsAsync(order); // Нужно, чтобы Order.RemoveOrderItem отработал
+            _orderItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<OrderItem>>(), It.IsAny<CancellationToken>())).ReturnsAsync(orderItem);
+            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Order>>(), It.IsAny<CancellationToken>())).ReturnsAsync(order); // Нужно, чтобы Order.RemoveOrderItem отработал
             _uowMock.Setup(uow => uow.OrderItems).Returns(_orderItemRepositoryMock.Object);
             _uowMock.Setup(uow => uow.Orders).Returns(_orderRepositoryMock.Object);
 
@@ -161,7 +162,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         public async Task DeleteByIdAsync_ItemNotFound_ShouldReturnFailure()
         {
             // Arrange
-            _orderItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<OrderItem>>(), It.IsAny<CancellationToken>())).ReturnsAsync((OrderItem)null);
+            _orderItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<OrderItem>>(), It.IsAny<CancellationToken>())).ReturnsAsync((OrderItem)null);
             _uowMock.Setup(uow => uow.OrderItems).Returns(_orderItemRepositoryMock.Object);
 
             // Act
@@ -179,7 +180,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var orderId = 1L;
             var orderItemsDto = new List<OrderItemDto> { new OrderItemDto { Id = 1, Quantity = 2 }, new OrderItemDto { Id = 2, Quantity = 1 } };
 
-            _orderItemRepositoryMock.Setup(r => r.GetListProjectedAsync<OrderItemDto>(It.IsAny<Specification<OrderItem>>(), It.IsAny<CancellationToken>()))
+            _orderItemRepositoryMock.Setup(r => r.GetListProjectedAsync<OrderItemDto>(It.IsAny<BaseSpecification<OrderItem>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(orderItemsDto);
             _uowMock.Setup(uow => uow.OrderItems).Returns(_orderItemRepositoryMock.Object);
 
@@ -205,18 +206,16 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var productPrice = 100m;
 
             var product = Product.Create("P", "D", productPrice, 10);
-            var orderItem = OrderItem.Create(productId, initialQuantity, productPrice, product);
-            orderItem.Id = orderItemId;
+            var orderItem = OrderItem.CreateExisting(orderItemId, productId, initialQuantity, productPrice, product);
 
-            var order = Order.Create(Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem> { orderItem });
-            order.Id = orderId;
+            var order = Order.CreateExisting(orderId, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem> { orderItem }, 500m);
 
             // Мокируем репозитории
             _orderItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(
-                    It.Is<Specification<OrderItem>>(s => s.Predicate(orderItem) && s.Includes.Any(i => i.PropertyName == "Product")), // Проверяем, что WithProduct() был применен
+                    It.IsAny<BaseSpecification<OrderItem>>(), // Проверяем, что WithProduct() был применен
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(orderItem);
-            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<Order>>(s => s.Predicate(order)), It.IsAny<CancellationToken>()))
+            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Order>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(order); // Нужно для Order.UpdateOrderItemQuantity
 
             _uowMock.Setup(uow => uow.OrderItems).Returns(_orderItemRepositoryMock.Object);
@@ -248,7 +247,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         public async Task UpdateQuantityAsync_ItemNotFound_ShouldReturnFailure()
         {
             // Arrange
-            _orderItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<OrderItem>>(), It.IsAny<CancellationToken>())).ReturnsAsync((OrderItem)null);
+            _orderItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<OrderItem>>(), It.IsAny<CancellationToken>())).ReturnsAsync((OrderItem)null);
             _uowMock.Setup(uow => uow.OrderItems).Returns(_orderItemRepositoryMock.Object);
 
             // Act

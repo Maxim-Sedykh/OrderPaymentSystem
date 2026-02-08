@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
@@ -8,55 +9,96 @@ namespace OrderPaymentSystem.Domain.Entities;
 /// <summary>
 /// Платёж заказа
 /// </summary>
-public class Payment : IEntityId<long>, IAuditable
+public class Payment : BaseEntity<long>, IAuditable
 {
-    /// <summary>
-    /// Id платежа
-    /// </summary>
-    public long Id { get; protected set; }
-
     /// <summary>
     /// Id заказа
     /// </summary>
-    public long OrderId { get; protected set; }
+    public long OrderId { get; private set; }
 
     /// <summary>
     /// Сколько нужно заплатить за заказ
     /// </summary>
-    public decimal AmountToPay { get; protected set; }
+    public decimal AmountToPay { get; private set; }
 
     /// <summary>
     /// Сколько заплатили
     /// </summary>
-    public decimal? AmountPayed { get; protected set; }
+    public decimal? AmountPaid { get; private set; }
 
     /// <summary>
     /// Сдача
     /// </summary>
-    public decimal? CashChange { get; protected set; }
+    public decimal? CashChange { get; private set; }
 
     /// <summary>
     /// Способ оплаты
     /// </summary>
-    public PaymentMethod Method { get; protected set; }
+    public PaymentMethod Method { get; private set; }
 
     /// <summary>
     /// Текущий статус платежа
     /// </summary>
-    public PaymentStatus Status { get; protected set; }
+    public PaymentStatus Status { get; private set; }
 
     /// <inheritdoc/>
-    public DateTime CreatedAt { get; protected set; }
+    public DateTime CreatedAt { get; private set; }
 
     /// <inheritdoc/>
-    public DateTime? UpdatedAt { get; protected set; }
+    public DateTime? UpdatedAt { get; private set; }
 
     /// <summary>
     /// Заказ
     /// </summary>
     public Order Order { get; protected set; }
 
-    protected Payment() { }
+    private Payment() { }
+
+    private Payment(long orderId,
+        decimal amountPayed,
+        decimal amountToPay,
+        PaymentMethod method,
+        PaymentStatus status) 
+    {
+        OrderId = orderId;
+        AmountToPay = amountToPay;
+        AmountPaid = amountPayed;
+        Method = method;
+        Status = status;
+    }
+
+    private Payment(
+        long id,
+        long orderId,
+        decimal amountPayed,
+        decimal amountToPay,
+        PaymentMethod method,
+        PaymentStatus status) 
+    {
+        Id = id;
+        OrderId = orderId;
+        AmountToPay = amountToPay;
+        AmountPaid = amountPayed;
+        Method = method;
+        Status = status;
+    }
+
+    public static Payment CreateExisting(
+        long id,
+        long orderId,
+        decimal amountPayed,
+        decimal amountToPay,
+        PaymentMethod method,
+        PaymentStatus status)
+    {
+        if (amountPayed <= 0)
+            throw new BusinessException(DomainErrors.Payment.AmountPositive());
+
+        if (amountToPay <= 0)
+            throw new BusinessException(DomainErrors.Payment.AmountPositive());
+
+        return new Payment(id, orderId, amountPayed, amountToPay, method, status);
+    }
 
     /// <summary>
     /// Создать платёж
@@ -77,15 +119,7 @@ public class Payment : IEntityId<long>, IAuditable
         if (amountToPay <= 0)
             throw new BusinessException(DomainErrors.Payment.AmountPositive());
 
-        return new Payment
-        {
-            Id = default,
-            OrderId = orderId,
-            AmountToPay = amountToPay,
-            AmountPayed = amountPayed,
-            Method = method,
-            Status = PaymentStatus.Pending
-        };
+        return new Payment(orderId, amountPayed, amountToPay, method, PaymentStatus.Pending);
     }
 
     /// <summary>
@@ -104,7 +138,7 @@ public class Payment : IEntityId<long>, IAuditable
         if (amountPaid - AmountToPay != cashChange)
             throw new BusinessException(DomainErrors.Payment.CashChangeMismatch());
 
-        AmountPayed = amountPaid;
+        AmountPaid = amountPaid;
         CashChange = cashChange;
         Status = PaymentStatus.Succeeded;
     }

@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
@@ -7,28 +8,23 @@ namespace OrderPaymentSystem.Domain.Entities;
 /// <summary>
 /// Пользователь системы
 /// </summary>
-public class User : IEntityId<Guid>, IAuditable
+public class User : BaseEntity<Guid>, IAuditable
 {
-    /// <summary>
-    /// Id пользователя
-    /// </summary>
-    public Guid Id { get; protected set; }
-
     /// <summary>
     /// Логин
     /// </summary>
-    public string Login { get; protected set; }
+    public string Login { get; private set; }
 
     /// <summary>
     /// Пароль в виде хэша
     /// </summary>
-    public string PasswordHash { get; protected set; }
+    public string PasswordHash { get; private set; }
 
     /// <inheritdoc/>
-    public DateTime CreatedAt { get; protected set; }
+    public DateTime CreatedAt { get; private set; }
 
     /// <inheritdoc/>
-    public DateTime? UpdatedAt { get; protected set; }
+    public DateTime? UpdatedAt { get; private set; }
 
     private readonly List<Role> _roles = [];
     public virtual IReadOnlyCollection<Role> Roles => _roles.AsReadOnly();
@@ -42,9 +38,23 @@ public class User : IEntityId<Guid>, IAuditable
     /// <summary>
     /// Токен аутентификации
     /// </summary>
-    public UserToken UserToken { get; protected set; }
+    public UserToken UserToken { get; private set; }
 
-    protected User() { }
+    private User() { }
+
+    private User(string login, string passwordHash) 
+    {
+        Id = Guid.NewGuid();
+        Login = login;
+        PasswordHash = passwordHash;
+    }
+
+    private User(Guid id, string login, string passwordHash) 
+    {
+        Id = id;
+        Login = login;
+        PasswordHash = passwordHash;
+    }
 
     /// <summary>
     /// Создать пользователя
@@ -56,12 +66,14 @@ public class User : IEntityId<Guid>, IAuditable
     {
         Validate(login, passwordHash);
 
-        return new User
-        {
-            Id = Guid.NewGuid(),
-            Login = login,
-            PasswordHash = passwordHash
-        };
+        return new User(login, passwordHash);
+    }
+
+    public static User CreateExisting(Guid id, string login, string passwordHash)
+    {
+        Validate(login, passwordHash);
+
+        return new User(id, login, passwordHash);
     }
 
     /// <summary>
@@ -79,6 +91,16 @@ public class User : IEntityId<Guid>, IAuditable
         Validate(Login, newPasswordHash);
 
         PasswordHash = newPasswordHash;
+    }
+
+    public void AddRole(Role role)
+    {
+        _roles.Add(role);
+    }
+
+    public void SetToken(UserToken token)
+    {
+        UserToken = token;
     }
 
     private static void Validate(string login, string password)

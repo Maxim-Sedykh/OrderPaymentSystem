@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
@@ -7,22 +8,17 @@ namespace OrderPaymentSystem.Domain.Entities;
 /// <summary>
 /// Позиция в корзине пользователя. Намеревание пользователя приобрести товар
 /// </summary>
-public class BasketItem : IEntityId<long>, IAuditable
+public class BasketItem : BaseEntity<long>, IAuditable
 {
-    /// <summary>
-    /// Id позиции корзины
-    /// </summary>
-    public long Id { get; protected set; }
-
     /// <summary>
     /// Id владельца корзины - пользователя
     /// </summary>
-    public Guid UserId { get; protected set; }
+    public Guid UserId { get; private set; }
 
     /// <summary>
     /// Id товара
     /// </summary>
-    public int ProductId { get; protected set; }
+    public int ProductId { get; private set; }
 
     /// <summary>
     /// Количество товара
@@ -38,14 +34,42 @@ public class BasketItem : IEntityId<long>, IAuditable
     /// <summary>
     /// Владелец корзины - пользователь
     /// </summary>
-    public User User { get; protected set; }
+    public User User { get; private set; }
 
     /// <summary>
     /// Товар
     /// </summary>
-    public Product Product { get; protected set; }
+    public Product Product { get; private set; }
 
-    protected BasketItem() { }
+    private BasketItem() { }
+
+    private BasketItem(long id, Guid userId, int productId, int quantity) 
+    {
+        Id = id;
+        UserId = userId;
+        ProductId = productId;
+        Quantity = quantity;
+    }
+
+    private BasketItem(Guid userId, int productId, int quantity)
+    {
+        UserId = userId;
+        ProductId = productId;
+        Quantity = quantity;
+    }
+
+    public static BasketItem CreateExisting(long id, Guid userId, int productId, int quantity, IStockInfo stockInfo)
+    {
+        if (userId == Guid.Empty)
+            throw new BusinessException(DomainErrors.Validation.Required(nameof(userId)));
+
+        if (productId <= 0)
+            throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(productId)));
+
+        Validate(stockInfo, quantity, productId);
+
+        return new BasketItem(id, userId, productId, quantity);
+    }
 
     /// <summary>
     /// Создать элемент корзины
@@ -65,12 +89,7 @@ public class BasketItem : IEntityId<long>, IAuditable
 
         Validate(stockInfo, quantity, productId);
 
-        return new BasketItem
-        {
-            UserId = userId,
-            ProductId = productId,
-            Quantity = quantity
-        };
+        return new BasketItem(userId, productId, quantity);
     }
 
     /// <summary>

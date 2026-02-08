@@ -1,4 +1,4 @@
-﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
@@ -7,24 +7,38 @@ namespace OrderPaymentSystem.Domain.Entities;
 /// <summary>
 /// Роль
 /// </summary>
-public class Role : IEntityId<int>
+public class Role : BaseEntity<int>
 {
     public const string DefaultUserRoleName = "User";
 
     /// <summary>
-    /// Id роли
-    /// </summary>
-    public int Id { get; protected set; }
-
-    /// <summary>
     /// Название роли
     /// </summary>
-    public string Name { get; protected set; }
+    public string Name { get; private set; }
 
     private readonly List<User> _users = new();
     public IReadOnlyCollection<User> Users => _users.AsReadOnly();
 
-    protected Role() { }
+    private Role() { }
+
+    private Role(string name)
+    {
+        Name = name;
+    }
+
+    private Role(int id, string name)
+    {
+        Id = id;
+        Name = name;
+    }
+
+    public static Role CreateExisting(int id, string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new BusinessException(DomainErrors.Validation.Required(nameof(Name)));
+
+        return new Role(id, name);
+    }
 
     /// <summary>
     /// Создать роль
@@ -36,7 +50,7 @@ public class Role : IEntityId<int>
         if (string.IsNullOrWhiteSpace(name))
             throw new BusinessException(DomainErrors.Validation.Required(nameof(Name)));
 
-        return new Role { Id = default, Name = name };
+        return new Role(name);
     }
 
     /// <summary>

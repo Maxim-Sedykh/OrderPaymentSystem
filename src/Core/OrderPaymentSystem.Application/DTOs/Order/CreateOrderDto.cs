@@ -5,6 +5,6 @@ namespace OrderPaymentSystem.Application.DTOs.Order;
 
 public record CreateOrderDto
 {
-    public IEnumerable<CreateOrderItemDto> OrderItems { get; set; }
+    public List<CreateOrderItemDto> OrderItems { get; set; }
     public Address DeliveryAddress { get; set; }
 }

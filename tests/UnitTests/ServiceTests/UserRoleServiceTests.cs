@@ -1,14 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
+﻿using FluentAssertions;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Logging;
 using Moq;
+using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.UserRole;
 using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Services;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
+using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
+using OrderPaymentSystem.Shared.Specifications;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Text;
 using Xunit;
 
@@ -53,22 +58,20 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Arrange
             var userId = Guid.NewGuid();
             var roleId = 1;
-            var createUserRoleDto = new CreateUserRoleDto { UserId = userId, RoleId = roleId };
+            var createUserRoleDto = new CreateUserRoleDto(userId, roleId);
             var userLogin = "testuser";
             var roleName = "TestRole";
 
-            var user = User.Create(userLogin, "hashed");
-            user.Id = userId;
-            var role = Role.Create(roleName);
-            role.Id = roleId;
+            var user = User.CreateExisting(userId, userLogin, "hashed");
+            var role = Role.CreateExisting(roleId, roleName);
 
             // Мокируем репозитории
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<User>>(s => s.Predicate(user)), It.IsAny<CancellationToken>()))
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(user);
-            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<Role>>(s => s.Predicate(role)), It.IsAny<CancellationToken>()))
+            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(role);
             // Добавляем мок для GetListValuesAsync, который проверяет, что у пользователя нет роли
-            _roleRepositoryMock.Setup(r => r.GetListValuesAsync(It.Is<Specification<Role>>(s => s.Predicate(user)), It.IsAny<Func<Role, int>>(), It.IsAny<CancellationToken>()))
+            _roleRepositoryMock.Setup(r => r.GetListValuesAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<Expression<Func<Role, int>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<int> { 2, 3 }); // Роль с ID = 1 не найдена в списке
 
             _userRoleRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<UserRole>(), It.IsAny<CancellationToken>()));
@@ -80,7 +83,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.UserLogin.Should().Be(userLogin);
+            result.Data.Login.Should().Be(userLogin);
             result.Data.RoleName.Should().Be(roleName);
 
             _userRoleRepositoryMock.Verify(r => r.CreateAsync(It.Is<UserRole>(ur => ur.UserId == userId && ur.RoleId == roleId), It.IsAny<CancellationToken>()), Times.Once);
@@ -92,8 +95,8 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         public async Task CreateAsync_UserNotFound_ShouldReturnFailure()
         {
             // Arrange
-            var createUserRoleDto = new CreateUserRoleDto { UserId = Guid.NewGuid(), RoleId = 1 };
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync((User)null);
+            var createUserRoleDto = new CreateUserRoleDto(Guid.NewGuid(), 1);
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync((User)null);
 
             // Act
             var result = await _userRoleService.CreateAsync(createUserRoleDto);
@@ -108,12 +111,11 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var createUserRoleDto = new CreateUserRoleDto { UserId = userId, RoleId = 1 };
-            var user = User.Create("testuser", "hashed");
-            user.Id = userId;
+            var createUserRoleDto = new CreateUserRoleDto(userId, 1);
+            var user = User.CreateExisting(userId, "testuser", "hashed");
 
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
-            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Role>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Role)null);
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
+            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Role)null);
 
             // Act
             var result = await _userRoleService.CreateAsync(createUserRoleDto);
@@ -129,16 +131,14 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Arrange
             var userId = Guid.NewGuid();
             var roleId = 1;
-            var createUserRoleDto = new CreateUserRoleDto { UserId = userId, RoleId = roleId };
-            var user = User.Create("testuser", "hashed");
-            user.Id = userId;
-            var role = Role.Create("TestRole");
-            role.Id = roleId;
+            var createUserRoleDto = new CreateUserRoleDto(userId, roleId);
+            var user = User.CreateExisting(userId, "testuser", "hashed");
+            var role = Role.CreateExisting(roleId, "TestRole");
 
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
-            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Role>>(), It.IsAny<CancellationToken>())).ReturnsAsync(role);
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
+            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<CancellationToken>())).ReturnsAsync(role);
             // Имитируем, что у пользователя уже есть эта роль
-            _roleRepositoryMock.Setup(r => r.GetListValuesAsync(It.Is<Specification<Role>>(s => s.Predicate(user)), It.IsAny<Func<Role, int>>(), It.IsAny<CancellationToken>()))
+            _roleRepositoryMock.Setup(r => r.GetListValuesAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<Expression<Func<Role, int>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new List<int> { roleId, 2 });
 
             // Act
@@ -158,23 +158,19 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var userLogin = "testuser";
             var roleName = "TestRole";
 
-            var user = User.Create(userLogin, "hashed");
-            user.Id = userId;
-            var role = Role.Create(roleName);
-            role.Id = roleId;
+            var user = User.CreateExisting(userId, userLogin, "hashed");
+            var role = Role.CreateExisting(roleId, roleName);
 
             // Мокируем, что у пользователя есть нужная роль
-            user.AddRole(role); // UserRole сущность будет создана внутри
+            var userRole = UserRole.Create(user.Id, role.Id); // UserRole сущность будет создана внутри
 
-            var userRoleEntity = user.Roles.First(r => r.Id == roleId); // Получаем созданную UserRole сущность
-
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<User>>(s => s.Predicate(user) && s.Includes.Any(i => i.PropertyName == "Roles")), It.IsAny<CancellationToken>()))
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(user);
-            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<Role>>(s => s.Predicate(role)), It.IsAny<CancellationToken>()))
+            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(role);
             // Важно: Мокаем UserRoleRepository, чтобы он вернул именно ту UserRole сущность, которую мы удаляем
-            _userRoleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<UserRole>>(s => s.Predicate(user.Id, role.Id)), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(userRoleEntity);
+            _userRoleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<UserRole>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(userRole);
             _userRoleRepositoryMock.Setup(r => r.Remove(It.IsAny<UserRole>()));
             _cacheServiceMock.Setup(cs => cs.RemoveAsync(CacheKeys.User.Roles(userId), It.IsAny<CancellationToken>()));
 
@@ -196,7 +192,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var userId = Guid.NewGuid();
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync((User)null);
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync((User)null);
 
             // Act
             var result = await _userRoleService.DeleteAsync(userId, 1);
@@ -212,12 +208,9 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Arrange
             var userId = Guid.NewGuid();
             var roleId = 1;
-            var user = User.Create("testuser", "hashed");
-            user.Id = userId;
+            var user = User.CreateExisting(userId, "testuser", "hashed");
 
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
-            // Имитируем, что у пользователя нет нужной роли
-            user.Roles.Clear();
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
 
             // Act
             var result = await _userRoleService.DeleteAsync(userId, roleId);
@@ -238,24 +231,23 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var fromRoleName = "OldRole";
             var toRoleName = "NewRole";
 
-            var user = User.Create(userLogin, "hashed");
-            user.Id = userId;
-            var fromRole = Role.Create(fromRoleName); fromRole.Id = fromRoleId;
-            var toRole = Role.Create(toRoleName); toRole.Id = toRoleId;
+            var user = User.CreateExisting(userId, userLogin, "hashed");
+            var fromRole = Role.CreateExisting(fromRoleId, fromRoleName);
+            var toRole = Role.CreateExisting(toRoleId, toRoleName);
 
             // User.AddRole(fromRole) создает UserRole сущность
             user.AddRole(fromRole); // Добавляем старую роль
 
-            var updateUserRoleDto = new UpdateUserRoleDto { FromRoleId = fromRoleId, ToRoleId = toRoleId };
+            var updateUserRoleDto = new UpdateUserRoleDto(fromRoleId, toRoleId);
 
             // Мокируем репозитории
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<User>>(s => s.Predicate(user) && s.Includes.Any(i => i.PropertyName == "Roles")), It.IsAny<CancellationToken>()))
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(user);
-            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<Role>>(s => s.Predicate(toRole)), It.IsAny<CancellationToken>()))
+            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(toRole);
             // Мокируем получение UserRole для удаления
-            _userRoleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<UserRole>>(s => s.Predicate(user.Id, fromRoleId)), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(user.Roles.First(r => r.Id == fromRoleId)); // Возвращаем UserRole сущность
+            _userRoleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<UserRole>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(UserRole.Create(userId, toRoleId)); // Возвращаем UserRole сущность
             _userRoleRepositoryMock.Setup(r => r.Remove(It.IsAny<UserRole>()));
             _userRoleRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<UserRole>(), It.IsAny<CancellationToken>()));
             _cacheServiceMock.Setup(cs => cs.RemoveAsync(CacheKeys.User.Roles(userId), It.IsAny<CancellationToken>()));
@@ -266,7 +258,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.UserLogin.Should().Be(userLogin);
+            result.Data.Login.Should().Be(userLogin);
             result.Data.RoleName.Should().Be(toRoleName);
 
             _userRoleRepositoryMock.Verify(r => r.Remove(It.Is<UserRole>(ur => ur.UserId == userId && ur.RoleId == fromRoleId)), Times.Once);
@@ -280,10 +272,10 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         public async Task UpdateAsync_UserNotFound_ShouldReturnFailure()
         {
             // Arrange
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync((User)null);
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync((User)null);
 
             // Act
-            var result = await _userRoleService.UpdateAsync(Guid.NewGuid(), new UpdateUserRoleDto { FromRoleId = 1, ToRoleId = 2 });
+            var result = await _userRoleService.UpdateAsync(Guid.NewGuid(), new UpdateUserRoleDto(1, 2));
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -295,13 +287,12 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = User.Create("testuser", "hashed");
-            user.Id = userId;
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
-            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Role>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Role)null); // Новая роль не найдена
+            var user = User.CreateExisting(userId, "testuser", "hashed");
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
+            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Role)null); // Новая роль не найдена
 
             // Act
-            var result = await _userRoleService.UpdateAsync(userId, new UpdateUserRoleDto { FromRoleId = 1, ToRoleId = 2 });
+            var result = await _userRoleService.UpdateAsync(userId, new UpdateUserRoleDto(1, 2));
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -315,19 +306,18 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var userId = Guid.NewGuid();
             var fromRoleId = 1;
             var toRoleId = 2;
-            var user = User.Create("testuser", "hashed");
-            user.Id = userId;
-            var fromRole = Role.Create("OldRole"); fromRole.Id = fromRoleId;
-            var toRole = Role.Create("NewRole"); toRole.Id = toRoleId;
+            var user = User.CreateExisting(userId, "testuser", "hashed");
+            var fromRole = Role.CreateExisting(fromRoleId, "OldRole");
+            var toRole = Role.CreateExisting(toRoleId, "NewRole");
 
             user.AddRole(fromRole); // Добавляем старую роль
             user.AddRole(toRole); // Добавляем новую роль (чтобы имитировать, что она уже есть)
 
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
-            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.Is<Specification<Role>>(s => s.Predicate(toRole)), It.IsAny<CancellationToken>())).ReturnsAsync(toRole); // Новая роль найдена
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
+            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<CancellationToken>())).ReturnsAsync(toRole); // Новая роль найдена
 
             // Act
-            var result = await _userRoleService.UpdateAsync(userId, new UpdateUserRoleDto { FromRoleId = fromRoleId, ToRoleId = toRoleId });
+            var result = await _userRoleService.UpdateAsync(userId, new UpdateUserRoleDto(fromRoleId, toRoleId));
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -339,15 +329,14 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = User.Create("testuser", "hashed");
-            user.Id = userId;
-            var fromRole = Role.Create("OldRole"); fromRole.Id = 1;
-            var toRole = Role.Create("NewRole"); toRole.Id = 2;
+            var user = User.CreateExisting(userId, "testuser", "hashed");
+            var fromRole = Role.CreateExisting(1, "OldRole");
+            var toRole = Role.CreateExisting(2, "NewRole");
             user.AddRole(fromRole);
 
-            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
-            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Role>>(), It.IsAny<CancellationToken>())).ReturnsAsync(toRole);
-            _userRoleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<UserRole>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user.Roles.First());
+            _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
+            _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<CancellationToken>())).ReturnsAsync(toRole);
+            _userRoleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<UserRole>>(), It.IsAny<CancellationToken>())).ReturnsAsync(UserRole.Create(user.Id, toRole.Id));
             _userRoleRepositoryMock.Setup(r => r.Remove(It.IsAny<UserRole>()));
             _userRoleRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<UserRole>(), It.IsAny<CancellationToken>()));
             // Имитируем исключение при SaveChangesAsync
@@ -355,7 +344,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
                 .ThrowsAsync(new Exception("Simulated error"));
 
             // Act
-            var result = await _userRoleService.UpdateAsync(userId, new UpdateUserRoleDto { FromRoleId = 1, ToRoleId = 2 });
+            var result = await _userRoleService.UpdateAsync(userId, new UpdateUserRoleDto(1, 2));
 
             // Assert
             result.IsSuccess.Should().BeFalse();
@@ -370,7 +359,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var userId = Guid.NewGuid();
             var roleNames = new List<string> { "Admin", "User" };
 
-            _cacheServiceMock.Setup(cs => cs.GetOrCreateAsync(CacheKeys.User.Roles(userId), It.IsAny<Func<CancellationToken, Task<List<string>>>>(), It.IsAny<CancellationToken>()))
+            _cacheServiceMock.Setup(cs => cs.GetOrCreateAsync(CacheKeys.User.Roles(userId), It.IsAny<Func<CancellationToken, Task<List<string>>>>()))
                 .ReturnsAsync(roleNames);
 
             // Act
@@ -380,7 +369,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().HaveCount(2);
             result.Data.Should().BeEquivalentTo(roleNames);
-            _cacheServiceMock.Verify(cs => cs.GetOrCreateAsync(CacheKeys.User.Roles(userId), It.IsAny<Func<CancellationToken, Task<List<string>>>>(), It.IsAny<CancellationToken>()), Times.Once);
+            _cacheServiceMock.Verify(cs => cs.GetOrCreateAsync(CacheKeys.User.Roles(userId), It.IsAny<Func<CancellationToken, Task<List<string>>>>()), Times.Once);
         }
 
         [Fact]
@@ -390,7 +379,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var userId = Guid.NewGuid();
             var emptyRoleNames = new List<string>();
 
-            _cacheServiceMock.Setup(cs => cs.GetOrCreateAsync(CacheKeys.User.Roles(userId), It.IsAny<Func<CancellationToken, Task<List<string>>>>(), It.IsAny<CancellationToken>()))
+            _cacheServiceMock.Setup(cs => cs.GetOrCreateAsync(CacheKeys.User.Roles(userId), It.IsAny<Func<CancellationToken, Task<List<string>>>>()))
                 .ReturnsAsync(emptyRoleNames);
 
             // Act

@@ -15,7 +15,7 @@ internal class PaymentConfiguration : IEntityTypeConfiguration<Payment>
 			.IsRequired()
 			.HasColumnType(DbColumnFormats.Decimal18_2);
 
-		builder.Property(p => p.AmountPayed)
+		builder.Property(p => p.AmountPaid)
 			.IsRequired()
 			.HasColumnType(DbColumnFormats.Decimal18_2);
 

@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
@@ -7,13 +8,8 @@ namespace OrderPaymentSystem.Domain.Entities;
 /// <summary>
 /// JWT-токен пользователя
 /// </summary>
-public class UserToken : IEntityId<long>
+public class UserToken : BaseEntity<long>
 {
-    /// <summary>
-    /// Id токена
-    /// </summary>
-    public long Id { get; protected set; }
-
     /// <summary>
     /// Refresh токен
     /// </summary>

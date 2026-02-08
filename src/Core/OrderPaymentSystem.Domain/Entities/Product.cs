@@ -11,30 +11,25 @@ namespace OrderPaymentSystem.Domain.Entities;
 public class Product : BaseEntity<int>, IAuditable, IStockInfo
 {
     /// <summary>
-    /// Id товара
-    /// </summary>
-    public int Id { get; protected set; }
-
-    /// <summary>
     /// Название товара
     /// </summary>
-    public string Name { get; protected set; }
+    public string Name { get; private set; }
 
     /// <summary>
     /// Описание товара
     /// </summary>
-    public string Description { get; protected set; }
+    public string Description { get; private set; }
 
     /// <summary>
     /// Стоимость единицы товара
     /// </summary>
-    public decimal Price { get; protected set; }
+    public decimal Price { get; private set; }
 
     /// <inheritdoc/>
-    public DateTime CreatedAt { get; protected set; }
+    public DateTime CreatedAt { get; private set; }
 
     /// <inheritdoc/>
-    public DateTime? UpdatedAt { get; protected set; }
+    public DateTime? UpdatedAt { get; private set; }
 
     private readonly List<OrderItem> _orderItems = new();
     public virtual IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
@@ -42,7 +37,7 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
     /// <summary>
     /// Элементы корзины в которых есть товар
     /// </summary>
-    public ICollection<BasketItem> BasketItems { get; protected set; } = [];
+    public ICollection<BasketItem> BasketItems { get; private set; } = [];
 
     public int StockQuantity { get; private set; }
 
@@ -50,13 +45,28 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
 
     private Product() { }
 
-    internal Product(int id, string name, string description, decimal price, int stockQuantity)
+    private Product(int id, string name, string description, decimal price, int stockQuantity)
         : base(id)
     {
         Name = name;
         Description = description;
         Price = price;
         StockQuantity = stockQuantity;
+    }
+
+    private Product(string name, string description, decimal price, int stockQuantity)
+    {
+        Name = name;
+        Description = description;
+        Price = price;
+        StockQuantity = stockQuantity;
+    }
+
+    public static Product CreateExisting(int id, string name, string description, decimal price, int stockQuantity)
+    {
+        Validate(name, price);
+
+        return new Product(id, name, description, price, stockQuantity);
     }
 
     /// <summary>
@@ -70,14 +80,7 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
     {
         Validate(name, price);
 
-        return new Product
-        {
-            Id = default,
-            Name = name,
-            Description = description,
-            Price = price,
-            StockQuantity = stockQuantity
-        };
+        return new Product(name, description, price, stockQuantity);
     }
 
     /// <summary>

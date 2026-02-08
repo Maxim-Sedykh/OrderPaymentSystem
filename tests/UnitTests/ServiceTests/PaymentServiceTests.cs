@@ -4,14 +4,14 @@ using Moq;
 using OrderPaymentSystem.Application.DTOs.Payment;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Services;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Errors;
+using OrderPaymentSystem.Domain.ValueObjects;
 using OrderPaymentSystem.Shared.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using OrderPaymentSystem.Shared.Specifications;
 using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests
@@ -21,6 +21,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly PaymentService _paymentService;
+        private readonly Mock<IStockInfo> _stockInfoMock = new();
 
         // Моки репозиториев
         private readonly Mock<IPaymentRepository> _paymentRepositoryMock;
@@ -51,14 +52,15 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
                 AmountPayed = 1000m,
                 Method = PaymentMethod.Cash
             };
-            var order = Order.Create(Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>());
-            order.Id = createDto.OrderId;
-            order.TotalAmount = 1000m; // Устанавливаем общую сумму для теста
+            var order = Order.CreateExisting(1, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>()
+            {
+                OrderItem.Create(2, 2, 2, _stockInfoMock.Object)
+            }, 1000m);
 
             // Мокируем репозитории
-            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Order>>(), It.IsAny<CancellationToken>()))
+            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Order>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(order);
-            _paymentRepositoryMock.Setup(r => r.AnyAsync(It.IsAny<Specification<Payment>>(), It.IsAny<CancellationToken>()))
+            _paymentRepositoryMock.Setup(r => r.AnyAsync(It.IsAny<BaseSpecification<Payment>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false); // Платеж еще не существует
             _paymentRepositoryMock.Setup(r => r.CreateAsync(It.IsAny<Payment>(), It.IsAny<CancellationToken>()));
 
@@ -67,7 +69,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
 
             // Assert
             result.IsSuccess.Should().BeTrue();
-            _paymentRepositoryMock.Verify(r => r.CreateAsync(It.Is<Payment>(p => p.OrderId == createDto.OrderId && p.AmountPayed == createDto.AmountPayed), It.IsAny<CancellationToken>()), Times.Once);
+            _paymentRepositoryMock.Verify(r => r.CreateAsync(It.Is<Payment>(p => p.OrderId == createDto.OrderId && p.AmountPaid == createDto.AmountPayed), It.IsAny<CancellationToken>()), Times.Once);
             _uowMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -77,7 +79,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Arrange
             var createDto = new CreatePaymentDto { OrderId = 1L, AmountPayed = 1000m, Method = PaymentMethod.Cash };
 
-            _paymentRepositoryMock.Setup(r => r.AnyAsync(It.IsAny<Specification<Payment>>(), It.IsAny<CancellationToken>()))
+            _paymentRepositoryMock.Setup(r => r.AnyAsync(It.IsAny<BaseSpecification<Payment>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true); // Платеж уже существует
 
             // Act
@@ -96,9 +98,9 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Arrange
             var createDto = new CreatePaymentDto { OrderId = 99L, AmountPayed = 1000m, Method = PaymentMethod.Cash };
 
-            _paymentRepositoryMock.Setup(r => r.AnyAsync(It.IsAny<Specification<Payment>>(), It.IsAny<CancellationToken>()))
+            _paymentRepositoryMock.Setup(r => r.AnyAsync(It.IsAny<BaseSpecification<Payment>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
-            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Order>>(), It.IsAny<CancellationToken>()))
+            _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Order>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Order)null); // Заказ не найден
 
             _uowMock.Setup(uow => uow.Payments).Returns(_paymentRepositoryMock.Object);
@@ -119,12 +121,11 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var paymentId = 1L;
-            var payment = Payment.Create(1, 1000m, 1000m, PaymentMethod.Cash);
-            payment.Id = paymentId;
+            var payment = Payment.CreateExisting(paymentId, 1, 1000m, 1000m, PaymentMethod.Cash, PaymentStatus.Pending);
 
             var completeDto = new CompletePaymentDto { AmountPaid = 1000m, CashChange = 0m };
 
-            _paymentRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Payment>>(), It.IsAny<CancellationToken>()))
+            _paymentRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Payment>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(payment);
             _uowMock.Setup(uow => uow.Payments).Returns(_paymentRepositoryMock.Object);
 
@@ -144,7 +145,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var paymentId = 99L;
-            _paymentRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Payment>>(), It.IsAny<CancellationToken>()))
+            _paymentRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Payment>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((Payment)null);
             _uowMock.Setup(uow => uow.Payments).Returns(_paymentRepositoryMock.Object);
 
@@ -162,11 +163,10 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var paymentId = 1L;
-            var payment = Payment.Create(1, 1000m, 1000m, PaymentMethod.Cash);
-            payment.Id = paymentId;
-            var completeDto = new CompletePaymentDto { AmountPaid = 500m, CashChange = 0m }; // Недостаточно средств
+            var payment = Payment.CreateExisting(paymentId, 1, 1000m, 1000m, PaymentMethod.Cash, PaymentStatus.Pending);
+            var completeDto = new CompletePaymentDto { AmountPaid = 500m, CashChange = 0m };
 
-            _paymentRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<Specification<Payment>>(), It.IsAny<CancellationToken>()))
+            _paymentRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Payment>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(payment);
             _uowMock.Setup(uow => uow.Payments).Returns(_paymentRepositoryMock.Object);
 
@@ -185,7 +185,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var paymentId = 1L;
             var paymentDto = new PaymentDto { Id = paymentId, OrderId = 1L };
 
-            _paymentRepositoryMock.Setup(r => r.GetProjectedAsync<PaymentDto>(It.IsAny<Specification<Payment>>(), It.IsAny<CancellationToken>()))
+            _paymentRepositoryMock.Setup(r => r.GetProjectedAsync<PaymentDto>(It.IsAny<BaseSpecification<Payment>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(paymentDto);
             _uowMock.Setup(uow => uow.Payments).Returns(_paymentRepositoryMock.Object);
 
@@ -203,7 +203,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var paymentId = 99L;
-            _paymentRepositoryMock.Setup(r => r.GetProjectedAsync<PaymentDto>(It.IsAny<Specification<Payment>>(), It.IsAny<CancellationToken>()))
+            _paymentRepositoryMock.Setup(r => r.GetProjectedAsync<PaymentDto>(It.IsAny<BaseSpecification<Payment>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((PaymentDto)null);
             _uowMock.Setup(uow => uow.Payments).Returns(_paymentRepositoryMock.Object);
 

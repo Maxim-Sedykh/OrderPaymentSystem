@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+﻿using OrderPaymentSystem.Domain.Abstract;
+using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
@@ -7,49 +8,71 @@ namespace OrderPaymentSystem.Domain.Entities;
 /// <summary>
 /// Позиция заказа.
 /// </summary>
-public class OrderItem : IEntityId<long>
+public class OrderItem : BaseEntity<long>
 {
-    /// <summary>
-    /// Id позиции заказа
-    /// </summary>
-    public long Id { get; protected set; }
-
     /// <summary>
     /// Id заказа
     /// </summary>
-    public long OrderId { get; protected set; }
+    public long OrderId { get; private set; }
 
     /// <summary>
     /// Id товара
     /// </summary>
-    public int ProductId { get; protected set; }
+    public int ProductId { get; private set; }
 
     /// <summary>
     /// Количество товара
     /// </summary>
-    public int Quantity { get; protected set; }
+    public int Quantity { get; private set; }
 
     /// <summary>
     /// Общая стоимость позиции заказа
     /// </summary>
-    public decimal ItemTotalSum { get; protected set; }
+    public decimal ItemTotalSum { get; private set; }
 
     /// <summary>
     /// Стоимость товара
     /// </summary>
-    public decimal ProductPrice { get; protected set; }
+    public decimal ProductPrice { get; private set; }
 
     /// <summary>
     /// Товар
     /// </summary>
-    public Product Product { get; protected set; }
+    public Product Product { get; private set; }
 
     /// <summary>
     /// Заказ
     /// </summary>
-    public Order Order { get; protected set; }
+    public Order Order { get; private set; }
 
-    protected OrderItem() { }
+    private OrderItem() { }
+
+    private OrderItem(int productId, int quantity, decimal productPrice, decimal itemTotalSum) 
+    {
+        ProductId = productId;
+        Quantity = quantity;
+        ProductPrice = productPrice;
+        ItemTotalSum = productPrice * quantity;
+    }
+
+    private OrderItem(long id, int productId, int quantity, decimal productPrice, decimal itemTotalSum) 
+    {
+        Id = id;
+        ProductId = productId;
+        Quantity = quantity;
+        ProductPrice = productPrice;
+        ItemTotalSum = productPrice * quantity;
+    }
+
+    public static OrderItem CreateExisting(long id, int productId, int quantity, decimal productPrice, IStockInfo stockInfo)
+    {
+        Validate(productId, quantity, stockInfo);
+
+        if (productPrice <= 0)
+            throw new BusinessException(DomainErrors.Product.PricePositive());
+
+        return new OrderItem(id, productId, quantity, productPrice, productPrice * quantity);
+    }
 
     /// <summary>
     /// Создать позицию заказа
@@ -65,14 +88,7 @@ public class OrderItem : IEntityId<long>
         if (productPrice <= 0)
             throw new BusinessException(DomainErrors.Product.PricePositive());
 
-        return new OrderItem
-        {
-            Id = default,
-            ProductId = productId,
-            Quantity = quantity,
-            ProductPrice = productPrice,
-            ItemTotalSum = productPrice * quantity
-        };
+        return new OrderItem(productId, quantity, productPrice, productPrice * quantity);
     }
 
     /// <summary>

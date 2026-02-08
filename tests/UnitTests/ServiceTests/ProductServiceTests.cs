@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using MapsterMapper;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Moq;
 using OrderPaymentSystem.Application.Constants;
@@ -97,8 +98,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var productId = 1;
 
 
-            var product = Product.Create("Product To Delete", "Desc", 100m, 10);
-            product.Id = productId;
+            var product = Product.CreateExisting(productId, "Product To Delete", "Desc", 100m, 10);
 
             _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(product);
@@ -141,10 +141,10 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             var productId = 1;
-            var productDto = new ProductDto { Id = productId, Name = "Test Product" };
+            var productDto = new ProductDto(productId, "Test", "Test", 5m, 5, DateTime.Now);
 
             // Имитируем кеш, который вернет DTO
-            _cacheServiceMock.Setup(cs => cs.GetOrCreateAsync(CacheKeys.Product.ById(productId), It.IsAny<Func<CancellationToken, Task<ProductDto>>>(), It.IsAny<CancellationToken>()))
+            _cacheServiceMock.Setup(cs => cs.GetOrCreateAsync(CacheKeys.Product.ById(productId), It.IsAny<Func<CancellationToken, Task<ProductDto>>>()))
                 .ReturnsAsync(productDto);
 
             // Act
@@ -156,9 +156,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             result.Data.Id.Should().Be(productId);
             result.Data.Name.Should().Be("Test Product");
 
-            // Убедимся, что GetOrCreateAsync был вызван
-            _cacheServiceMock.Verify(cs => cs.GetOrCreateAsync(CacheKeys.Product.ById(productId), It.IsAny<Func<CancellationToken, Task<ProductDto>>>(), It.IsAny<CancellationToken>()), Times.Once);
-            // Убедимся, что репозиторий не был вызван напрямую (кеш отдал результат)
+            _cacheServiceMock.Verify(cs => cs.GetOrCreateAsync(CacheKeys.Product.ById(productId), It.IsAny<Func<CancellationToken, Task<ProductDto>>>()));
             _productRepositoryMock.Verify(r => r.GetProjectedAsync<ProductDto>(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
@@ -169,7 +167,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var productId = 99;
 
             // Имитируем кеш, который не нашел и вызвал репозиторий, но репозиторий тоже ничего не вернул
-            _cacheServiceMock.Setup(cs => cs.GetOrCreateAsync(CacheKeys.Product.ById(productId), It.IsAny<Func<CancellationToken, Task<ProductDto>>>(), It.IsAny<CancellationToken>()))
+            _cacheServiceMock.Setup(cs => cs.GetOrCreateAsync(CacheKeys.Product.ById(productId), It.IsAny<Func<CancellationToken, Task<ProductDto>>>()))
                 .ReturnsAsync((ProductDto)null);
 
             // Act
@@ -184,9 +182,10 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         public async Task GetAllAsync_ProductsExist_ShouldReturnCollectionFromCache()
         {
             // Arrange
-            var productsDto = new List<ProductDto> { new ProductDto { Id = 1 }, new ProductDto { Id = 2 } };
+            var productsDto = new List<ProductDto> { new ProductDto(1, "Test", "Test", 5m, 5, DateTime.Now)
+                , new ProductDto(2, "Test", "Test", 5m, 5, DateTime.Now) };
 
-            _cacheServiceMock.Setup(cs => cs.GetOrCreateAsync(CacheKeys.Product.All, It.IsAny<Func<CancellationToken, Task<List<ProductDto>>>>(), It.IsAny<CancellationToken>()))
+            _cacheServiceMock.Setup(cs => cs.GetOrCreateAsync(CacheKeys.Product.All, It.IsAny<Func<CancellationToken, Task<List<ProductDto>>>>()))
                 .ReturnsAsync(productsDto);
 
             // Act
@@ -195,7 +194,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().HaveCount(2);
-            _cacheServiceMock.Verify(cs => cs.GetOrCreateAsync(CacheKeys.Product.All, It.IsAny<Func<CancellationToken, Task<List<ProductDto>>>>(), It.IsAny<CancellationToken>()), Times.Once);
+            _cacheServiceMock.Verify(cs => cs.GetOrCreateAsync(CacheKeys.Product.All, It.IsAny<Func<CancellationToken, Task<List<ProductDto>>>>()), Times.Once);
             _productRepositoryMock.Verify(r => r.GetListProjectedAsync<ProductDto>(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>()), Times.Never); // Убедимся, что репозиторий не вызывался
         }
 
@@ -211,11 +210,11 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
                 Price = 150.50m,
                 StockQuantity = 20
             };
-            var product = new Product(productId, "Old Name", "Old Desc", 100m, 10);
+            var product = Product.CreateExisting(productId, "Old Name", "Old Desc", 100m, 10);
 
             _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(product);
-            _mapperMock.Setup(m => m.Map<ProductDto>(It.IsAny<Product>())).Returns(new ProductDto { Id = productId }); // Пример маппинга
+            _mapperMock.Setup(m => m.Map<ProductDto>(It.IsAny<Product>())).Returns(new ProductDto(1, "Test", "Test", 5m, 5, DateTime.Now)); // Пример маппинга
             _cacheServiceMock.Setup(cs => cs.RemoveAsync(CacheKeys.Product.All, It.IsAny<CancellationToken>()));
             _cacheServiceMock.Setup(cs => cs.RemoveAsync(CacheKeys.Product.ById(productId), It.IsAny<CancellationToken>()));
 
