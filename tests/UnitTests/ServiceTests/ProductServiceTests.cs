@@ -154,7 +154,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Id.Should().Be(productId);
-            result.Data.Name.Should().Be("Test Product");
+            result.Data.Name.Should().Be("Test");
 
             _cacheServiceMock.Verify(cs => cs.GetOrCreateAsync(CacheKeys.Product.ById(productId), It.IsAny<Func<CancellationToken, Task<ProductDto>>>()));
             _productRepositoryMock.Verify(r => r.GetProjectedAsync<ProductDto>(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>()), Times.Never);

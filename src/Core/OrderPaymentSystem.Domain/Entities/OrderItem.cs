@@ -74,6 +74,11 @@ public class OrderItem : BaseEntity<long>
         return new OrderItem(id, productId, quantity, productPrice, productPrice * quantity);
     }
 
+    public void SetProduct(Product product)
+    {
+        Product = product;
+    }
+
     /// <summary>
     /// Создать позицию заказа
     /// </summary>

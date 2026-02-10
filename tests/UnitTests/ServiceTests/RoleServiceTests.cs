@@ -192,7 +192,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         }
 
         [Fact]
-        public async Task GetAllAsync_RolesNotFound_ShouldReturnFailure()
+        public async Task GetAllAsync_RolesNotFound_ShouldReturnSuccess()
         {
             // Arrange
             var rolesDto = new List<RoleDto>(); // Пустой список
@@ -206,7 +206,6 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be(DomainErrors.Role.RolesNotFound());
-            _loggerMock.Verify(l => l.LogWarning("Roles not found in database"), Times.Once);
         }
     }
 

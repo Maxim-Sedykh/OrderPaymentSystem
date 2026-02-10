@@ -21,7 +21,6 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         private readonly Mock<IUnitOfWork> _uowMock;
         private readonly Mock<IMapper> _mapperMock;
         private readonly PaymentService _paymentService;
-        private readonly Mock<IStockInfo> _stockInfoMock = new();
 
         // Моки репозиториев
         private readonly Mock<IPaymentRepository> _paymentRepositoryMock;
@@ -52,9 +51,12 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
                 AmountPayed = 1000m,
                 Method = PaymentMethod.Cash
             };
+
+            var product = Product.CreateExisting(2, "test", "test", 500m, 5);
+
             var order = Order.CreateExisting(1, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>()
             {
-                OrderItem.Create(2, 2, 2, _stockInfoMock.Object)
+                OrderItem.Create(2, 2, 2, product)
             }, 1000m);
 
             // Мокируем репозитории
@@ -174,7 +176,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             Func<Task> act = async () => await _paymentService.CompletePaymentAsync(paymentId, completeDto);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().WithMessage("Недостаточно средств для оплаты. Оплачено: 500, Требуется: 1000"); // Проверяем сообщение исключения
+            await act.Should().ThrowAsync<BusinessException>().WithMessage(DomainErrors.Payment.NotEnoughAmount(completeDto.AmountPaid, payment.AmountToPay).Message); // Проверяем сообщение исключения
             _uowMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
 

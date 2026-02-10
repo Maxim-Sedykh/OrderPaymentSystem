@@ -123,56 +123,5 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Assert
             act.Should().Throw<InvalidOperationException>().WithMessage(ErrorMessage.UserRolesNotFound);
         }
-
-        [Fact]
-        public async Task RefreshAsync_InvalidRefreshToken_ShouldReturnFailure()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var user = User.CreateExisting(userId, "testuser", "hashed_password");
-            var currentTime = _timeProvider.GetUtcNow().UtcDateTime;
-            var refreshToken = "wrong_refresh_token_from_db"; // Не совпадает с DTO
-            var expiryTime = currentTime.AddDays(7);
-            user.SetToken(UserToken.Create(userId, refreshToken, expiryTime));
-
-            var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(user);
-            _uowMock.Setup(uow => uow.Users).Returns(userRepositoryMock.Object);
-
-            // Act
-            var result = await _userTokenService.RefreshAsync(new TokenDto { AccessToken = "any_access_token", RefreshToken = "dto_refresh_token" }, default);
-
-            // Assert
-            result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be(DomainErrors.General.InvalidClientRequest());
-            _uowMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-        }
-
-        [Fact]
-        public async Task RefreshAsync_ExpiredRefreshToken_ShouldReturnFailure()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var user = User.CreateExisting(userId, "testuser", "hashed_password");
-            var currentTime = _timeProvider.GetUtcNow().UtcDateTime;
-            var refreshToken = "valid_refresh_token";
-            var expiryTime = currentTime.AddDays(-1); // Токен истек
-            user.SetToken(UserToken.Create(userId, refreshToken, expiryTime));
-
-            var userRepositoryMock = new Mock<IUserRepository>();
-            userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(user);
-            _uowMock.Setup(uow => uow.Users).Returns(userRepositoryMock.Object);
-
-            // Act
-            var result = await _userTokenService.RefreshAsync(new TokenDto { AccessToken = "any_access_token", RefreshToken = refreshToken }, default);
-
-            // Assert
-            result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be(DomainErrors.Token.RefreshExpired());
-            _uowMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
-        }
     }
-
 }

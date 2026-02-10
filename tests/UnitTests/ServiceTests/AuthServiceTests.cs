@@ -27,7 +27,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         private readonly Mock<IPasswordHasher> _passwordHasherMock;
         private readonly Mock<IUserTokenService> _userTokenServiceMock;
         private readonly Mock<ILogger<AuthService>> _loggerMock;
-        private readonly Mock<IDbContextTransaction> _transactionMock;
+        private readonly Mock<IDbContextTransaction> _transactionMock = new();
         private readonly AuthService _authService; // Для контроля времени
 
         public AuthServiceTests()
@@ -47,12 +47,15 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         [Fact]
         public async Task LoginAsync_ValidCredentials_ShouldReturnTokenDto()
         {
+            var accessToken = "valid_access_token";
+            var resreshToken = "valid_refresh_token";
+
             // Arrange
             var loginDto = new LoginUserDto("testuser", "password123");
             var user = User.CreateExisting(Guid.NewGuid(), "testuser", "hashed_password");
             user.SetToken(UserToken.Create(user.Id, "existing_refresh", DateTime.Now.AddDays(7))); // Существующий токен
-            _userTokenServiceMock.Setup(uts => uts.GenerateRefreshToken()).Returns("refreshtoken");
-            _userTokenServiceMock.Setup(uts => uts.GenerateAccessToken(It.IsAny<IEnumerable<Claim>>())).Returns("accesstoken");
+            _userTokenServiceMock.Setup(uts => uts.GenerateRefreshToken()).Returns(resreshToken);
+            _userTokenServiceMock.Setup(uts => uts.GenerateAccessToken(It.IsAny<IEnumerable<Claim>>())).Returns(accessToken);
 
 			// Мокируем репозитории
 			var userRepositoryMock = new Mock<IUserRepository>();
@@ -66,13 +69,13 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Assert
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
-            result.Data.AccessToken.Should().Be("valid_access_token");
-            result.Data.RefreshToken.Should().Be("valid_refresh_token");
+            result.Data.AccessToken.Should().Be(accessToken);
+            result.Data.RefreshToken.Should().Be(resreshToken);
 
             // Проверяем, что SaveChangesAsync был вызван (для обновления токена)
             _uowMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
             // Проверяем, что UserToken был обновлен
-            user.UserToken.RefreshToken.Should().Be("valid_refresh_token");
+            user.UserToken.RefreshToken.Should().Be(resreshToken);
         }
 
         [Fact]

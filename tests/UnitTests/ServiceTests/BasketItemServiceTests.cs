@@ -9,6 +9,7 @@ using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
+using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Exceptions;
 using OrderPaymentSystem.Shared.Specifications;
 using Xunit;
@@ -18,7 +19,6 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
     public class BasketItemServiceTests
     {
         private readonly Mock<IUnitOfWork> _uowMock;
-        private readonly Mock<IStockInfo> _stockInfoMock = new();
         private readonly Mock<IMapper> _mapperMock;
         private readonly BasketItemService _basketItemService;
         private readonly Mock<IProductRepository> _productRepositoryMock; // Мок репозитория продуктов
@@ -48,14 +48,14 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var productId = 1;
             var quantity = 5;
             var createDto = new CreateBasketItemDto { ProductId = productId, Quantity = quantity };
-            var product = Product.Create("Test Product", "Desc", 100m, 10); // Stock 10, so quantity 5 is available
+            var product = Product.CreateExisting(productId, "Test Product", "Desc", 100m, 10); // Stock 10, so quantity 5 is available
             var basketItem = BasketItem.Create(userId, productId, quantity, product);
             var basketItemDto = new BasketItemDto { Id = 1, UserId = userId, ProductId = productId, Quantity = quantity }; // Пример DTO
 
             // Мокируем репозитории
             _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(product);
-            _mapperMock.Setup(m => m.Map<BasketItemDto>(basketItem)).Returns(basketItemDto);
+            _mapperMock.Setup(m => m.Map<BasketItemDto>(It.IsAny<BasketItem>())).Returns(basketItemDto);
 
             // Act
             var result = await _basketItemService.CreateAsync(userId, createDto);
@@ -162,10 +162,11 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var initialQuantity = 5;
 
             // Создаем продукт, который будет использоваться как StockInfo
-            var product = Product.Create("Test Product", "Desc", 100m, 10); // Stock 10
+            var product = Product.CreateExisting(productId, "Test Product", "Desc", 100m, 10); // Stock 10
 
             // Имитируем BasketItem с product, который был загружен через WithProduct()
             var basketItem = BasketItem.CreateExisting(basketItemId, userId, productId, initialQuantity, product);
+            basketItem.SetProduct(product);
 
             // Настройка моков
             _basketItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(
@@ -216,8 +217,9 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var updateDto = new UpdateQuantityDto { NewQuantity = newQuantity };
             var userId = Guid.NewGuid();
             var productId = 1;
-            var product = Product.Create("Test Product", "Desc", 100m, 10);
+            var product = Product.CreateExisting(productId, "Test Product", "Desc", 100m, 10);
             var basketItem = BasketItem.CreateExisting(basketItemId, userId, productId, 5, product);
+            basketItem.SetProduct(product);
 
             _basketItemRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<BasketItem>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(basketItem);
@@ -226,7 +228,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             Func<Task> act = async () => await _basketItemService.UpdateQuantityAsync(basketItemId, updateDto);
 
             // Assert
-            await act.Should().ThrowAsync<BusinessException>().WithMessage("Количество товара должно быть положительным."); // Проверяем сообщение исключения
+            await act.Should().ThrowAsync<BusinessException>().WithMessage(ErrorMessage.QuantityPositive); // Проверяем сообщение исключения
             _uowMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
         }
     }

@@ -58,6 +58,11 @@ public class BasketItem : BaseEntity<long>, IAuditable
         Quantity = quantity;
     }
 
+    public void SetProduct(Product product)
+    {
+        Product = product; 
+    }
+
     public static BasketItem CreateExisting(long id, Guid userId, int productId, int quantity, IStockInfo stockInfo)
     {
         if (userId == Guid.Empty)

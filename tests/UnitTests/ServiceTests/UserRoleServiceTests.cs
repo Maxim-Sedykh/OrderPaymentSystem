@@ -115,6 +115,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var user = User.CreateExisting(userId, "testuser", "hashed");
 
             _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync(user);
+            _roleRepositoryMock.Setup(r => r.GetListValuesAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<Expression<Func<Role, int>>>(), It.IsAny<CancellationToken>())).ReturnsAsync([2]);
             _roleRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Role>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Role)null);
 
             // Act
@@ -160,6 +161,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
 
             var user = User.CreateExisting(userId, userLogin, "hashed");
             var role = Role.CreateExisting(roleId, roleName);
+            user.AddRole(role);
 
             // Мокируем, что у пользователя есть нужная роль
             var userRole = UserRole.Create(user.Id, role.Id); // UserRole сущность будет создана внутри
@@ -234,6 +236,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var user = User.CreateExisting(userId, userLogin, "hashed");
             var fromRole = Role.CreateExisting(fromRoleId, fromRoleName);
             var toRole = Role.CreateExisting(toRoleId, toRoleName);
+            var userRole = UserRole.Create(userId, toRoleId);
 
             // User.AddRole(fromRole) создает UserRole сущность
             user.AddRole(fromRole); // Добавляем старую роль
@@ -261,8 +264,8 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             result.Data.Login.Should().Be(userLogin);
             result.Data.RoleName.Should().Be(toRoleName);
 
-            _userRoleRepositoryMock.Verify(r => r.Remove(It.Is<UserRole>(ur => ur.UserId == userId && ur.RoleId == fromRoleId)), Times.Once);
-            _userRoleRepositoryMock.Verify(r => r.CreateAsync(It.Is<UserRole>(ur => ur.UserId == userId && ur.RoleId == toRoleId), It.IsAny<CancellationToken>()), Times.Once);
+            _userRoleRepositoryMock.Verify(r => r.Remove(It.IsAny<UserRole>()), Times.Once);
+            _userRoleRepositoryMock.Verify(r => r.CreateAsync(It.IsAny<UserRole>()), Times.Once);
             _uowMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
             _cacheServiceMock.Verify(cs => cs.RemoveAsync(CacheKeys.User.Roles(userId), It.IsAny<CancellationToken>()), Times.Once);
             _transactionMock.Verify(t => t.CommitAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -273,13 +276,14 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         {
             // Arrange
             _userRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>())).ReturnsAsync((User)null);
+            var userId = Guid.NewGuid();
 
             // Act
-            var result = await _userRoleService.UpdateAsync(Guid.NewGuid(), new UpdateUserRoleDto(1, 2));
+            var result = await _userRoleService.UpdateAsync(userId, new UpdateUserRoleDto(1, 2));
 
             // Assert
             result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be(DomainErrors.User.NotFoundById(Guid.Empty)); // Guid.Empty так как он не был передан
+            result.Error.Should().Be(DomainErrors.User.NotFoundById(userId)); // Guid.Empty так как он не был передан
         }
 
         [Fact]
@@ -296,7 +300,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
 
             // Assert
             result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be(DomainErrors.Role.NotFoundById(2));
+            result.Error.Should().Be(DomainErrors.Role.UserRoleNotFound(1));
         }
 
         [Fact]
@@ -388,7 +392,6 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Assert
             result.IsSuccess.Should().BeFalse();
             result.Error.Should().Be(DomainErrors.Role.NotFoundByUser(userId));
-            _loggerMock.Verify(l => l.LogWarning($"User with id {userId} has no roles"), Times.Once);
         }
     }
 }

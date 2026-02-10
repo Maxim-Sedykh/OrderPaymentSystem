@@ -56,7 +56,10 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
 
             var product = Product.CreateExisting(productId, "Test Product", "Desc", productPrice, 10);
 
-            var order = Order.CreateExisting(orderId, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>(), 500m);
+            var order = Order.CreateExisting(orderId, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>()
+            {
+                OrderItem.Create(product.Id, quantity, productPrice, product)
+            }, 500m);
 
             var createdOrderItem = OrderItem.Create(productId, quantity, productPrice, product);
             var orderItemDto = new OrderItemDto { Id = 1, OrderId = orderId, ProductId = productId, Quantity = quantity, ItemTotalSum = quantity * productPrice };
@@ -84,7 +87,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             result.Data.ProductId.Should().Be(productId);
             result.Data.Quantity.Should().Be(quantity);
 
-            order.Items.Should().HaveCount(1); // Проверяем, чтоOrderItem был добавлен в заказ
+            order.Items.Should().HaveCount(2); // Проверяем, чтоOrderItem был добавлен в заказ
             order.Items.First().ProductId.Should().Be(productId);
 
             _uowMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -116,8 +119,12 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Arrange
             var orderId = 1L;
             var createDto = new CreateOrderItemDto { ProductId = 99, Quantity = 3 };
+            var product = Product.CreateExisting(99, "test", "test", 500m, 3);
 
-            var order = Order.CreateExisting(orderId, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>(), 500m);
+            var order = Order.CreateExisting(orderId, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>()
+            {
+                OrderItem.Create(99, 3, 500m, product)
+            }, 500m);
 
             _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Order>>(), It.IsAny<CancellationToken>())).ReturnsAsync(order);
             _productRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>())).ReturnsAsync((Product)null);
@@ -207,6 +214,8 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
 
             var product = Product.Create("P", "D", productPrice, 10);
             var orderItem = OrderItem.CreateExisting(orderItemId, productId, initialQuantity, productPrice, product);
+            orderItem.SetProduct(product);
+
 
             var order = Order.CreateExisting(orderId, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem> { orderItem }, 500m);
 

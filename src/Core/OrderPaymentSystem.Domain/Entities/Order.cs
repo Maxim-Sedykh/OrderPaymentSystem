@@ -83,6 +83,11 @@ public class Order : BaseEntity<long>, IAuditable
         TotalAmount = totalAmountSum;
     }
 
+    public void SetPayment(Payment payment)
+    {
+        Payment = payment;
+    }
+
     public static Order CreateExisting(long id, Guid userId, Address address, IEnumerable<OrderItem> items, decimal totalAmount)
     {
         if (userId == Guid.Empty) throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(userId)));
