@@ -57,7 +57,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var order = Order.CreateExisting(1, Guid.NewGuid(), new Address("S", "C", "1", "Country"), new List<OrderItem>()
             {
                 OrderItem.Create(2, 2, 2, product)
-            }, 1000m);
+            }, 1000m, OrderStatus.Pending);
 
             // Мокируем репозитории
             _orderRepositoryMock.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Order>>(), It.IsAny<CancellationToken>()))

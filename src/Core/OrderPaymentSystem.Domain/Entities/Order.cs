@@ -83,25 +83,24 @@ public class Order : BaseEntity<long>, IAuditable
         TotalAmount = totalAmountSum;
     }
 
-    public void SetPayment(Payment payment)
+    internal void SetPayment(Payment payment)
     {
         Payment = payment;
     }
 
-    public static Order CreateExisting(long id, Guid userId, Address address, IEnumerable<OrderItem> items, decimal totalAmount)
+    internal static Order CreateExisting(long id,
+        Guid userId,
+        Address address,
+        IEnumerable<OrderItem> items,
+        decimal totalAmount,
+        OrderStatus status)
     {
-        if (userId == Guid.Empty) throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(userId)));
-        if (address == null) throw new BusinessException(DomainErrors.Order.DeliveryAddressRequired());
+        ValidateCreate(userId, address, items);
 
-        var itemList = items?.ToList();
-        if (itemList.IsNullOrEmpty())
-            throw new BusinessException(DomainErrors.Order.ItemsEmpty());
+        var order = new Order(id, userId, address, status, totalAmount);
 
-        var order = new Order(id, userId, address, OrderStatus.Pending, totalAmount);
+        order._items.AddRange(items);
 
-        foreach (var item in itemList) order._items.Add(item);
-
-        order.RecalculateTotalAmount();
         return order;
     }
 
@@ -114,16 +113,11 @@ public class Order : BaseEntity<long>, IAuditable
     /// <returns>Созданный заказ</returns>
     public static Order Create(Guid userId, Address address, IEnumerable<OrderItem> items)
     {
-        if (userId == Guid.Empty) throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(userId)));
-        if (address == null) throw new BusinessException(DomainErrors.Order.DeliveryAddressRequired());
-
-        var itemList = items?.ToList();
-        if (itemList.IsNullOrEmpty())
-            throw new BusinessException(DomainErrors.Order.ItemsEmpty());
+        ValidateCreate(userId, address, items);
 
         var order = new Order(userId, address, OrderStatus.Pending);
 
-        foreach (var item in itemList) order._items.Add(item);
+        order._items.AddRange(items);
 
         order.RecalculateTotalAmount();
         return order;
@@ -274,5 +268,15 @@ public class Order : BaseEntity<long>, IAuditable
     {
         if (_items.IsNullOrEmpty()) throw new BusinessException(DomainErrors.Order.ItemsEmpty());
         if (!PaymentId.HasValue) throw new BusinessException(DomainErrors.Validation.Required(nameof(PaymentId)));
+    }
+
+    private static void ValidateCreate(Guid userId, Address address, IEnumerable<OrderItem> items)
+    {
+        if (userId == Guid.Empty) throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(userId)));
+        if (address == null) throw new BusinessException(DomainErrors.Order.DeliveryAddressRequired());
+
+        var itemList = items?.ToList();
+        if (itemList.IsNullOrEmpty())
+            throw new BusinessException(DomainErrors.Order.ItemsEmpty());
     }
 }

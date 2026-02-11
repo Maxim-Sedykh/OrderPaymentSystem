@@ -58,18 +58,14 @@ public class BasketItem : BaseEntity<long>, IAuditable
         Quantity = quantity;
     }
 
-    public void SetProduct(Product product)
+    internal void SetProduct(Product product)
     {
         Product = product; 
     }
 
-    public static BasketItem CreateExisting(long id, Guid userId, int productId, int quantity, IStockInfo stockInfo)
+    internal static BasketItem CreateExisting(long id, Guid userId, int productId, int quantity, IStockInfo stockInfo)
     {
-        if (userId == Guid.Empty)
-            throw new BusinessException(DomainErrors.Validation.Required(nameof(userId)));
-
-        if (productId <= 0)
-            throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(productId)));
+        ValidateIds(userId, productId);
 
         Validate(stockInfo, quantity, productId);
 
@@ -86,11 +82,7 @@ public class BasketItem : BaseEntity<long>, IAuditable
     /// <returns>Созданный элемент корзины</returns>
     public static BasketItem Create(Guid userId, int productId, int quantity, IStockInfo stockInfo)
     {
-        if (userId == Guid.Empty)
-            throw new BusinessException(DomainErrors.Validation.Required(nameof(userId)));
-
-        if (productId <= 0)
-            throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(productId)));
+        ValidateIds(userId, productId);
 
         Validate(stockInfo, quantity, productId);
 
@@ -115,12 +107,21 @@ public class BasketItem : BaseEntity<long>, IAuditable
         Quantity = newQuantity;
     }
 
-    public static void Validate(IStockInfo stockInfo, int quantity, int productId)
+    private static void Validate(IStockInfo stockInfo, int quantity, int productId)
     {
         if (!stockInfo.IsStockQuantityAvailable(quantity))
             throw new BusinessException(DomainErrors.Product.StockNotAvailable(quantity, productId));
 
         if (quantity <= 0)
             throw new BusinessException(DomainErrors.General.QuantityPositive());
+    }
+
+    private static void ValidateIds(Guid userId, int productId)
+    {
+        if (userId == Guid.Empty)
+            throw new BusinessException(DomainErrors.Validation.Required(nameof(userId)));
+
+        if (productId <= 0)
+            throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(productId)));
     }
 }

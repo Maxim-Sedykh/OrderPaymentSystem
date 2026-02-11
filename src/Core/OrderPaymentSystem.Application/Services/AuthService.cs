@@ -64,13 +64,13 @@ public class AuthService : IAuthService
 
         if (user.UserToken == null)
         {
-            var newUserToken = UserToken.Create(user.Id, refreshToken, refreshTokenExpire);
+            var newUserToken = UserToken.Create(user.Id, refreshToken, refreshTokenExpire, DateTime.UtcNow);
 
             await _unitOfWork.UserToken.CreateAsync(newUserToken, ct);
         }
         else
         {
-            user.UserToken.UpdateRefreshTokenData(refreshToken, refreshTokenExpire);
+            user.UserToken.UpdateRefreshTokenData(refreshToken, refreshTokenExpire, DateTime.UtcNow);
         }
 
         await _unitOfWork.SaveChangesAsync(ct);

@@ -64,17 +64,14 @@ public class OrderItem : BaseEntity<long>
         ItemTotalSum = productPrice * quantity;
     }
 
-    public static OrderItem CreateExisting(long id, int productId, int quantity, decimal productPrice, IStockInfo stockInfo)
+    internal static OrderItem CreateExisting(long id, int productId, int quantity, decimal productPrice, IStockInfo stockInfo)
     {
-        Validate(productId, quantity, stockInfo);
-
-        if (productPrice <= 0)
-            throw new BusinessException(DomainErrors.Product.PricePositive());
+        Validate(productId, quantity, stockInfo, productPrice);
 
         return new OrderItem(id, productId, quantity, productPrice, productPrice * quantity);
     }
 
-    public void SetProduct(Product product)
+    internal void SetProduct(Product product)
     {
         Product = product;
     }
@@ -88,10 +85,7 @@ public class OrderItem : BaseEntity<long>
     /// <returns>Созданный элемент заказа</returns>
     public static OrderItem Create(int productId, int quantity, decimal productPrice, IStockInfo stockInfo)
     {
-        Validate(productId, quantity, stockInfo);
-
-        if (productPrice <= 0)
-            throw new BusinessException(DomainErrors.Product.PricePositive());
+        Validate(productId, quantity, stockInfo, productPrice);
 
         return new OrderItem(productId, quantity, productPrice, productPrice * quantity);
     }
@@ -113,7 +107,7 @@ public class OrderItem : BaseEntity<long>
         ItemTotalSum = ProductPrice * Quantity;
     }
 
-    private static void Validate(int productId, int quantity, IStockInfo stockInfo)
+    private static void Validate(int productId, int quantity, IStockInfo stockInfo, decimal? productPrice = null)
     {
         if (productId <= 0)
             throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(productId)));
@@ -123,5 +117,8 @@ public class OrderItem : BaseEntity<long>
 
         if (stockInfo == null || !stockInfo.IsStockQuantityAvailable(quantity))
             throw new BusinessException(DomainErrors.Product.StockNotAvailable(quantity, productId));
+
+        if (productPrice.HasValue && productPrice.Value <= 0)
+            throw new BusinessException(DomainErrors.Product.PricePositive());
     }
 }

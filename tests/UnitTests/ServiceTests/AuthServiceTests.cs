@@ -53,7 +53,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             // Arrange
             var loginDto = new LoginUserDto("testuser", "password123");
             var user = User.CreateExisting(Guid.NewGuid(), "testuser", "hashed_password");
-            user.SetToken(UserToken.Create(user.Id, "existing_refresh", DateTime.Now.AddDays(7))); // Существующий токен
+            user.SetToken(UserToken.Create(user.Id, "existing_refresh", DateTime.Now.AddDays(7), DateTime.UtcNow)); // Существующий токен
             _userTokenServiceMock.Setup(uts => uts.GenerateRefreshToken()).Returns(resreshToken);
             _userTokenServiceMock.Setup(uts => uts.GenerateAccessToken(It.IsAny<IEnumerable<Claim>>())).Returns(accessToken);
 

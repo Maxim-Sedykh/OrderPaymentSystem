@@ -11,7 +11,7 @@ public class UserTokenTests
     public void Create_WithPastExpiry_ShouldThrowBusinessException()
     {
         // Act
-        Action act = () => UserToken.Create(Guid.NewGuid(), "token", DateTime.UtcNow.AddMinutes(-1));
+        Action act = () => UserToken.Create(Guid.NewGuid(), "token", DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow);
 
         // Assert
         act.Should().Throw<BusinessException>();

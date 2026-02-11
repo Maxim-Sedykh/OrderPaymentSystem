@@ -104,7 +104,8 @@ public class UserTokenService : IUserTokenService
 
         user.UserToken.UpdateRefreshTokenData(
             newRefreshToken,
-            _timeProvider.GetUtcNow().UtcDateTime.AddDays(7)
+            _timeProvider.GetUtcNow().UtcDateTime.AddDays(7),
+            DateTime.UtcNow
         );
 
         await _unitOfWork.SaveChangesAsync(ct);

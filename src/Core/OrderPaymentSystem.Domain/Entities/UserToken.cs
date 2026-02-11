@@ -1,5 +1,4 @@
 ﻿using OrderPaymentSystem.Domain.Abstract;
-using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 
@@ -13,24 +12,29 @@ public class UserToken : BaseEntity<long>
     /// <summary>
     /// Refresh токен
     /// </summary>
-    public string RefreshToken { get; protected set; }
+    public string RefreshToken { get; private set; }
 
     /// <summary>
     /// Время истечения действия Refresh токена
     /// </summary>
-    public DateTime RefreshTokenExpireTime { get; protected set; }
+    public DateTime RefreshTokenExpireTime { get; private set; }
 
     /// <summary>
     /// Id пользователя
     /// </summary>
-    public Guid UserId { get; protected set; }
+    public Guid UserId { get; private set; }
 
     /// <summary>
     /// Пользователь
     /// </summary>
-    public User User { get; protected set; }
+    public User User { get; private set; }
 
-    protected UserToken() { }
+    private UserToken(Guid userId, string refreshToken, DateTime expireTime)
+    {
+        UserId = userId;
+        RefreshToken = refreshToken;
+        RefreshTokenExpireTime = expireTime;
+    }
 
     /// <summary>
     /// Создать токен
@@ -39,17 +43,11 @@ public class UserToken : BaseEntity<long>
     /// <param name="refreshToken">Refresh токен</param>
     /// <param name="expireTime">Время истечения жизни токена</param>
     /// <returns>Результат создания</returns>
-    public static UserToken Create(Guid userId, string refreshToken, DateTime expireTime)
+    public static UserToken Create(Guid userId, string refreshToken, DateTime expireTime, DateTime nowUtc)
     {
-        Validate(refreshToken, expireTime);
+        Validate(refreshToken, expireTime, nowUtc);
 
-        return new UserToken
-        {
-            Id = default,
-            UserId = userId,
-            RefreshToken = refreshToken,
-            RefreshTokenExpireTime = expireTime
-        };
+        return new UserToken(userId, refreshToken, expireTime);
     }
 
     /// <summary>
@@ -58,9 +56,9 @@ public class UserToken : BaseEntity<long>
     /// <param name="newRefreshToken">Новый Refresh токен</param>
     /// <param name="newExpireTime">Новый срок истечения Refresh токена</param>
     /// <returns>Результат обновления токена</returns>
-    public void UpdateRefreshTokenData(string newRefreshToken, DateTime newExpireTime)
+    public void UpdateRefreshTokenData(string newRefreshToken, DateTime newExpireTime, DateTime nowUtc)
     {
-        Validate(newRefreshToken, newExpireTime);
+        Validate(newRefreshToken, newExpireTime, nowUtc);
 
         RefreshToken = newRefreshToken;
         RefreshTokenExpireTime = newExpireTime;
@@ -70,11 +68,11 @@ public class UserToken : BaseEntity<long>
     /// Истек ли срок действия Refresh токена
     /// </summary>
     /// <returns></returns>
-    public bool IsExpired() => RefreshTokenExpireTime <= DateTime.UtcNow;
+    public bool IsExpired(DateTime date) => RefreshTokenExpireTime <= date;
 
-    private static void Validate(string token, DateTime expire)
+    private static void Validate(string token, DateTime expire, DateTime nowUtc)
     {
         if (string.IsNullOrWhiteSpace(token)) throw new BusinessException(DomainErrors.Validation.Required(nameof(token)));
-        if (expire <= DateTime.UtcNow) throw new BusinessException(DomainErrors.Token.RefreshFuture());
+        if (expire <= nowUtc) throw new BusinessException(DomainErrors.Token.RefreshFuture());
     }
 }

@@ -32,8 +32,11 @@ public class Role : BaseEntity<int>
         Name = name;
     }
 
-    public static Role CreateExisting(int id, string name)
+    internal static Role CreateExisting(int id, string name)
     {
+        if (id < 0)
+            throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(id)));
+
         if (string.IsNullOrWhiteSpace(name))
             throw new BusinessException(DomainErrors.Validation.Required(nameof(Name)));
 

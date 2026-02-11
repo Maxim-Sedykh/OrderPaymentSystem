@@ -46,8 +46,8 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
     private Product() { }
 
     private Product(int id, string name, string description, decimal price, int stockQuantity)
-        : base(id)
     {
+        Id = id;
         Name = name;
         Description = description;
         Price = price;
@@ -62,7 +62,7 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
         StockQuantity = stockQuantity;
     }
 
-    public static Product CreateExisting(int id, string name, string description, decimal price, int stockQuantity)
+    internal static Product CreateExisting(int id, string name, string description, decimal price, int stockQuantity)
     {
         Validate(name, price);
 

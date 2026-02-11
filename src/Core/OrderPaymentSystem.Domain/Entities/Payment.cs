@@ -83,21 +83,17 @@ public class Payment : BaseEntity<long>, IAuditable
         Status = status;
     }
 
-    public static Payment CreateExisting(
+    internal static Payment CreateExisting(
         long id,
         long orderId,
-        decimal amountPayed,
+        decimal amountPaid,
         decimal amountToPay,
         PaymentMethod method,
         PaymentStatus status)
     {
-        if (amountPayed <= 0)
-            throw new BusinessException(DomainErrors.Payment.AmountPositive());
+        ValidateCreate(orderId, amountPaid, amountToPay);
 
-        if (amountToPay <= 0)
-            throw new BusinessException(DomainErrors.Payment.AmountPositive());
-
-        return new Payment(id, orderId, amountPayed, amountToPay, method, status);
+        return new Payment(id, orderId, amountPaid, amountToPay, method, status);
     }
 
     /// <summary>
@@ -109,17 +105,13 @@ public class Payment : BaseEntity<long>, IAuditable
     /// <returns>Созданный платёж</returns>
     public static Payment Create(
         long orderId,
-        decimal amountPayed,
+        decimal amountPaid,
         decimal amountToPay,
         PaymentMethod method)
     {
-        if (amountPayed <= 0)
-            throw new BusinessException(DomainErrors.Payment.AmountPositive());
+        ValidateCreate(orderId, amountPaid, amountToPay);
 
-        if (amountToPay <= 0)
-            throw new BusinessException(DomainErrors.Payment.AmountPositive());
-
-        return new Payment(orderId, amountPayed, amountToPay, method, PaymentStatus.Pending);
+        return new Payment(orderId, amountPaid, amountToPay, method, PaymentStatus.Pending);
     }
 
     /// <summary>
@@ -141,5 +133,17 @@ public class Payment : BaseEntity<long>, IAuditable
         AmountPaid = amountPaid;
         CashChange = cashChange;
         Status = PaymentStatus.Succeeded;
+    }
+
+    private static void ValidateCreate(long orderId, decimal amoundPaid, decimal amountToPay)
+    {
+        if (orderId < 0)
+            throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(orderId)));
+
+        if (amoundPaid <= 0)
+            throw new BusinessException(DomainErrors.Payment.AmountPositive());
+
+        if (amountToPay <= 0)
+            throw new BusinessException(DomainErrors.Payment.AmountPositive());
     }
 }

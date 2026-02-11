@@ -69,7 +69,7 @@ public class User : BaseEntity<Guid>, IAuditable
         return new User(login, passwordHash);
     }
 
-    public static User CreateExisting(Guid id, string login, string passwordHash)
+    internal static User CreateExisting(Guid id, string login, string passwordHash)
     {
         Validate(login, passwordHash);
 
@@ -93,12 +93,12 @@ public class User : BaseEntity<Guid>, IAuditable
         PasswordHash = newPasswordHash;
     }
 
-    public void AddRole(Role role)
+    internal void AddRole(Role role)
     {
         _roles.Add(role);
     }
 
-    public void SetToken(UserToken token)
+    internal void SetToken(UserToken token)
     {
         UserToken = token;
     }

@@ -11,14 +11,14 @@ public class UserRole
     /// <summary>
     /// Id пользователя
     /// </summary>
-    public Guid UserId { get; protected set; }
+    public Guid UserId { get; private set; }
 
     /// <summary>
     /// Id роли
     /// </summary>
-    public int RoleId { get; protected set; }
+    public int RoleId { get; private set; }
 
-    protected UserRole() { }
+    private UserRole() { }
 
     /// <summary>
     /// Создать роль для пользователя
@@ -31,7 +31,7 @@ public class UserRole
         if (userId == default)
             throw new BusinessException(DomainErrors.Validation.Required(nameof(userId)));
 
-        if (roleId == default)
+        if (roleId == default || roleId < 0)
             throw new BusinessException(DomainErrors.Validation.Required(nameof(roleId)));
 
         return new UserRole { UserId = userId, RoleId = roleId };
