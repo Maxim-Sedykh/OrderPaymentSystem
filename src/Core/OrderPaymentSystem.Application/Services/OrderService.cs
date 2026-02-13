@@ -142,20 +142,8 @@ public class OrderService : IOrderService
             return BaseResult.Failure(DomainErrors.Order.NotFound(orderId));
         }
 
-        if (order.Payment == null)
-        {
-            return BaseResult.Failure(DomainErrors.Order.CannotBeConfirmedWithoutPayment());
-        }
-
-        foreach (var item in order.Items)
-        {
-            if (item.Product == null)
-            {
-                return BaseResult.Failure(DomainErrors.Product.NotFound(item.Product.Id));
-            }
-        }
-
-        if (order.Payment.Status != PaymentStatus.Succeeded)
+        if (order.Payment == null 
+            || order.Payment.Status != PaymentStatus.Succeeded)
         {
             return BaseResult.Failure(DomainErrors.Order.CannotBeConfirmedWithoutPayment());
         }

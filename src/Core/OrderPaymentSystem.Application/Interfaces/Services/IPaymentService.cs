@@ -14,7 +14,7 @@ public interface IPaymentService
     /// <param name="dto"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    Task<BaseResult> CreateAsync(CreatePaymentDto dto, CancellationToken ct = default);
+    Task<DataResult<PaymentDto>> CreateAsync(CreatePaymentDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// Получить платёж по Id

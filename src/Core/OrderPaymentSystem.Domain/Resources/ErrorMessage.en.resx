@@ -282,4 +282,7 @@
   <data name="SameRoleSelected" xml:space="preserve">
     <value>For change user role was chosen same role</value>
   </data>
+  <data name="UserWasNull" xml:space="preserve">
+    <value>User was null from db</value>
+  </data>
 </root>

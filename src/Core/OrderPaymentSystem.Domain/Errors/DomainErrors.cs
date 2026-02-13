@@ -39,6 +39,9 @@ public static class DomainErrors
         public static Error NotFoundByLogin(string login)
             => new(ErrorCodes.UserNotFoundByLogin, string.Format(ErrorMessage.UserNotFoundByLogin, login));
 
+        public static Error WasNull()
+            => new(ErrorCodes.UserWasNull, ErrorMessage.UserNotFoundByLogin);
+
         public static Error AlreadyExist(string login) 
             => new(ErrorCodes.UserAlreadyExist, string.Format(ErrorMessage.UserAlreadyExist, login));
 

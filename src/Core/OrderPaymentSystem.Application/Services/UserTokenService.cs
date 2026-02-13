@@ -24,19 +24,23 @@ public class UserTokenService : IUserTokenService
     private readonly string _jwtKey;
     private readonly string _issuer;
     private readonly string _audience;
+    private readonly int _refreshTokenLifeTimeInDays;
+    private readonly int _accessTokenLifeTimeInDays;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
 
     public UserTokenService(
         IOptions<JwtSettings> options,
         IUnitOfWork unitOfWork,
-        TimeProvider timeProvider = null)
+        TimeProvider timeProvider)
     {
         _jwtKey = options.Value.JwtKey;
         _issuer = options.Value.Issuer;
         _audience = options.Value.Audience;
+        _refreshTokenLifeTimeInDays = options.Value.RefreshTokenValidityInDays;
+        _accessTokenLifeTimeInDays = options.Value.AccessTokenValidityInMinutes;
         _unitOfWork = unitOfWork;
-        _timeProvider = timeProvider ?? TimeProvider.System;
+        _timeProvider = timeProvider;
     }
 
     /// <inheritdoc/>
@@ -49,7 +53,7 @@ public class UserTokenService : IUserTokenService
             issuer: _issuer,
             audience: _audience,
             claims: claims,
-            expires: _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(10),
+            expires: _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(_accessTokenLifeTimeInDays),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
@@ -66,13 +70,16 @@ public class UserTokenService : IUserTokenService
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Claim> GetClaimsFromUser(User user)
+    public CollectionResult<Claim> GetClaimsFromUser(User user)
     {
-        ArgumentNullException.ThrowIfNull(user, nameof(user));
-
-        if (user.Roles == null || !user.Roles.Any())
+        if (user == null)
         {
-            throw new InvalidOperationException(ErrorMessage.UserRolesNotFound);
+            return CollectionResult<Claim>.Failure(DomainErrors.User.WasNull());
+        }
+
+        if (user.Roles == null || user.Roles.Count == 0)
+        {
+            return CollectionResult<Claim>.Failure(DomainErrors.Role.NotFoundByUser(user.Id));
         }
 
         var claims = new List<Claim>
@@ -83,7 +90,7 @@ public class UserTokenService : IUserTokenService
 
         claims.AddRange(user.Roles.Select(role => new Claim(ClaimTypes.Role, role.Name)));
 
-        return claims.AsReadOnly();
+        return CollectionResult<Claim>.Success(claims);
     }
 
     /// <inheritdoc/>
@@ -98,14 +105,19 @@ public class UserTokenService : IUserTokenService
         }
 
         var user = userResult.Data;
-        var newClaims = GetClaimsFromUser(user);
-        var newAccessToken = GenerateAccessToken(newClaims);
+        var getNewClaimsResult = GetClaimsFromUser(user);
+        if (!getNewClaimsResult.IsSuccess)
+        {
+            return DataResult<TokenDto>.Failure(getNewClaimsResult.Error);
+        }
+
+        var newAccessToken = GenerateAccessToken(getNewClaimsResult.Data);
         var newRefreshToken = GenerateRefreshToken();
 
         user.UserToken.UpdateRefreshTokenData(
             newRefreshToken,
-            _timeProvider.GetUtcNow().UtcDateTime.AddDays(7),
-            DateTime.UtcNow
+            _timeProvider.GetUtcNow().UtcDateTime.AddDays(_accessTokenLifeTimeInDays),
+            _timeProvider.GetUtcNow().UtcDateTime
         );
 
         await _unitOfWork.SaveChangesAsync(ct);
@@ -129,17 +141,13 @@ public class UserTokenService : IUserTokenService
         TokenDto dto,
         CancellationToken ct)
     {
-        ClaimsPrincipal claimsPrincipal;
-        try
+        var claimsPrincipalResult = GetPrincipalFromExpiredToken(dto.AccessToken);
+        if (!claimsPrincipalResult.IsSuccess)
         {
-            claimsPrincipal = GetPrincipalFromExpiredToken(dto.AccessToken);
-        }
-        catch (SecurityTokenException)
-        {
-            return DataResult<User>.Failure(DomainErrors.General.InvalidToken());
+            return DataResult<User>.Failure(claimsPrincipalResult.Error);
         }
 
-        var login = claimsPrincipal.Identity?.Name;
+        var login = claimsPrincipalResult.Data.Identity?.Name;
         if (string.IsNullOrEmpty(login))
         {
             return DataResult<User>.Failure(DomainErrors.General.InvalidToken());
@@ -171,7 +179,7 @@ public class UserTokenService : IUserTokenService
     /// <param name="accessToken">Access token</param>
     /// <returns>ClaimsPrincipal</returns>
     /// <exception cref="SecurityTokenException">Когда токен невалидный</exception>
-    private ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken)
+    private DataResult<ClaimsPrincipal> GetPrincipalFromExpiredToken(string accessToken)
     {
         var tokenValidationParameters = new TokenValidationParameters
         {
@@ -194,9 +202,9 @@ public class UserTokenService : IUserTokenService
         if (securityToken is not JwtSecurityToken jwtSecurityToken ||
             !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.OrdinalIgnoreCase))
         {
-            throw new SecurityTokenException(ErrorMessage.InvalidToken);
+            return DataResult<ClaimsPrincipal>.Failure(DomainErrors.General.InvalidToken());
         }
 
-        return claimsPrincipal;
+        return DataResult<ClaimsPrincipal>.Success(claimsPrincipal);
     }
 }

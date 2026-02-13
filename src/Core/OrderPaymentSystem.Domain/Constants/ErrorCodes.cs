@@ -48,6 +48,7 @@ public static class ErrorCodes
     public const int InvalidCredentials = 1025;
     public const int UserRoleNotFound = 1026;
     public const int SameRoleSelected = 1027;
+    public const int UserWasNull = 1028;
 
 
     #endregion

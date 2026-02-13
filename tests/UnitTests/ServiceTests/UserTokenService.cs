@@ -104,24 +104,27 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             var claims = _userTokenService.GetClaimsFromUser(user);
 
             // Assert
-            claims.Should().Contain(c => c.Type == ClaimTypes.Name && c.Value == user.Login);
-            claims.Should().Contain(c => c.Type == ClaimTypes.NameIdentifier && c.Value == user.Id.ToString());
-            claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == role1.Name);
-            claims.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == role2.Name);
+            claims.IsSuccess.Should().BeTrue();
+            claims.Data.Should().Contain(c => c.Type == ClaimTypes.Name && c.Value == user.Login);
+            claims.Data.Should().Contain(c => c.Type == ClaimTypes.NameIdentifier && c.Value == user.Id.ToString());
+            claims.Data.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == role1.Name);
+            claims.Data.Should().Contain(c => c.Type == ClaimTypes.Role && c.Value == role2.Name);
         }
 
         [Fact]
         public void GetClaimsFromUser_UserWithoutRoles_ShouldThrowInvalidOperationException()
         {
             // Arrange
-            var user = User.CreateExisting(Guid.NewGuid(), "testuser", "hashed_password");
+            var userId = Guid.NewGuid();
+            var user = User.CreateExisting(userId, "testuser", "hashed_password");
             // Пользователь без ролей
 
             // Act
-            Action act = () => _userTokenService.GetClaimsFromUser(user);
+            var claims = _userTokenService.GetClaimsFromUser(user);
 
             // Assert
-            act.Should().Throw<InvalidOperationException>().WithMessage(ErrorMessage.UserRolesNotFound);
+            claims.IsSuccess.Should().BeFalse();
+            claims.Error.Message.Should().Be(DomainErrors.Role.NotFoundByUser(user.Id).Message);
         }
     }
 }

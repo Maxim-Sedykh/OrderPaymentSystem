@@ -28,6 +28,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
         private readonly Mock<IUserTokenService> _userTokenServiceMock;
         private readonly Mock<ILogger<AuthService>> _loggerMock;
         private readonly Mock<IDbContextTransaction> _transactionMock = new();
+        private readonly JwtSettings _jwtSettings;
         private readonly AuthService _authService; // Для контроля времени
 
         public AuthServiceTests()
@@ -36,6 +37,16 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
             _passwordHasherMock = AuthServiceMockConfigurations.SetupPasswordHasher();
             _userTokenServiceMock = AuthServiceMockConfigurations.SetupUserTokenService("valid_access_token", "valid_refresh_token");
             _loggerMock = new Mock<ILogger<AuthService>>();
+
+            _jwtSettings = new JwtSettings
+            {
+                JwtKey = TestJwtKey,
+                Issuer = TestIssuer,
+                Audience = TestAudience,
+                Lifetime = "10" // Minutes for access token
+            };
+            _jwtOptionsMock = new Mock<IOptions<JwtSettings>>();
+            _jwtOptionsMock.Setup(opt => opt.Value).Returns(_jwtSettings);
 
             _authService = new AuthService(
                 _loggerMock.Object,
@@ -200,7 +211,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests
 
             // Assert
             result.IsSuccess.Should().BeFalse();
-            result.Error.Should().Be(DomainErrors.Role.NotFoundByName(Role.DefaultUserRoleName));
+            result.Error.Should().Be(DomainErrors.Role.NotFoundByName("User"));
             _uowMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once); // SaveChangesAsync после создания пользователя
             _uowMock.Verify(uow => uow.BeginTransactionAsync(It.IsAny<CancellationToken>()), Times.Once);
 			_transactionMock.Verify(t => t.RollbackAsync(It.IsAny<CancellationToken>()), Times.Once);

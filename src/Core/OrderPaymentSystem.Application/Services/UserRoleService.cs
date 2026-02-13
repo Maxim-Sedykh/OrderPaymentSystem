@@ -17,12 +17,12 @@ namespace OrderPaymentSystem.Application.Services;
 public class UserRoleService : IUserRoleService
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly ILogger<RoleService> _logger;
+    private readonly ILogger<UserRoleService> _logger;
     private readonly ICacheService _cacheService;
 
     public UserRoleService(
         IUnitOfWork unitOfWork,
-        ILogger<RoleService> logger,
+        ILogger<UserRoleService> logger,
         ICacheService cacheService)
     {
         _unitOfWork = unitOfWork;
@@ -76,8 +76,8 @@ public class UserRoleService : IUserRoleService
         CancellationToken ct = default)
     {
         var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ById(userId).WithRoles(), ct);
-        var role = user?.Roles.FirstOrDefault(x => x.Id == roleId);
         if (user == null) return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(userId));
+        var role = user.Roles.FirstOrDefault(x => x.Id == roleId);
         if (role == null) return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundById(roleId));
 
         var userRole = await _unitOfWork.UserRoles.GetFirstOrDefaultAsync(UserRoleSpecs.ByUserIdRoleId(user.Id, role.Id), ct);
@@ -152,13 +152,6 @@ public class UserRoleService : IUserRoleService
         var userRoles = await _cacheService.GetOrCreateAsync(CacheKeys.User.Roles(userId),
             async (token) => await _unitOfWork.Roles.GetListValuesAsync(RoleSpecs.ByUserId(userId), x => x.Name, token),
             ct: ct);
-
-        if (userRoles.Count == 0)
-        {
-            _logger.LogWarning($"User with id {userId} has no roles");
-
-            return CollectionResult<string>.Failure(DomainErrors.Role.NotFoundByUser(userId));
-        }
 
         return CollectionResult<string>.Success(userRoles);
     }

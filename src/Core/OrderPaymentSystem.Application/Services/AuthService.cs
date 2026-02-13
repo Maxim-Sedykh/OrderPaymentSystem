@@ -1,13 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.DTOs.Auth;
 using OrderPaymentSystem.Application.DTOs.Token;
 using OrderPaymentSystem.Application.Interfaces.Auth;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
+using OrderPaymentSystem.Application.Settings;
 using OrderPaymentSystem.Application.Specifications;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Result;
+using System;
 using System.Security.Claims;
 
 namespace OrderPaymentSystem.Application.Services;
@@ -17,30 +20,35 @@ namespace OrderPaymentSystem.Application.Services;
 /// </summary>
 public class AuthService : IAuthService
 {
-    private const int TokenLifeTimeInDays = 7;
+    private readonly int _tokenLifeTimeInDays;
+    private readonly string _defaultRoleName;
 
     private readonly ILogger<AuthService> _logger;
     private readonly IUserTokenService _userTokenService;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly TimeProvider _timeProvider;
 
     /// <summary>
     /// Конструктор сервиса авторизации и аутентификации
     /// </summary>
-    /// <param name="userTokenService">Сервис для работы с JWT-токенами</param>
-    /// <param name="unitOfWork">Сервис для работы с транзакциями</param>
-    /// <param name="passwordHasher">Сервис для хэширования паролей</param>
-    /// <param name="cacheService">Сервис для работы с кэшем</param>
     public AuthService(
         ILogger<AuthService> logger,
         IUserTokenService userTokenService,
         IUnitOfWork unitOfWork,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        TimeProvider timeProvider,
+        IOptions<JwtSettings> jwtSettings,
+        IOptions<RoleSettings> roleSettings)
     {
         _logger = logger;
         _userTokenService = userTokenService;
         _unitOfWork = unitOfWork;
         _passwordHasher = passwordHasher;
+        _timeProvider = timeProvider;
+
+        _tokenLifeTimeInDays = jwtSettings.Value.RefreshTokenValidityInDays;
+        _defaultRoleName = roleSettings.Value.DefaultRoleName;
     }
 
     /// <inheritdoc/>
@@ -52,36 +60,43 @@ public class AuthService : IAuthService
             return DataResult<TokenDto>.Failure(DomainErrors.User.InvalidCredentials());
         }
 
-        var claims = _userTokenService.GetClaimsFromUser(user);
+        var now = _timeProvider.GetUtcNow();
+        var getClaimsResult = _userTokenService.GetClaimsFromUser(user);
+        if (!getClaimsResult.IsSuccess)
+        {
+            return DataResult<TokenDto>.Failure(getClaimsResult.Error);
+        }
 
-        var userRoles = claims.Where(c => c.Type == ClaimTypes.Role)
-            .Select(c => c.Value)
-            .ToArray();
 
-        var accessToken = _userTokenService.GenerateAccessToken(claims);
+        var accessToken = _userTokenService.GenerateAccessToken(getClaimsResult.Data);
         var refreshToken = _userTokenService.GenerateRefreshToken();
-        var refreshTokenExpire = DateTime.UtcNow.AddDays(TokenLifeTimeInDays);
+        var refreshTokenExpire = now.AddDays(_tokenLifeTimeInDays);
 
         if (user.UserToken == null)
         {
-            var newUserToken = UserToken.Create(user.Id, refreshToken, refreshTokenExpire, DateTime.UtcNow);
+            var newUserToken = UserToken.Create(
+                user.Id,
+                refreshToken,
+                refreshTokenExpire.UtcDateTime,
+                now.UtcDateTime);
 
             await _unitOfWork.UserToken.CreateAsync(newUserToken, ct);
         }
         else
         {
-            user.UserToken.UpdateRefreshTokenData(refreshToken, refreshTokenExpire, DateTime.UtcNow);
+            user.UserToken.UpdateRefreshTokenData(
+                refreshToken,
+                refreshTokenExpire.UtcDateTime,
+                now.UtcDateTime);
         }
 
         await _unitOfWork.SaveChangesAsync(ct);
 
-        var result = new TokenDto()
+        return DataResult<TokenDto>.Success(new TokenDto()
         {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-        };
-
-        return DataResult<TokenDto>.Success(result);
+        });
     }
 
     /// <inheritdoc/>
@@ -108,7 +123,7 @@ public class AuthService : IAuthService
             await _unitOfWork.SaveChangesAsync(ct);
 
             var roleId = await _unitOfWork.Roles.GetValueAsync(
-                RoleSpecs.ByName(Role.DefaultUserRoleName),
+                RoleSpecs.ByName(_defaultRoleName),
                 x => x.Id,
                 ct);
 
@@ -117,7 +132,7 @@ public class AuthService : IAuthService
                 await transaction.RollbackAsync(ct);
                 _logger.LogError("default User role not found during registration for user: {Login}", dto.Login);
 
-                return BaseResult.Failure(DomainErrors.Role.NotFoundByName(Role.DefaultUserRoleName));
+                return BaseResult.Failure(DomainErrors.Role.NotFoundByName(_defaultRoleName));
             }
 
             var userRole = UserRole.Create(user.Id, roleId);

@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Application.DTOs.Payment;
+﻿using MapsterMapper;
+using OrderPaymentSystem.Application.DTOs.Payment;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Specifications;
@@ -11,10 +12,12 @@ namespace OrderPaymentSystem.Application.Services;
 public class PaymentService : IPaymentService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public PaymentService(IUnitOfWork unitOfWork)
+    public PaymentService(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     public async Task<BaseResult> CompletePaymentAsync(long paymentId, CompletePaymentDto dto, CancellationToken ct = default)
@@ -32,18 +35,18 @@ public class PaymentService : IPaymentService
         return BaseResult.Success();
     }
 
-    public async Task<BaseResult> CreateAsync(CreatePaymentDto dto, CancellationToken ct = default)
+    public async Task<DataResult<PaymentDto>> CreateAsync(CreatePaymentDto dto, CancellationToken ct = default)
     {
         var paymentExists = await _unitOfWork.Payments.AnyAsync(PaymentSpecs.ByOrderId(dto.OrderId), ct);
         if (paymentExists)
         { 
-            return BaseResult.Failure(DomainErrors.Payment.AlreadyExists(dto.OrderId)); 
+            return DataResult<PaymentDto>.Failure(DomainErrors.Payment.AlreadyExists(dto.OrderId)); 
         }
         
         var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(dto.OrderId), ct);
         if (order == null)
         { 
-            return BaseResult.Failure(DomainErrors.Order.NotFound(dto.OrderId));
+            return DataResult<PaymentDto>.Failure(DomainErrors.Order.NotFound(dto.OrderId));
         }
 
         var payment = Payment.Create(dto.OrderId, dto.AmountPayed, order.TotalAmount, dto.Method);
@@ -51,7 +54,7 @@ public class PaymentService : IPaymentService
         await _unitOfWork.Payments.CreateAsync(payment, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
-        return BaseResult.Success();
+        return DataResult<PaymentDto>.Success(_mapper.Map<PaymentDto>(payment));
     }
 
     public async Task<DataResult<PaymentDto>> GetByIdAsync(long paymentId, CancellationToken ct = default)

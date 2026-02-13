@@ -282,4 +282,7 @@
   <data name="SameRoleSelected" xml:space="preserve">
     <value>Для изменения роли пользователя выбрана одна и та же роль</value>
   </data>
+  <data name="UserWasNull" xml:space="preserve">
+    <value>Пользователь не был получен из БД</value>
+  </data>
 </root>

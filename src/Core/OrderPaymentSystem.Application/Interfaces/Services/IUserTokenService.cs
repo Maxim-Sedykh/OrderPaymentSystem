@@ -35,5 +35,5 @@ public interface IUserTokenService
     /// </summary>
     /// <param name="user"></param>
     /// <returns></returns>
-    IReadOnlyCollection<Claim> GetClaimsFromUser(User user);
+    CollectionResult<Claim> GetClaimsFromUser(User user);
 }

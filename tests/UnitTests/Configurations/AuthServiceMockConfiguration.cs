@@ -5,6 +5,7 @@ using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Entities;
+using OrderPaymentSystem.Shared.Result;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -40,7 +41,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations
             var mock = new Mock<IUserTokenService>();
             mock.Setup(uts => uts.GenerateAccessToken(It.IsAny<IEnumerable<Claim>>())).Returns(accessToken);
             mock.Setup(uts => uts.GenerateRefreshToken()).Returns(refreshToken);
-            mock.Setup(uts => uts.GetClaimsFromUser(It.IsAny<User>())).Returns(new List<Claim>()); // Простая заглушка
+            mock.Setup(uts => uts.GetClaimsFromUser(It.IsAny<User>())).Returns(CollectionResult<Claim>.Success([])); // Простая заглушка
             return mock;
         }
     }

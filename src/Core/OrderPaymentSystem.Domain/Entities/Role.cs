@@ -9,8 +9,6 @@ namespace OrderPaymentSystem.Domain.Entities;
 /// </summary>
 public class Role : BaseEntity<int>
 {
-    public const string DefaultUserRoleName = "User";
-
     /// <summary>
     /// Название роли
     /// </summary>
