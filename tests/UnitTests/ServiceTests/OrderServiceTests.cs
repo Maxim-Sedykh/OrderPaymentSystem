@@ -27,7 +27,7 @@ public class OrderServiceTests
         var product = TestDataFactory.Product.WithStock(10).Build();
         var item = TestDataFactory.OrderItem.WithProduct(product).WithQuantity(3).Build();
         var order = TestDataFactory.Order.WithItems(item).WithStatus(OrderStatus.Pending).Build();
-        var payment = TestDataFactory.Payment.WithStatus(PaymentStatus.Succeeded).Build();
+        var payment = TestDataFactory.Payment.ToPay(100m).WithStatus(PaymentStatus.Succeeded).Build();
 
         _fixture.SetupOrder(order)
                 .SetupPayment(payment);
@@ -78,8 +78,8 @@ public class OrderServiceTests
     public async Task ShipOrderAsync_WhenOrderIsConfirmedAndPaid_ShouldSetStatusShipped()
     {
         // Arrange
-        var payment = TestDataFactory.Payment.WithStatus(PaymentStatus.Succeeded).Build();
-        var order = TestDataFactory.Order.WithStatus(OrderStatus.Confirmed).Build();
+        var payment = TestDataFactory.Payment.ToPay(100m).WithStatus(PaymentStatus.Succeeded).Build();
+        var order = TestDataFactory.Order.WithItems(TestDataFactory.OrderItem.Build()).WithStatus(OrderStatus.Confirmed).Build();
         order.AssignPayment(payment.Id);
         order.SetPayment(payment);
 
@@ -99,7 +99,7 @@ public class OrderServiceTests
     public async Task ShipOrderAsync_WhenPaymentMissing_ShouldReturnError()
     {
         // Arrange
-        var order = TestDataFactory.Order.WithStatus(OrderStatus.Pending).Build();
+        var order = TestDataFactory.Order.WithItems(TestDataFactory.OrderItem.Build()).WithStatus(OrderStatus.Pending).Build();
         _fixture.SetupOrder(order);
 
         // Act

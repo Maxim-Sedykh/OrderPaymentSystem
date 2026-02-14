@@ -15,5 +15,12 @@ public class BasketItemBuilder
     public BasketItemBuilder WithProduct(Product product) { _product = product; _productId = product.Id; return this; }
     public BasketItemBuilder WithQuantity(int quantity) { _quantity = quantity; return this; }
 
-    public BasketItem Build() => BasketItem.CreateExisting(_id, _userId, _productId, _quantity, _product);
+    public BasketItem Build()
+    {
+        var basketItem = BasketItem.CreateExisting(_id, _userId, _productId, _quantity, _product);
+
+        basketItem.SetProduct(_product);
+
+        return basketItem;
+    }
 }

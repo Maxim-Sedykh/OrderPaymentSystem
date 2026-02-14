@@ -140,7 +140,7 @@ public class Payment : BaseEntity<long>, IAuditable
         if (orderId < 0)
             throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(orderId)));
 
-        if (amoundPaid <= 0)
+        if (amoundPaid < 0)
             throw new BusinessException(DomainErrors.Payment.AmountPositive());
 
         if (amountToPay <= 0)

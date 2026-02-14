@@ -18,5 +18,5 @@ public class PaymentBuilder
     public PaymentBuilder Paid(decimal amount) { _amountPaid = amount; return this; }
     public PaymentBuilder WithStatus(PaymentStatus status) { _status = status; return this; }
 
-    public Payment Build() => Payment.CreateExisting(_id, _orderId, _amountToPay, _amountPaid, PaymentMethod.Cash, _status);
+    public Payment Build() => Payment.CreateExisting(_id, _orderId, _amountPaid, _amountToPay, PaymentMethod.Cash, _status);
 }

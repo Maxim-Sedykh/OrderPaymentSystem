@@ -27,9 +27,10 @@ public class BasketItemServiceTests
         var userId = Guid.NewGuid();
         var product = TestDataFactory.Product.Build();
         var dto = new CreateBasketItemDto(product.Id, 5);
+        var basketItem = TestDataFactory.CreateBasketItemDto(userId: userId, productId: product.Id, quantity: dto.Quantity);
 
         _fixture.SetupProduct(product)
-                .SetupMapping<BasketItem, BasketItemDto>(TestDataFactory.CreateBasketItemDto(userId: userId, productId: product.Id));
+                .SetupMapping<BasketItem, BasketItemDto>(basketItem);
 
         // Act
         var result = await _fixture.Service.CreateAsync(userId, dto);

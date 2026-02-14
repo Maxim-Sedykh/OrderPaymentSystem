@@ -23,7 +23,7 @@ public class OrderItemServiceTests
     {
         // Arrange
         var product = TestDataFactory.Product.WithPrice(200m).Build();
-        var order = TestDataFactory.Order.Build();
+        var order = TestDataFactory.Order.WithItems(TestDataFactory.OrderItem.Build()).Build();
         var dto = new CreateOrderItemDto { ProductId = product.Id, Quantity = 2 };
 
         _fixture.SetupOrder(order)
@@ -35,8 +35,8 @@ public class OrderItemServiceTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        order.Items.Should().HaveCount(1);
-        order.TotalAmount.Should().Be(400m);
+        order.Items.Should().HaveCount(2);
+        order.TotalAmount.Should().Be(500m);
         _fixture.VerifySaved();
     }
 
@@ -65,7 +65,7 @@ public class OrderItemServiceTests
     public async Task UpdateQuantityAsync_WhenValid_ShouldUpdateItemAndOrderTotal()
     {
         // Arrange
-        var product = TestDataFactory.Product.WithPrice(100m).Build();
+        var product = TestDataFactory.Product.WithPrice(100m).WithStock(10).Build();
         var item = TestDataFactory.OrderItem.WithProduct(product).WithQuantity(1).Build();
         var order = TestDataFactory.Order.WithItems(item).Build();
 

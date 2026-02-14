@@ -20,5 +20,12 @@ public class OrderItemBuilder
     }
     public OrderItemBuilder WithQuantity(int quantity) { _quantity = quantity; return this; }
 
-    public OrderItem Build() => OrderItem.CreateExisting(_id, _productId, _quantity, _price, _product);
+    public OrderItem Build()
+    {
+        var orderItem = OrderItem.CreateExisting(_id, _productId, _quantity, _price, _product);
+
+        orderItem.SetProduct(_product);
+
+        return orderItem;
+    }
 }
