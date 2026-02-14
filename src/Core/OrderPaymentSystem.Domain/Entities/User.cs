@@ -93,9 +93,9 @@ public class User : BaseEntity<Guid>, IAuditable
         PasswordHash = newPasswordHash;
     }
 
-    internal void AddRole(Role role)
+    internal void AddRoles(params IEnumerable<Role> roles)
     {
-        _roles.Add(role);
+        _roles.AddRange(roles);
     }
 
     internal void SetToken(UserToken token)
