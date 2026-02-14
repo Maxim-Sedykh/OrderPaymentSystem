@@ -9,7 +9,7 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
-public class RoleFixture
+internal class RoleFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
     public Mock<IRoleRepository> RoleRepo { get; } = new();

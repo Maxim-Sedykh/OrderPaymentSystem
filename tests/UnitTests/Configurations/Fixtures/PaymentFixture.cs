@@ -10,7 +10,7 @@ using OrderPaymentSystem.UnitTests.Configurations.Factories;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
-public class PaymentFixture
+internal class PaymentFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
     public Mock<IPaymentRepository> PaymentRepo { get; } = new();

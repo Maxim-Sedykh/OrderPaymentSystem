@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OrderPaymentSystem.Application.Settings
+﻿namespace OrderPaymentSystem.Application.Settings
 {
     public class RoleSettings
     {

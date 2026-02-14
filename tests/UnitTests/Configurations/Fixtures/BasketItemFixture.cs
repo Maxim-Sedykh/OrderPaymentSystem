@@ -8,7 +8,7 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
-public class BasketItemFixture
+internal class BasketItemFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
     public Mock<IMapper> Mapper { get; } = new();

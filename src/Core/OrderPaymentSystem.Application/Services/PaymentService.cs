@@ -9,7 +9,7 @@ using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Services;
 
-public class PaymentService : IPaymentService
+internal class PaymentService : IPaymentService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;

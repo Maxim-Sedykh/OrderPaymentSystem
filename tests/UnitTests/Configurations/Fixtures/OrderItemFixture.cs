@@ -9,7 +9,7 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
-public class OrderItemFixture
+internal class OrderItemFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
     public Mock<IMapper> Mapper { get; } = new();

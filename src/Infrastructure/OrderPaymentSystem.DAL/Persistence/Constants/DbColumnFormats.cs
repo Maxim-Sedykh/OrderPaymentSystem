@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace OrderPaymentSystem.DAL.Persistence.Constants;
+﻿namespace OrderPaymentSystem.DAL.Persistence.Constants;
 
 public static class DbColumnFormats
 {

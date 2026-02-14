@@ -11,7 +11,7 @@ using System.Linq.Expressions;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
-public class UserRoleFixture
+internal class UserRoleFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
     public Mock<IUserRepository> UserRepo { get; } = new();

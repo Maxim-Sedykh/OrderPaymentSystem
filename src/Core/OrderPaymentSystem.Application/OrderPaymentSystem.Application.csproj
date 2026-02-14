@@ -16,6 +16,10 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="OrderPaymentSystem.UnitTests" />
+		<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+	</ItemGroup>
+	<ItemGroup>
 		<ProjectReference Include="..\OrderPaymentSystem.Domain\OrderPaymentSystem.Domain.csproj" />
 		<ProjectReference Include="..\OrderPaymentSystem.Shared\OrderPaymentSystem.Shared.csproj" />
 	</ItemGroup>

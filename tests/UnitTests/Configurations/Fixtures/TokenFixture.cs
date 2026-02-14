@@ -7,7 +7,7 @@ using OrderPaymentSystem.Application.Settings;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
-public class TokenFixture
+internal class TokenFixture
 {
     public UserTokenService Service { get; }
     public FakeTimeProvider TimeProvider { get; } = new();

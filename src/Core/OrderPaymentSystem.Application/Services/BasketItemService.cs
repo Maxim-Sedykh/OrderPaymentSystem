@@ -10,7 +10,7 @@ using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Services;
 
-public class BasketItemService : IBasketItemService
+internal class BasketItemService : IBasketItemService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;

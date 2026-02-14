@@ -15,7 +15,7 @@ namespace OrderPaymentSystem.Application.Services;
 /// <summary>
 /// Сервис для работы с ролями
 /// </summary>
-public class RoleService : IRoleService
+internal class RoleService : IRoleService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<RoleService> _logger;

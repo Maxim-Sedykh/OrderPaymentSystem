@@ -15,7 +15,7 @@ namespace OrderPaymentSystem.Application.Services;
 /// <summary>
 /// Сервис отвечающий за работу с товарами (Product)
 /// </summary>
-public class ProductService : IProductService
+internal class ProductService : IProductService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ProductService> _logger;

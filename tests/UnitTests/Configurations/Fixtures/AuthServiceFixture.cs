@@ -17,7 +17,7 @@ using System.Security.Claims;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
-public class AuthServiceFixture
+internal class AuthServiceFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
     public Mock<IUserRepository> UserRepo { get; } = new();

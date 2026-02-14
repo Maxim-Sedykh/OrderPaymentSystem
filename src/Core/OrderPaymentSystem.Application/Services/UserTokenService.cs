@@ -7,7 +7,6 @@ using OrderPaymentSystem.Application.Settings;
 using OrderPaymentSystem.Application.Specifications;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Result;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -19,7 +18,7 @@ namespace OrderPaymentSystem.Application.Services;
 /// <summary>
 /// Сервис для работы с JWT-токенами
 /// </summary>
-public class UserTokenService : IUserTokenService
+internal class UserTokenService : IUserTokenService
 {
     private readonly string _jwtKey;
     private readonly string _issuer;

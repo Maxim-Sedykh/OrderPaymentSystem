@@ -14,7 +14,7 @@ using Order = OrderPaymentSystem.Domain.Entities.Order;
 
 namespace OrderPaymentSystem.Application.Services;
 
-public class OrderService : IOrderService
+internal class OrderService : IOrderService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;

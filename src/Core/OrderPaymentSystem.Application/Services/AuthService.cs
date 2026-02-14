@@ -10,15 +10,13 @@ using OrderPaymentSystem.Application.Specifications;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Result;
-using System;
-using System.Security.Claims;
 
 namespace OrderPaymentSystem.Application.Services;
 
 /// <summary>
 /// Сервис авторизации и аутентификации
 /// </summary>
-public class AuthService : IAuthService
+internal class AuthService : IAuthService
 {
     private readonly int _tokenLifeTimeInDays;
     private readonly string _defaultRoleName;
