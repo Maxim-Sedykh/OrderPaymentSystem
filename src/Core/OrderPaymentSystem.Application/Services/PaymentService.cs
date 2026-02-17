@@ -49,7 +49,7 @@ internal class PaymentService : IPaymentService
             return DataResult<PaymentDto>.Failure(DomainErrors.Order.NotFound(dto.OrderId));
         }
 
-        var payment = Payment.Create(dto.OrderId, dto.AmountPayed, order.TotalAmount, dto.Method);
+        var payment = Payment.Create(dto.OrderId, dto.AmountPaid, order.TotalAmount, dto.Method);
 
         await _unitOfWork.Payments.CreateAsync(payment, ct);
         await _unitOfWork.SaveChangesAsync(ct);

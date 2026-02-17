@@ -4,15 +4,13 @@ using OrderPaymentSystem.Api.Middlewares;
 using Prometheus;
 using Serilog;
 
-try
-{
-    var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
-    builder.AddSerilogConfiguration();
+builder.AddSerilogConfiguration();
 
-    builder.Services.AddApiInfrastructure(builder.Configuration);
-    builder.Services.AddAuthConfiguration(builder.Configuration);
-    builder.Services.AddSwaggerConfiguration();
+builder.Services.AddApiInfrastructure(builder.Configuration);
+builder.Services.AddAuthConfiguration(builder.Configuration);
+builder.Services.AddSwaggerConfiguration();
 
     var app = builder.Build();
 
@@ -29,20 +27,15 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
 
-    app.ApplyDatabaseMigrations();
+    await app.ApplyDatabaseMigrations();
 
     app.MapGet("/ping", () => Results.Ok("pong"));
     app.MapMetrics();
     app.MapControllers();
 
     app.Run();
-}
-catch (Exception ex)
-{
-    Log.Fatal(ex, "The application failed to start correctly");
-}
-finally
-{
-    Log.CloseAndFlush();
-}
+
+public partial class Program { }
+
+public interface IApiMarker { }
 

@@ -123,12 +123,12 @@ public class ProductController : ControllerBase
     [HttpPost]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult> Create(CreateProductDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult<ProductDto>> Create(CreateProductDto dto, CancellationToken cancellationToken)
     {
         var response = await _productService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Created();
+            return Ok(response.Data);
         }
         return BadRequest(response.Error);
     }

@@ -35,13 +35,13 @@ internal class ProductService : IProductService
     }
 
     /// <inheritdoc/>
-    public async Task<BaseResult> CreateAsync(CreateProductDto dto,
+    public async Task<DataResult<ProductDto>> CreateAsync(CreateProductDto dto,
         CancellationToken ct = default)
     {
         var productExists = await _unitOfWork.Products.AnyAsync(ProductSpecs.ByName(dto.Name), ct);
         if (productExists)
         {
-            return BaseResult.Failure(DomainErrors.Product.AlreadyExist(dto.Name));
+            return DataResult<ProductDto>.Failure(DomainErrors.Product.AlreadyExist(dto.Name));
         }
 
         var product = Product.Create(dto.Name, dto.Description, dto.Price, dto.StockQuantity);
@@ -54,7 +54,7 @@ internal class ProductService : IProductService
         _logger.LogInformation("Product created successfully: {ProductName} (ID: {ProductId})",
             dto.Name, product.Id);
 
-        return BaseResult.Success();
+        return DataResult<ProductDto>.Success(_mapper.Map<ProductDto>(product));
     }
 
     /// <inheritdoc/>

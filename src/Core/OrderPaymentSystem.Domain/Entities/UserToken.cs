@@ -29,6 +29,8 @@ public class UserToken : BaseEntity<long>
     /// </summary>
     public User User { get; private set; }
 
+    private UserToken() { }
+
     private UserToken(Guid userId, string refreshToken, DateTime expireTime)
     {
         UserId = userId;

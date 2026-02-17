@@ -36,7 +36,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Architecture/OrderPaymentSystem.ArchitectureTests.csproj" />
-    <Project Path="tests/Functional/OrderPaymentSystem.FunctionalTests.csproj" />
     <Project Path="tests/Integration/OrderPaymentSystem.IntegrationTests.csproj" />
     <Project Path="tests/UnitTests/OrderPaymentSystem.UnitTests.csproj" />
   </Folder>

@@ -20,12 +20,12 @@ public class PaymentsController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(CreatePaymentDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult<PaymentDto>> Create(CreatePaymentDto dto, CancellationToken cancellationToken)
     {
         var response = await _paymentService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Created();
+            return Ok(response.Data);
         }
         return BadRequest(response.Error);
     }

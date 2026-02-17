@@ -25,6 +25,9 @@
   <ItemGroup>
 	<InternalsVisibleTo Include="OrderPaymentSystem.UnitTests" />
   </ItemGroup>
+	<ItemGroup>
+		<InternalsVisibleTo Include="OrderPaymentSystem.IntegrationTests" />
+	</ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Update="Resources\ErrorMessage.resx">

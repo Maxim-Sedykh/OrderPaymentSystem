@@ -9,7 +9,7 @@ public class CreatePaymentValidator : AbstractValidator<CreatePaymentDto>
 {
     public CreatePaymentValidator()
     {
-        RuleFor(x => x.AmountPayed)
+        RuleFor(x => x.AmountPaid)
             .GreaterThan(0)
             .WithError(DomainErrors.Payment.AmountPositive());
 

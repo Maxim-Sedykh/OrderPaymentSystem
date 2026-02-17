@@ -9,6 +9,8 @@ namespace OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories.Base;
 /// <typeparam name="TEntity">Тип сущности</typeparam>
 public interface IBaseRepository<TEntity>
 {
+    Task<List<TEntity>> GetAll(CancellationToken ct = default);
+
     Task<bool> AnyAsync(ISpecification<TEntity> spec, CancellationToken ct = default);
 
     Task<TEntity> GetFirstOrDefaultAsync(ISpecification<TEntity> spec, CancellationToken ct = default);

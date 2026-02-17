@@ -9,6 +9,9 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	<DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
+	<PreserveCompilationContext>true</PreserveCompilationContext>
+	<NoWarn>$(NoWarn);ASP0027</NoWarn>
+	<PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>

@@ -149,4 +149,9 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
             throw new ArgumentNullException(nameof(entities), "Entities is null");
         }
     }
+
+    public async Task<List<TEntity>> GetAll(CancellationToken ct = default)
+    {
+        return await _table.ToListAsync(ct);
+    }
 }

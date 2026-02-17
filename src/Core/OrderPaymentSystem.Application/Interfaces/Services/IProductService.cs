@@ -26,7 +26,7 @@ public interface IProductService
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    Task<BaseResult> CreateAsync(CreateProductDto dto, CancellationToken ct = default);
+    Task<DataResult<ProductDto>> CreateAsync(CreateProductDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// Удаление товара по идентификатору
