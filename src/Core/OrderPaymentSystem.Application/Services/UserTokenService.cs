@@ -24,7 +24,7 @@ internal class UserTokenService : IUserTokenService
     private readonly string _issuer;
     private readonly string _audience;
     private readonly int _refreshTokenLifeTimeInDays;
-    private readonly int _accessTokenLifeTimeInDays;
+    private readonly int _accessTokenLifeTimeInMinutes;
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;
 
@@ -37,7 +37,7 @@ internal class UserTokenService : IUserTokenService
         _issuer = options.Value.Issuer;
         _audience = options.Value.Audience;
         _refreshTokenLifeTimeInDays = options.Value.RefreshTokenValidityInDays;
-        _accessTokenLifeTimeInDays = options.Value.AccessTokenValidityInMinutes;
+        _accessTokenLifeTimeInMinutes = options.Value.AccessTokenValidityInMinutes;
         _unitOfWork = unitOfWork;
         _timeProvider = timeProvider;
     }
@@ -52,7 +52,7 @@ internal class UserTokenService : IUserTokenService
             issuer: _issuer,
             audience: _audience,
             claims: claims,
-            expires: _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(_accessTokenLifeTimeInDays),
+            expires: _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(_accessTokenLifeTimeInMinutes),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
@@ -115,7 +115,7 @@ internal class UserTokenService : IUserTokenService
 
         user.UserToken.UpdateRefreshTokenData(
             newRefreshToken,
-            _timeProvider.GetUtcNow().UtcDateTime.AddDays(_accessTokenLifeTimeInDays),
+            _timeProvider.GetUtcNow().UtcDateTime.AddDays(_refreshTokenLifeTimeInDays),
             _timeProvider.GetUtcNow().UtcDateTime
         );
 

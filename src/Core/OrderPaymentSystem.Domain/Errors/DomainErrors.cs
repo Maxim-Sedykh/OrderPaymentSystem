@@ -66,9 +66,9 @@ public static class DomainErrors
         public static Error RolesNotFound() 
             => new(ErrorCodes.RolesNotFound, ErrorMessage.RolesNotFound);
 
-        public static Error UserAlreadyHasRole(int roleId) 
+        public static Error UserAlreadyHasRole(string roleName) 
             => new(ErrorCodes.UserAlreadyExistThisRole,
-                string.Format(ErrorMessage.UserAlreadyExistThisRole, roleId));
+                string.Format(ErrorMessage.UserAlreadyExistThisRole, roleName));
 
         public static Error UserRoleNotFound(int roleId)
             => new(ErrorCodes.UserRoleNotFound, string.Format(ErrorMessage.UserRolesNotFound, roleId));

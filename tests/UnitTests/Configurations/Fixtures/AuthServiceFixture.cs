@@ -40,7 +40,6 @@ internal class AuthServiceFixture
         Uow.Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(Transaction.Object);
 
         var jwtOptions = Options.Create(new JwtSettings { RefreshTokenValidityInDays = 7 });
-        var roleOptions = Options.Create(new RoleSettings { DefaultRoleName = "User" });
 
         Service = new AuthService(
             Mock.Of<ILogger<AuthService>>(),
@@ -48,8 +47,7 @@ internal class AuthServiceFixture
             Uow.Object,
             Hasher.Object,
             TimeProvider,
-            jwtOptions,
-            roleOptions);
+            jwtOptions);
     }
 
     public AuthServiceFixture SetupUserByLogin(User user)

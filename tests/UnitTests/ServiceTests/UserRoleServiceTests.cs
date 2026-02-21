@@ -21,18 +21,18 @@ public class UserRoleServiceTests
     {
         // Arrange
         var user = TestDataFactory.User.Build();
-        var role = TestDataFactory.Role.WithId(1).Build();
+        var role = TestDataFactory.Role.WithId(1).WithName("test").Build();
 
         _fixture.SetupUser(user)
                 .SetupRole(role)
-                .SetupUserExistingRoles([role.Id]);
+                .SetupUserExistingRoles([role.Name]);
 
         // Act
-        var result = await _fixture.Service.CreateAsync(new CreateUserRoleDto(user.Id, role.Id));
+        var result = await _fixture.Service.CreateAsync(user.Id, role.Name);
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be(DomainErrors.Role.UserAlreadyHasRole(role.Id));
+        result.Error.Should().Be(DomainErrors.Role.UserAlreadyHasRole(role.Name));
         _fixture.VerifyNotSaved();
     }
 

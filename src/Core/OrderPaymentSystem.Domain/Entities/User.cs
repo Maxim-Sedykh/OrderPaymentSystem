@@ -93,7 +93,7 @@ public class User : BaseEntity<Guid>, IAuditable
         PasswordHash = newPasswordHash;
     }
 
-    public void AddRoles(params IEnumerable<Role> roles)
+    internal void AddRoles(params IEnumerable<Role> roles)
     {
         _roles.AddRange(roles);
     }

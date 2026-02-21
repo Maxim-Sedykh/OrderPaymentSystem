@@ -62,6 +62,6 @@ public class BasketItemsController : PrincipalAccessController
         {
             return Ok(response.Data);
         }
-        return BadRequest(response.Error);
+        return NotFound(response.Error);
     }
 }

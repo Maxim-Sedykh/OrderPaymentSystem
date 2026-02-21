@@ -53,8 +53,6 @@ internal class BasketItemService : IBasketItemService
 
     public async Task<CollectionResult<BasketItemDto>> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
     {
-        var itemsAllTest = await _unitOfWork.BasketItems.GetAll();
-
         var items = await _unitOfWork.BasketItems
             .GetListProjectedAsync<BasketItemDto>(BasketItemSpecs.ByUserId(userId), ct);
 

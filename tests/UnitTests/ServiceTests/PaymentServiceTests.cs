@@ -25,7 +25,7 @@ public class PaymentServiceTests
     {
         // Arrange
         var order = TestDataFactory.Order.WithItems(TestDataFactory.OrderItem.Build()).Build();
-        var dto = new CreatePaymentDto { OrderId = order.Id, AmountPayed = 1000m, Method = PaymentMethod.Cash };
+        var dto = new CreatePaymentDto { OrderId = order.Id, AmountPaid = 1000m, Method = PaymentMethod.Cash };
 
         _fixture.SetupOrder(order)
                 .SetupPaymentExistence(false);

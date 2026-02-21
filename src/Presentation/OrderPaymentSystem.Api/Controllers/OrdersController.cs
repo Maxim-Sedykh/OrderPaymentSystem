@@ -10,16 +10,14 @@ namespace OrderPaymentSystem.Api.Controllers;
 [Authorize]
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/v{version:apiVersion}/[controller]")]
+[Route("api/v{version:apiVersion}/orders")]
 public class OrdersController : PrincipalAccessController
 {
     private readonly IOrderService _orderService;
-    private readonly IOrderItemService _orderItemService;
 
-    public OrdersController(IOrderService orderService, IOrderItemService orderItemService)
+    public OrdersController(IOrderService orderService)
     {
         _orderService = orderService;
-        _orderItemService = orderItemService;
     }
 
     [HttpGet("{id}")]
@@ -44,7 +42,7 @@ public class OrdersController : PrincipalAccessController
         return BadRequest(response.Error);
     }
 
-    [HttpPatch("/{id}/status")]
+    [HttpPatch("{id}/status")]
     public async Task<ActionResult> UpdateStatus(long id, UpdateOrderStatusDto dto, CancellationToken cancellationToken)
     {
         var response = await _orderService.UpdateStatusAsync(id, dto, cancellationToken);
@@ -66,7 +64,7 @@ public class OrdersController : PrincipalAccessController
         return BadRequest(response.Error);
     }
 
-    [HttpPost("{id}/process/{paymentId}")]
+    [HttpPost("{id}/payments/{paymentId}/complete")]
     public async Task<ActionResult> CompleteProcessing(long id, long paymentId, CancellationToken cancellationToken = default)
     {
         var response = await _orderService.CompleteProcessingAsync(id, paymentId, cancellationToken);
@@ -88,7 +86,7 @@ public class OrdersController : PrincipalAccessController
         return BadRequest(response.Error);
     }
 
-    [HttpPost("{id}/shipment")]
+    [HttpPost("{id}/ship")]
     public async Task<ActionResult> ShipOrder(long id, CancellationToken cancellationToken = default)
     {
         var response = await _orderService.ShipOrderAsync(id, cancellationToken);

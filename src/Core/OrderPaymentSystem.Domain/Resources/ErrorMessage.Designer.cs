@@ -8,560 +8,559 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace OrderPaymentSystem.Domain.Resources {
-    using System;
+namespace OrderPaymentSystem.Domain.Resources; 
+using System;
+
+
+/// <summary>
+///   Класс ресурса со строгой типизацией для поиска локализованных строк и т.д.
+/// </summary>
+// Этот класс создан автоматически классом StronglyTypedResourceBuilder
+// с помощью такого средства, как ResGen или Visual Studio.
+// Чтобы добавить или удалить член, измените файл .ResX и снова запустите ResGen
+// с параметром /str или перестройте свой проект VS.
+[global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+[global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+[global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
+public class ErrorMessage {
     
+    private static global::System.Resources.ResourceManager resourceMan;
+    
+    private static global::System.Globalization.CultureInfo resourceCulture;
+    
+    [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
+    internal ErrorMessage() {
+    }
     
     /// <summary>
-    ///   Класс ресурса со строгой типизацией для поиска локализованных строк и т.д.
+    ///   Возвращает кэшированный экземпляр ResourceManager, использованный этим классом.
     /// </summary>
-    // Этот класс создан автоматически классом StronglyTypedResourceBuilder
-    // с помощью такого средства, как ResGen или Visual Studio.
-    // Чтобы добавить или удалить член, измените файл .ResX и снова запустите ResGen
-    // с параметром /str или перестройте свой проект VS.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class ErrorMessage {
-        
-        private static global::System.Resources.ResourceManager resourceMan;
-        
-        private static global::System.Globalization.CultureInfo resourceCulture;
-        
-        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal ErrorMessage() {
+    [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
+    public static global::System.Resources.ResourceManager ResourceManager {
+        get {
+            if (object.ReferenceEquals(resourceMan, null)) {
+                global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OrderPaymentSystem.Domain.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
+                resourceMan = temp;
+            }
+            return resourceMan;
         }
-        
-        /// <summary>
-        ///   Возвращает кэшированный экземпляр ResourceManager, использованный этим классом.
-        /// </summary>
-        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Resources.ResourceManager ResourceManager {
-            get {
-                if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("OrderPaymentSystem.Domain.Resources.ErrorMessage", typeof(ErrorMessage).Assembly);
-                    resourceMan = temp;
-                }
-                return resourceMan;
-            }
+    }
+    
+    /// <summary>
+    ///   Перезаписывает свойство CurrentUICulture текущего потока для всех
+    ///   обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
+    /// </summary>
+    [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
+    public static global::System.Globalization.CultureInfo Culture {
+        get {
+            return resourceCulture;
         }
-        
-        /// <summary>
-        ///   Перезаписывает свойство CurrentUICulture текущего потока для всех
-        ///   обращений к ресурсу с помощью этого класса ресурса со строгой типизацией.
-        /// </summary>
-        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Globalization.CultureInfo Culture {
-            get {
-                return resourceCulture;
-            }
-            set {
-                resourceCulture = value;
-            }
+        set {
+            resourceCulture = value;
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Элемент корзины с Id {0} не найден.
-        /// </summary>
-        public static string BasketItemNotFound {
-            get {
-                return ResourceManager.GetString("BasketItemNotFound", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Элемент корзины с Id {0} не найден.
+    /// </summary>
+    public static string BasketItemNotFound {
+        get {
+            return ResourceManager.GetString("BasketItemNotFound", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Запись была обновлена другим пользователем, попробуйте ещё раз.
-        /// </summary>
-        public static string ConcurrencyConflict {
-            get {
-                return ResourceManager.GetString("ConcurrencyConflict", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Запись была обновлена другим пользователем, попробуйте ещё раз.
+    /// </summary>
+    public static string ConcurrencyConflict {
+        get {
+            return ResourceManager.GetString("ConcurrencyConflict", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Поле с названием {0} имеет неподходящий формат.
-        /// </summary>
-        public static string FieldInvalidFormat {
-            get {
-                return ResourceManager.GetString("FieldInvalidFormat", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Поле с названием {0} имеет неподходящий формат.
+    /// </summary>
+    public static string FieldInvalidFormat {
+        get {
+            return ResourceManager.GetString("FieldInvalidFormat", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Поле с названием {0} должно быть заполнено.
-        /// </summary>
-        public static string FieldRequired {
-            get {
-                return ResourceManager.GetString("FieldRequired", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Поле с названием {0} должно быть заполнено.
+    /// </summary>
+    public static string FieldRequired {
+        get {
+            return ResourceManager.GetString("FieldRequired", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Значение поля {0} должно быть не более чем {1} символов.
-        /// </summary>
-        public static string FieldValueToLong {
-            get {
-                return ResourceManager.GetString("FieldValueToLong", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Значение поля {0} должно быть не более чем {1} символов.
+    /// </summary>
+    public static string FieldValueToLong {
+        get {
+            return ResourceManager.GetString("FieldValueToLong", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Значение поля {0} должно быть не менее чем {1} символов.
-        /// </summary>
-        public static string FieldValueTooShort {
-            get {
-                return ResourceManager.GetString("FieldValueTooShort", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Значение поля {0} должно быть не менее чем {1} символов.
+    /// </summary>
+    public static string FieldValueTooShort {
+        get {
+            return ResourceManager.GetString("FieldValueTooShort", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Внутренняя ошибка сервера.
-        /// </summary>
-        public static string InternalServerError {
-            get {
-                return ResourceManager.GetString("InternalServerError", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Внутренняя ошибка сервера.
+    /// </summary>
+    public static string InternalServerError {
+        get {
+            return ResourceManager.GetString("InternalServerError", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Не валидный запрос клиента.
-        /// </summary>
-        public static string InvalidClientRequest {
-            get {
-                return ResourceManager.GetString("InvalidClientRequest", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Не валидный запрос клиента.
+    /// </summary>
+    public static string InvalidClientRequest {
+        get {
+            return ResourceManager.GetString("InvalidClientRequest", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Неверные данные пользователя.
-        /// </summary>
-        public static string InvalidCredentials {
-            get {
-                return ResourceManager.GetString("InvalidCredentials", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Неверные данные пользователя.
+    /// </summary>
+    public static string InvalidCredentials {
+        get {
+            return ResourceManager.GetString("InvalidCredentials", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Не валидный токен.
-        /// </summary>
-        public static string InvalidToken {
-            get {
-                return ResourceManager.GetString("InvalidToken", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Не валидный токен.
+    /// </summary>
+    public static string InvalidToken {
+        get {
+            return ResourceManager.GetString("InvalidToken", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Изменений не найдено.
-        /// </summary>
-        public static string NoChangesFound {
-            get {
-                return ResourceManager.GetString("NoChangesFound", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Изменений не найдено.
+    /// </summary>
+    public static string NoChangesFound {
+        get {
+            return ResourceManager.GetString("NoChangesFound", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Не хватает средств для оплаты.
-        /// </summary>
-        public static string NotEnoughPayFunds {
-            get {
-                return ResourceManager.GetString("NotEnoughPayFunds", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Не хватает средств для оплаты.
+    /// </summary>
+    public static string NotEnoughPayFunds {
+        get {
+            return ResourceManager.GetString("NotEnoughPayFunds", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Нельзя менять элементы товара в статусе {0}.
-        /// </summary>
-        public static string OrderCannotAddOrRemoveItemInCurrentStatus {
-            get {
-                return ResourceManager.GetString("OrderCannotAddOrRemoveItemInCurrentStatus", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Нельзя менять элементы товара в статусе {0}.
+    /// </summary>
+    public static string OrderCannotAddOrRemoveItemInCurrentStatus {
+        get {
+            return ResourceManager.GetString("OrderCannotAddOrRemoveItemInCurrentStatus", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Заказ не может быть подтверждён. Текущий статус {0}.
-        /// </summary>
-        public static string OrderCannotBeConfirmed {
-            get {
-                return ResourceManager.GetString("OrderCannotBeConfirmed", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Заказ не может быть подтверждён. Текущий статус {0}.
+    /// </summary>
+    public static string OrderCannotBeConfirmed {
+        get {
+            return ResourceManager.GetString("OrderCannotBeConfirmed", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Заказ не может быть подтверждён без законченного платежа.
-        /// </summary>
-        public static string OrderCannotBeConfirmedWithoutPayment {
-            get {
-                return ResourceManager.GetString("OrderCannotBeConfirmedWithoutPayment", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Заказ не может быть подтверждён без законченного платежа.
+    /// </summary>
+    public static string OrderCannotBeConfirmedWithoutPayment {
+        get {
+            return ResourceManager.GetString("OrderCannotBeConfirmedWithoutPayment", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Заказ не может быть доставлен по причине {0}.
-        /// </summary>
-        public static string OrderCannotBeShipped {
-            get {
-                return ResourceManager.GetString("OrderCannotBeShipped", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Заказ не может быть доставлен по причине {0}.
+    /// </summary>
+    public static string OrderCannotBeShipped {
+        get {
+            return ResourceManager.GetString("OrderCannotBeShipped", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Заказ не может быть доставлен без платежа.
-        /// </summary>
-        public static string OrderCannotBeShippedWithoutPayment {
-            get {
-                return ResourceManager.GetString("OrderCannotBeShippedWithoutPayment", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Заказ не может быть доставлен без платежа.
+    /// </summary>
+    public static string OrderCannotBeShippedWithoutPayment {
+        get {
+            return ResourceManager.GetString("OrderCannotBeShippedWithoutPayment", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Нельзя удалить несуществующий элемент заказа из заказа.
-        /// </summary>
-        public static string OrderCannotRemoveNonExistingItem {
-            get {
-                return ResourceManager.GetString("OrderCannotRemoveNonExistingItem", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Нельзя удалить несуществующий элемент заказа из заказа.
+    /// </summary>
+    public static string OrderCannotRemoveNonExistingItem {
+        get {
+            return ResourceManager.GetString("OrderCannotRemoveNonExistingItem", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Для заказа необходимо указать адрес доставки.
-        /// </summary>
-        public static string OrderDeliveryAddressRequired {
-            get {
-                return ResourceManager.GetString("OrderDeliveryAddressRequired", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Для заказа необходимо указать адрес доставки.
+    /// </summary>
+    public static string OrderDeliveryAddressRequired {
+        get {
+            return ResourceManager.GetString("OrderDeliveryAddressRequired", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Элемент заказа c Id {0} не найден.
-        /// </summary>
-        public static string OrderItemNotFound {
-            get {
-                return ResourceManager.GetString("OrderItemNotFound", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Элемент заказа c Id {0} не найден.
+    /// </summary>
+    public static string OrderItemNotFound {
+        get {
+            return ResourceManager.GetString("OrderItemNotFound", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Заказ должен содержать хотя бы один элемент.
-        /// </summary>
-        public static string OrderItemsEmpty {
-            get {
-                return ResourceManager.GetString("OrderItemsEmpty", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Заказ должен содержать хотя бы один элемент.
+    /// </summary>
+    public static string OrderItemsEmpty {
+        get {
+            return ResourceManager.GetString("OrderItemsEmpty", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Заказ с Id {0} не найден.
-        /// </summary>
-        public static string OrderNotFound {
-            get {
-                return ResourceManager.GetString("OrderNotFound", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Заказ с Id {0} не найден.
+    /// </summary>
+    public static string OrderNotFound {
+        get {
+            return ResourceManager.GetString("OrderNotFound", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Нельзя поменять статус заказа с {0} на {1}.
-        /// </summary>
-        public static string OrderStatusChangeNotAllowed {
-            get {
-                return ResourceManager.GetString("OrderStatusChangeNotAllowed", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Нельзя поменять статус заказа с {0} на {1}.
+    /// </summary>
+    public static string OrderStatusChangeNotAllowed {
+        get {
+            return ResourceManager.GetString("OrderStatusChangeNotAllowed", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Пароль не должен быть пустым.
-        /// </summary>
-        public static string PasswordHashCannotBeEmpty {
-            get {
-                return ResourceManager.GetString("PasswordHashCannotBeEmpty", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Пароль не должен быть пустым.
+    /// </summary>
+    public static string PasswordHashCannotBeEmpty {
+        get {
+            return ResourceManager.GetString("PasswordHashCannotBeEmpty", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Пароли не равны.
-        /// </summary>
-        public static string PasswordNotEqualsPasswordConfirm {
-            get {
-                return ResourceManager.GetString("PasswordNotEqualsPasswordConfirm", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Пароли не равны.
+    /// </summary>
+    public static string PasswordNotEqualsPasswordConfirm {
+        get {
+            return ResourceManager.GetString("PasswordNotEqualsPasswordConfirm", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Платёж уже существует для заказа с Id {0}.
-        /// </summary>
-        public static string PaymentAlreadyExistsForOrder {
-            get {
-                return ResourceManager.GetString("PaymentAlreadyExistsForOrder", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Платёж уже существует для заказа с Id {0}.
+    /// </summary>
+    public static string PaymentAlreadyExistsForOrder {
+        get {
+            return ResourceManager.GetString("PaymentAlreadyExistsForOrder", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Сумма платежа должна быть положительной.
-        /// </summary>
-        public static string PaymentAmountPositive {
-            get {
-                return ResourceManager.GetString("PaymentAmountPositive", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Сумма платежа должна быть положительной.
+    /// </summary>
+    public static string PaymentAmountPositive {
+        get {
+            return ResourceManager.GetString("PaymentAmountPositive", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Несоответствие сдачи в платеже.
-        /// </summary>
-        public static string PaymentCashChangeMismatch {
-            get {
-                return ResourceManager.GetString("PaymentCashChangeMismatch", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Несоответствие сдачи в платеже.
+    /// </summary>
+    public static string PaymentCashChangeMismatch {
+        get {
+            return ResourceManager.GetString("PaymentCashChangeMismatch", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Невозможно поменять статус платежа с {0} на {1}.
-        /// </summary>
-        public static string PaymentInvalidStatus {
-            get {
-                return ResourceManager.GetString("PaymentInvalidStatus", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Невозможно поменять статус платежа с {0} на {1}.
+    /// </summary>
+    public static string PaymentInvalidStatus {
+        get {
+            return ResourceManager.GetString("PaymentInvalidStatus", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Сумма платежа {0} меньше чем нужно заплатить {1}.
-        /// </summary>
-        public static string PaymentNotEnoughAmount {
-            get {
-                return ResourceManager.GetString("PaymentNotEnoughAmount", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Сумма платежа {0} меньше чем нужно заплатить {1}.
+    /// </summary>
+    public static string PaymentNotEnoughAmount {
+        get {
+            return ResourceManager.GetString("PaymentNotEnoughAmount", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Платёж с Id {0} не найден.
-        /// </summary>
-        public static string PaymentNotFound {
-            get {
-                return ResourceManager.GetString("PaymentNotFound", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Платёж с Id {0} не найден.
+    /// </summary>
+    public static string PaymentNotFound {
+        get {
+            return ResourceManager.GetString("PaymentNotFound", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Платёж не связан с заказом.
-        /// </summary>
-        public static string PaymentOrderNotAssociated {
-            get {
-                return ResourceManager.GetString("PaymentOrderNotAssociated", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Платёж не связан с заказом.
+    /// </summary>
+    public static string PaymentOrderNotAssociated {
+        get {
+            return ResourceManager.GetString("PaymentOrderNotAssociated", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Платежи не найдены.
-        /// </summary>
-        public static string PaymentsNotFound {
-            get {
-                return ResourceManager.GetString("PaymentsNotFound", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Платежи не найдены.
+    /// </summary>
+    public static string PaymentsNotFound {
+        get {
+            return ResourceManager.GetString("PaymentsNotFound", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Товар с названием {0} уже существует.
-        /// </summary>
-        public static string ProductAlreadyExist {
-            get {
-                return ResourceManager.GetString("ProductAlreadyExist", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Товар с названием {0} уже существует.
+    /// </summary>
+    public static string ProductAlreadyExist {
+        get {
+            return ResourceManager.GetString("ProductAlreadyExist", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Название товара должно быть не пустым.
-        /// </summary>
-        public static string ProductNameEmpty {
-            get {
-                return ResourceManager.GetString("ProductNameEmpty", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Название товара должно быть не пустым.
+    /// </summary>
+    public static string ProductNameEmpty {
+        get {
+            return ResourceManager.GetString("ProductNameEmpty", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Товар с Id {0} не найден.
-        /// </summary>
-        public static string ProductNotFound {
-            get {
-                return ResourceManager.GetString("ProductNotFound", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Товар с Id {0} не найден.
+    /// </summary>
+    public static string ProductNotFound {
+        get {
+            return ResourceManager.GetString("ProductNotFound", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на У товара должна быть положительная цена.
-        /// </summary>
-        public static string ProductPricePositive {
-            get {
-                return ResourceManager.GetString("ProductPricePositive", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на У товара должна быть положительная цена.
+    /// </summary>
+    public static string ProductPricePositive {
+        get {
+            return ResourceManager.GetString("ProductPricePositive", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Товары не найдены.
-        /// </summary>
-        public static string ProductsNotFound {
-            get {
-                return ResourceManager.GetString("ProductsNotFound", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Товары не найдены.
+    /// </summary>
+    public static string ProductsNotFound {
+        get {
+            return ResourceManager.GetString("ProductsNotFound", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Запрошенное количество товара{0} для товара с Id {1} недоступно..
-        /// </summary>
-        public static string ProductStockQuantityNotAvailable {
-            get {
-                return ResourceManager.GetString("ProductStockQuantityNotAvailable", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Запрошенное количество товара{0} для товара с Id {1} недоступно..
+    /// </summary>
+    public static string ProductStockQuantityNotAvailable {
+        get {
+            return ResourceManager.GetString("ProductStockQuantityNotAvailable", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Количество товара должно быть не отрицательным.
-        /// </summary>
-        public static string QuantityPositive {
-            get {
-                return ResourceManager.GetString("QuantityPositive", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Количество товара должно быть не отрицательным.
+    /// </summary>
+    public static string QuantityPositive {
+        get {
+            return ResourceManager.GetString("QuantityPositive", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Время жизни токена истекло.
-        /// </summary>
-        public static string RefreshTokenExpired {
-            get {
-                return ResourceManager.GetString("RefreshTokenExpired", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Время жизни токена истекло.
+    /// </summary>
+    public static string RefreshTokenExpired {
+        get {
+            return ResourceManager.GetString("RefreshTokenExpired", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Время истечения жизни токена должно быть в будущем.
-        /// </summary>
-        public static string RefreshTokenFuture {
-            get {
-                return ResourceManager.GetString("RefreshTokenFuture", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Время истечения жизни токена должно быть в будущем.
+    /// </summary>
+    public static string RefreshTokenFuture {
+        get {
+            return ResourceManager.GetString("RefreshTokenFuture", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Роль с таким названием {0} уже существует.
-        /// </summary>
-        public static string RoleAlreadyExist {
-            get {
-                return ResourceManager.GetString("RoleAlreadyExist", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Роль с таким названием {0} уже существует.
+    /// </summary>
+    public static string RoleAlreadyExist {
+        get {
+            return ResourceManager.GetString("RoleAlreadyExist", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Название роли не может быть пустым.
-        /// </summary>
-        public static string RoleNameCannotBeEmpty {
-            get {
-                return ResourceManager.GetString("RoleNameCannotBeEmpty", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Название роли не может быть пустым.
+    /// </summary>
+    public static string RoleNameCannotBeEmpty {
+        get {
+            return ResourceManager.GetString("RoleNameCannotBeEmpty", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Роль c id {0} не найдена.
-        /// </summary>
-        public static string RoleNotFoundById {
-            get {
-                return ResourceManager.GetString("RoleNotFoundById", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Роль c id {0} не найдена.
+    /// </summary>
+    public static string RoleNotFoundById {
+        get {
+            return ResourceManager.GetString("RoleNotFoundById", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Роль с названием {0} не найдена.
-        /// </summary>
-        public static string RoleNotFoundByName {
-            get {
-                return ResourceManager.GetString("RoleNotFoundByName", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Роль с названием {0} не найдена.
+    /// </summary>
+    public static string RoleNotFoundByName {
+        get {
+            return ResourceManager.GetString("RoleNotFoundByName", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Роли не найдены.
-        /// </summary>
-        public static string RolesNotFound {
-            get {
-                return ResourceManager.GetString("RolesNotFound", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Роли не найдены.
+    /// </summary>
+    public static string RolesNotFound {
+        get {
+            return ResourceManager.GetString("RolesNotFound", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Для изменения роли пользователя выбрана одна и та же роль.
-        /// </summary>
-        public static string SameRoleSelected {
-            get {
-                return ResourceManager.GetString("SameRoleSelected", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Для изменения роли пользователя выбрана одна и та же роль.
+    /// </summary>
+    public static string SameRoleSelected {
+        get {
+            return ResourceManager.GetString("SameRoleSelected", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Количество товара на складе не может быть отрицательным.
-        /// </summary>
-        public static string StockQuantityPositive {
-            get {
-                return ResourceManager.GetString("StockQuantityPositive", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Количество товара на складе не может быть отрицательным.
+    /// </summary>
+    public static string StockQuantityPositive {
+        get {
+            return ResourceManager.GetString("StockQuantityPositive", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Пользователь c логином {0} уже существует.
-        /// </summary>
-        public static string UserAlreadyExist {
-            get {
-                return ResourceManager.GetString("UserAlreadyExist", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Пользователь c логином {0} уже существует.
+    /// </summary>
+    public static string UserAlreadyExist {
+        get {
+            return ResourceManager.GetString("UserAlreadyExist", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Пользователь с ролью у которой Id {0} уже существует.
-        /// </summary>
-        public static string UserAlreadyExistThisRole {
-            get {
-                return ResourceManager.GetString("UserAlreadyExistThisRole", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Пользователь с ролью у которой Id {0} уже существует.
+    /// </summary>
+    public static string UserAlreadyExistThisRole {
+        get {
+            return ResourceManager.GetString("UserAlreadyExistThisRole", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Пользователь с Id {0} не найден.
-        /// </summary>
-        public static string UserNotFoundById {
-            get {
-                return ResourceManager.GetString("UserNotFoundById", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Пользователь с Id {0} не найден.
+    /// </summary>
+    public static string UserNotFoundById {
+        get {
+            return ResourceManager.GetString("UserNotFoundById", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Пользователь с логином {0} не найден.
-        /// </summary>
-        public static string UserNotFoundByLogin {
-            get {
-                return ResourceManager.GetString("UserNotFoundByLogin", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Пользователь с логином {0} не найден.
+    /// </summary>
+    public static string UserNotFoundByLogin {
+        get {
+            return ResourceManager.GetString("UserNotFoundByLogin", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на У пользователя роль с Id {0} не найдена.
-        /// </summary>
-        public static string UserRoleNotFound {
-            get {
-                return ResourceManager.GetString("UserRoleNotFound", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на У пользователя роль с Id {0} не найдена.
+    /// </summary>
+    public static string UserRoleNotFound {
+        get {
+            return ResourceManager.GetString("UserRoleNotFound", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на У пользователя с Id {0} нет ролей.
-        /// </summary>
-        public static string UserRolesNotFound {
-            get {
-                return ResourceManager.GetString("UserRolesNotFound", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на У пользователя с Id {0} нет ролей.
+    /// </summary>
+    public static string UserRolesNotFound {
+        get {
+            return ResourceManager.GetString("UserRolesNotFound", resourceCulture);
         }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на Пользователь не был получен из БД.
-        /// </summary>
-        public static string UserWasNull {
-            get {
-                return ResourceManager.GetString("UserWasNull", resourceCulture);
-            }
+    }
+    
+    /// <summary>
+    ///   Ищет локализованную строку, похожую на Пользователь не был получен из БД.
+    /// </summary>
+    public static string UserWasNull {
+        get {
+            return ResourceManager.GetString("UserWasNull", resourceCulture);
         }
     }
 }

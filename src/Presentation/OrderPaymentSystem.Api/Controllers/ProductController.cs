@@ -51,7 +51,7 @@ public class ProductController : ControllerBase
         {
             return Ok(response.Data);
         }
-        return BadRequest(response.Error);
+        return NotFound(response.Error);
     }
 
     /// <summary>
@@ -128,7 +128,7 @@ public class ProductController : ControllerBase
         var response = await _productService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return Ok(response.Data);
+            return CreatedAtAction(nameof(GetById), new { id = response.Data.Id }, response.Data);
         }
         return BadRequest(response.Error);
     }

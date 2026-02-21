@@ -28,7 +28,7 @@ public static class ServiceCollectionExtensions
         // Settings
         services.Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)));
         services.Configure<RedisSettings>(configuration.GetSection(nameof(RedisSettings)));
-        services.Configure<RoleSettings>(configuration.GetSection(nameof(RoleSettings)));
+        services.Configure<AdminSettings>(configuration.GetSection(nameof(AdminSettings)));
 
         // Common API
         services.AddEndpointsApiExplorer();

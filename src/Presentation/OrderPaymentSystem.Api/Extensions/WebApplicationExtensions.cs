@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Interfaces.Auth;
+using OrderPaymentSystem.Application.Settings;
 using OrderPaymentSystem.DAL.Persistence;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
-using System;
 
 namespace OrderPaymentSystem.Api.Extensions;
 
@@ -25,55 +27,70 @@ public static class WebApplicationExtensions
         }
     }
 
-    public static async Task ApplyDatabaseMigrations(this WebApplication app)
+    public static async Task ApplyDatabaseMigrationsAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
         var services = scope.ServiceProvider;
+
         try
         {
             var context = services.GetRequiredService<ApplicationDbContext>();
-            var passwordHasher = services.GetRequiredService<IPasswordHasher>();
-            if (context.Database.GetPendingMigrations().Any())
+
+            if ((await context.Database.GetPendingMigrationsAsync()).Any())
             {
                 await context.Database.MigrateAsync();
             }
-            await EnsureCreatedRole(context, "User");
-            await EnsureCreatedRole(context, "Moderator");
-            var adminRole = await EnsureCreatedRole(context, "Admin");
 
-            if (!await context.Users.AnyAsync(r => r.Login == "admin"))
-            {
-
-                var admin = User.Create("admin", passwordHasher.Hash("12345"));
-                admin.AddRoles(adminRole);
-
-                await context.Users.AddAsync(admin);
-
-                await context.SaveChangesAsync();
-            }
-
+            await SeedIdentityDataAsync(services);
         }
         catch (Exception ex)
         {
             var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "Ошибка при применении миграций БД.");
+            logger.LogError(ex, "Error while migrating database");
+
+            throw;
         }
     }
 
+    private static async Task SeedIdentityDataAsync(IServiceProvider services)
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        var passwordHasher = services.GetRequiredService<IPasswordHasher>();
+        var adminSettings = services.GetRequiredService<IOptions<AdminSettings>>().Value;
+
+        await EnsureCreatedRole(context, DefaultRoles.User);
+        await EnsureCreatedRole(context, DefaultRoles.Moderator);
+        var adminRole = await EnsureCreatedRole(context, DefaultRoles.Admin);
+
+        await EnsureAdminUser(context, passwordHasher, adminRole, adminSettings);
+    }
 
 
     private static async Task<Role> EnsureCreatedRole(ApplicationDbContext context, string roleName)
     {
-        if (!await context.Roles.AnyAsync(r => r.Name == roleName))
+        var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+
+        if (role == null)
         {
-            var userRole = Role.Create(roleName);
-            context.Roles.Add(userRole);
-
+            role = Role.Create(roleName);
+            context.Roles.Add(role);
             await context.SaveChangesAsync();
-
-            return userRole;
         }
 
-        return null;
+        return role;
+    }
+
+    private static async Task EnsureAdminUser(ApplicationDbContext context, IPasswordHasher passwordHasher, Role adminRole, AdminSettings adminSettings)
+    {
+        if (await context.Users.AnyAsync(u => u.Login == adminSettings.Login))
+            return;
+
+        var admin = User.Create(adminSettings.Login, passwordHasher.Hash(adminSettings.Password));
+        var userRole = UserRole.Create(admin.Id, adminRole.Id);
+
+        context.Users.Add(admin);
+        context.UserRoles.Add(userRole);
+
+        await context.SaveChangesAsync();
     }
 }

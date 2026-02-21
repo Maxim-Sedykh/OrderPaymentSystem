@@ -17,6 +17,8 @@ services:
       - RedisSettings__Url=redis:6379
       - ASPNETCORE_Kestrel__Certificates__Default__Password=${HTTPS_PASSWORD}
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.pfx
+      - ASPNETCORE_AdminSettings_Login=${ADMIN_LOGIN}
+      - ASPNETCORE_AdminSettings_Password=${ADMIN_PASSWORD}
     ports:
       - "5000:8080"
       - "5001:8081"

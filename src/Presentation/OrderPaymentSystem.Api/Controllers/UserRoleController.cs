@@ -31,6 +31,7 @@ public class UserRoleController : ControllerBase
     /// <summary>
     /// Создание роли для пользователя
     /// </summary>
+    /// <param name="userId"></param>
     /// <param name="dto"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
@@ -44,15 +45,15 @@ public class UserRoleController : ControllerBase
     /// </remarks>
     /// <response code="200">Если роль для пользователя создалась</response>
     /// <response code="400">Если роль для пользователя не была создана</response>
-    [HttpPost("roles")]
+    [HttpPost("{userId}/roles")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<UserRoleDto>> AddRoleForUser(CreateUserRoleDto dto, CancellationToken cancellationToken)
+    public async Task<ActionResult<UserRoleDto>> AddRoleForUser(Guid userId,[FromBody] string roleName, CancellationToken cancellationToken)
     {
-        var response = await _userRoleService.CreateAsync(dto, cancellationToken);
+        var response = await _userRoleService.CreateAsync(userId, roleName, cancellationToken);
         if (response.IsSuccess)
         {
-            return Created(string.Empty, response.Data);
+            return CreatedAtAction(nameof(GetUserRoles), response.Data);
         }
         return BadRequest(response.Error);
     }

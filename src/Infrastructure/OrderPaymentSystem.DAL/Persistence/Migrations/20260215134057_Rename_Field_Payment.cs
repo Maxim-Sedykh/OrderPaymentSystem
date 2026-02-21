@@ -2,27 +2,26 @@
 
 #nullable disable
 
-namespace OrderPaymentSystem.DAL.Persistence.Migrations
+namespace OrderPaymentSystem.DAL.Persistence.Migrations;
+
+/// <inheritdoc />
+public partial class Rename_Field_Payment : Migration
 {
     /// <inheritdoc />
-    public partial class Rename_Field_Payment : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.RenameColumn(
-                name: "AmountPayed",
-                table: "Payments",
-                newName: "AmountPaid");
-        }
+        migrationBuilder.RenameColumn(
+            name: "AmountPayed",
+            table: "Payments",
+            newName: "AmountPaid");
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.RenameColumn(
-                name: "AmountPaid",
-                table: "Payments",
-                newName: "AmountPayed");
-        }
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.RenameColumn(
+            name: "AmountPaid",
+            table: "Payments",
+            newName: "AmountPayed");
     }
 }

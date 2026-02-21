@@ -7,6 +7,7 @@ using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Settings;
 using OrderPaymentSystem.Application.Specifications;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Result;
@@ -19,7 +20,6 @@ namespace OrderPaymentSystem.Application.Services;
 internal class AuthService : IAuthService
 {
     private readonly int _tokenLifeTimeInDays;
-    private readonly string _defaultRoleName;
 
     private readonly ILogger<AuthService> _logger;
     private readonly IUserTokenService _userTokenService;
@@ -36,8 +36,7 @@ internal class AuthService : IAuthService
         IUnitOfWork unitOfWork,
         IPasswordHasher passwordHasher,
         TimeProvider timeProvider,
-        IOptions<JwtSettings> jwtSettings,
-        IOptions<RoleSettings> roleSettings)
+        IOptions<JwtSettings> jwtSettings)
     {
         _logger = logger;
         _userTokenService = userTokenService;
@@ -46,14 +45,11 @@ internal class AuthService : IAuthService
         _timeProvider = timeProvider;
 
         _tokenLifeTimeInDays = jwtSettings.Value.RefreshTokenValidityInDays;
-        _defaultRoleName = roleSettings.Value.DefaultRoleName;
     }
 
     /// <inheritdoc/>
     public async Task<DataResult<TokenDto>> LoginAsync(LoginUserDto dto, CancellationToken ct = default)
     {
-        var users = await _unitOfWork.Users.GetAll();
-
         var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(dto.Login).ForAuth(), ct);
         if (user == null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
         {
@@ -123,7 +119,7 @@ internal class AuthService : IAuthService
             await _unitOfWork.SaveChangesAsync(ct);
 
             var roleId = await _unitOfWork.Roles.GetValueAsync(
-                RoleSpecs.ByName(_defaultRoleName),
+                RoleSpecs.ByName(DefaultRoles.User),
                 x => x.Id,
                 ct);
 
@@ -132,7 +128,7 @@ internal class AuthService : IAuthService
                 await transaction.RollbackAsync(ct);
                 _logger.LogError("default User role not found during registration for user: {Login}", dto.Login);
 
-                return BaseResult.Failure(DomainErrors.Role.NotFoundByName(_defaultRoleName));
+                return BaseResult.Failure(DomainErrors.Role.NotFoundByName(DefaultRoles.User));
             }
 
             var userRole = UserRole.Create(user.Id, roleId);

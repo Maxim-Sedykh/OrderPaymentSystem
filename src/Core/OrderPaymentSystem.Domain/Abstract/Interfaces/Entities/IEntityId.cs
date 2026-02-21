@@ -1,14 +1,13 @@
-﻿namespace OrderPaymentSystem.Domain.Abstract.Interfaces.Entities
+﻿namespace OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
+
+/// <summary>
+/// Определяет сущность, имеющую идентификатор.
+/// </summary>
+/// <typeparam name="TId">Тип идентификатора.</typeparam>
+public interface IEntityId<TId>
 {
     /// <summary>
-    /// Определяет сущность, имеющую идентификатор.
+    /// Уникальный идентификатор сущности.
     /// </summary>
-    /// <typeparam name="TId">Тип идентификатора.</typeparam>
-    public interface IEntityId<TId>
-    {
-        /// <summary>
-        /// Уникальный идентификатор сущности.
-        /// </summary>
-        TId Id { get; }
-    }
+    TId Id { get; }
 }

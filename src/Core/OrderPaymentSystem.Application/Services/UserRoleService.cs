@@ -32,31 +32,32 @@ internal class UserRoleService : IUserRoleService
 
     /// <inheritdoc/>
     public async Task<DataResult<UserRoleDto>> CreateAsync(
-        CreateUserRoleDto dto,
+        Guid userId,
+        string roleName,
         CancellationToken ct = default)
     {
-        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ById(dto.UserId).WithRoles(), ct);
+        var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ById(userId).WithRoles(), ct);
 
         if (user == null)
         {
-            return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(dto.UserId));
+            return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(userId));
         }
 
-        var userRoleIds = await _unitOfWork.Roles
+        var userRoleNames = await _unitOfWork.Roles
             .GetListValuesAsync(
-            RoleSpecs.ByUserId(dto.UserId),
-            x => x.Id,
+            RoleSpecs.ByUserId(userId),
+            x => x.Name,
             ct);
 
-        if (userRoleIds.Contains(dto.RoleId))
+        if (userRoleNames.Contains(roleName))
         {
-            return DataResult<UserRoleDto>.Failure(DomainErrors.Role.UserAlreadyHasRole(dto.RoleId));
+            return DataResult<UserRoleDto>.Failure(DomainErrors.Role.UserAlreadyHasRole(roleName));
         }
 
-        var role = await _unitOfWork.Roles.GetFirstOrDefaultAsync(RoleSpecs.ById(dto.RoleId), ct);
+        var role = await _unitOfWork.Roles.GetFirstOrDefaultAsync(RoleSpecs.ByName(roleName), ct);
         if (role == null)
         {
-            return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundById(dto.RoleId));
+            return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundByName(roleName));
         }
 
         var userRole = UserRole.Create(user.Id, role.Id);
@@ -64,7 +65,7 @@ internal class UserRoleService : IUserRoleService
         await _unitOfWork.UserRoles.CreateAsync(userRole, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
-        await _cacheService.RemoveAsync(CacheKeys.User.Roles(dto.UserId), ct);
+        await _cacheService.RemoveAsync(CacheKeys.User.Roles(userId), ct);
 
         return DataResult<UserRoleDto>.Success(new UserRoleDto(user.Login, role.Name));
     }
@@ -116,7 +117,7 @@ internal class UserRoleService : IUserRoleService
 
         if (user.Roles.Any(x => x.Id == dto.ToRoleId))
         {
-            return DataResult<UserRoleDto>.Failure(DomainErrors.Role.UserAlreadyHasRole(newRole.Id));
+            return DataResult<UserRoleDto>.Failure(DomainErrors.Role.UserAlreadyHasRole(newRole.Name));
         }
 
         await using var transaction = await _unitOfWork.BeginTransactionAsync(ct);

@@ -14,7 +14,7 @@ public interface IUserRoleService
     /// <param name="dto"></param>
     /// <param name="ct">Токен отмены операции</param>
     /// <returns></returns>
-    Task<DataResult<UserRoleDto>> CreateAsync(CreateUserRoleDto dto, CancellationToken ct = default);
+    Task<DataResult<UserRoleDto>> CreateAsync(Guid userId, string roleName, CancellationToken ct = default);
 
     /// <summary>
     /// Удаление роли у пользователя
