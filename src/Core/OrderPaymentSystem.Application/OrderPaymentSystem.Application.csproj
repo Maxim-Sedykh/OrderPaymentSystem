@@ -17,6 +17,7 @@
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="OrderPaymentSystem.UnitTests" />
+		<InternalsVisibleTo Include="OrderPaymentSystem.Benchmarks" />
 		<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
 	</ItemGroup>
 	<ItemGroup>

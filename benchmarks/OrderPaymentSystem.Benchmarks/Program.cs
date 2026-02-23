@@ -1,9 +1,15 @@
-﻿namespace OrderPaymentSystem.Benchmarks;
+﻿using BenchmarkDotNet.Running;
+using OrderPaymentSystem.Benchmarks.Benchmarks;
 
-internal class Program
+namespace OrderPaymentSystem.Benchmarks;
+
+public class Program
 {
-    static void Main(string[] args)
+    public static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        BenchmarkRunner.Run<AuthServiceBenchmarks>();
+        BenchmarkRunner.Run<OrderServiceBenchmarks>();
+        BenchmarkRunner.Run<ProductServiceBenchmarks>();
+        BenchmarkRunner.Run<UserTokenServiceBenchmarks>();
     }
 }

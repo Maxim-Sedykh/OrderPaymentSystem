@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.Caching.Distributed;
+﻿using MessagePack;
+using MessagePack.Resolvers;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.Interfaces.Cache;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace OrderPaymentSystem.DAL.Cache;
 
@@ -13,7 +13,7 @@ public sealed class RedisCacheService : ICacheService
 {
     private readonly IDistributedCache _cache;
     private readonly ILogger<RedisCacheService> _logger;
-    private readonly JsonSerializerOptions _jsonSerializerOptions;
+    private readonly MessagePackSerializerOptions _options;
 
     /// <summary>
     /// Создает экземпляр <see cref="RedisCacheService"/>
@@ -25,12 +25,15 @@ public sealed class RedisCacheService : ICacheService
         _cache = cache;
         _logger = logger;
 
-        _jsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = false,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
+        var resolver = CompositeResolver.Create(
+            ContractlessStandardResolver.Instance,
+            StandardResolver.Instance
+        );
+
+        _options = MessagePackSerializerOptions.Standard
+            .WithResolver(resolver);
+
+        MessagePackSerializer.DefaultOptions = _options;
     }
 
     /// <inheritdoc/>
@@ -45,14 +48,16 @@ public sealed class RedisCacheService : ICacheService
             return null;
         }
 
-        var result = JsonSerializer.Deserialize<T>(data, _jsonSerializerOptions);
-
-        if (result is null)
+        try
         {
-            _logger.LogWarning("Failed to deserialize cached data for key: {CacheKey}", key);
+            return MessagePackSerializer.Deserialize<T>(data, _options, cancellationToken);
         }
-
-        return result;
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to deserialize cached data for key: {CacheKey}", key);
+            await _cache.RemoveAsync(key, cancellationToken);
+            return null;
+        }
     }
 
     /// <inheritdoc/>
@@ -71,8 +76,11 @@ public sealed class RedisCacheService : ICacheService
             return cachedValue;
         }
 
-        var value = await factory(cancellationToken)
-            ?? throw new InvalidOperationException($"Factory for key '{key}' returned null");
+        var value = await factory(cancellationToken);
+        if (value is null)
+        {
+            return null;
+        }
 
         await SetAsync(key, value, options, cancellationToken);
 
@@ -88,7 +96,7 @@ public sealed class RedisCacheService : ICacheService
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
         ArgumentNullException.ThrowIfNull(value, nameof(value));
 
-        var data = JsonSerializer.SerializeToUtf8Bytes(value, _jsonSerializerOptions);
+        var data = MessagePackSerializer.Serialize(value, cancellationToken: cancellationToken);
 
         var cacheOptions = options ?? GetDefaultCacheOptions();
 
@@ -110,8 +118,8 @@ public sealed class RedisCacheService : ICacheService
     {
         return new DistributedCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
-            SlidingExpiration = TimeSpan.FromMinutes(2)
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15),
+            SlidingExpiration = TimeSpan.FromMinutes(5)
         };
     }
 }

@@ -14,7 +14,7 @@ public interface IOrderService
     /// <param name="dto"></param>
     /// <param name="ct"></param>
     /// <returns></returns>
-    Task<DataResult<OrderDto>> CreateAsync(Guid userId, CreateOrderDto dto, CancellationToken ct = default);
+    Task<DataResult<long>> CreateAsync(Guid userId, CreateOrderDto dto, CancellationToken ct = default);
 
     /// <summary>
     /// Получить заказ по Id

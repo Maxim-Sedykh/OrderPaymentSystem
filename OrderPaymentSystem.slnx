@@ -16,9 +16,7 @@
     <File Path=".env" />
     <File Path=".env.template" />
     <File Path="deploy/prometheus.yml" />
-    <Project Path="deploy/docker-compose.dcproj">
-      <Build />
-    </Project>
+    <File Path="docker-compose.yml" />
   </Folder>
   <Folder Name="/benchmarks/">
     <Project Path="benchmarks/OrderPaymentSystem.Benchmarks/OrderPaymentSystem.Benchmarks.csproj" />

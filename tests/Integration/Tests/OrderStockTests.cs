@@ -45,13 +45,19 @@ public class OrderStockTests : BaseIntegrationTest
 
         var orderResponse = await Client.PostAsJsonAsync(TestConstants.ApiOrdersV1, orderDto);
         orderResponse.EnsureSuccessStatusCode();
-        var createdOrder = await orderResponse.Content.ReadFromJsonAsync<OrderDto>();
-        createdOrder.Should().NotBeNull();
+        var createdOrderId = await orderResponse.Content.ReadFromJsonAsync<long>();
+
+        var getResponse = await Client.GetAsync($"{TestConstants.ApiOrdersV1}/{createdOrderId}");
+        getResponse.EnsureSuccessStatusCode();
+
+        var getCreatedOrder = await getResponse.Content.ReadFromJsonAsync<OrderDto>();
+
+        getCreatedOrder.Should().NotBeNull();
 
         // Act
         var paymentDto = new CreatePaymentDto()
         {
-            OrderId = createdOrder.Id,
+            OrderId = getCreatedOrder.Id,
             AmountPaid = 500,
             Method = Domain.Enum.PaymentMethod.GooglePay,
         };
@@ -61,7 +67,7 @@ public class OrderStockTests : BaseIntegrationTest
         var createdPayment = await paymentResponse.Content.ReadFromJsonAsync<PaymentDto>();
         createdPayment.Should().NotBeNull();
 
-        var processResponse = await Client.PostAsJsonAsync($"{TestConstants.ApiOrdersV1}/{createdOrder.Id}/payments/{createdPayment.Id}/complete", new object());
+        var processResponse = await Client.PostAsJsonAsync($"{TestConstants.ApiOrdersV1}/{getCreatedOrder.Id}/payments/{createdPayment.Id}/complete", new object());
         processResponse.EnsureSuccessStatusCode();
 
         // Assert

@@ -41,12 +41,19 @@ public class OrderFlowTests : BaseIntegrationTest
         var orderResponse = await Client.PostAsJsonAsync(TestConstants.ApiOrdersV1, orderDto);
         orderResponse.EnsureSuccessStatusCode();
 
-        var createdOrder = await orderResponse.Content.ReadFromJsonAsync<OrderDto>();
-        createdOrder.Should().NotBeNull();
+        var createdOrderId = await orderResponse.Content.ReadFromJsonAsync<long>();
+
+        var getResponse = await Client.GetAsync($"{TestConstants.ApiOrdersV1}/{createdOrderId}");
+
+        getResponse.EnsureSuccessStatusCode();
+
+        var getCreatedOrder = await getResponse.Content.ReadFromJsonAsync<OrderDto>();
+
+        getCreatedOrder.Should().NotBeNull();
 
         // Assert
-        createdOrder.TotalAmount.Should().Be(4000m); // 2000 * 2
-        createdOrder.Items.Should().HaveCount(1).And.Contain(item => item.ProductId == productId && item.Quantity == 2);
-        createdOrder.Status.Should().Be(OrderStatus.Pending);
+        getCreatedOrder.TotalAmount.Should().Be(4000m); // 2000 * 2
+        getCreatedOrder.Items.Should().HaveCount(1).And.Contain(item => item.ProductId == productId && item.Quantity == 2);
+        getCreatedOrder.Status.Should().Be(OrderStatus.Pending);
     }
 }

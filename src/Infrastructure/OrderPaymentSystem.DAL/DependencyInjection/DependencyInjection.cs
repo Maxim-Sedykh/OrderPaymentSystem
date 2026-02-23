@@ -42,7 +42,7 @@ public static class DependencyInjection
         services.InitCaching(configuration);
     }
 
-    private static void InitRepositories(this IServiceCollection services)
+    public static void InitRepositories(this IServiceCollection services)
     {
         var types = new List<Type>()
         {
@@ -76,7 +76,7 @@ public static class DependencyInjection
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
     }
 
-    private static void InitUnitOfWork(this IServiceCollection services)
+    public static void InitUnitOfWork(this IServiceCollection services)
     {
         services.AddScoped<IUnitOfWork, UnitOfWork>(provider =>
             new UnitOfWork(
@@ -93,7 +93,7 @@ public static class DependencyInjection
     ));
     }
 
-    private static void InitCaching(this IServiceCollection services, IConfiguration configuration)
+    public static void InitCaching(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<ICacheService, RedisCacheService>();
 

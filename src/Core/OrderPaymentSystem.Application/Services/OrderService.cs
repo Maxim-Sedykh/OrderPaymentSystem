@@ -86,9 +86,9 @@ internal class OrderService : IOrderService
         }
     }
 
-    public async Task<DataResult<OrderDto>> CreateAsync(Guid userId, CreateOrderDto dto, CancellationToken ct = default)
+    public async Task<DataResult<long>> CreateAsync(Guid userId, CreateOrderDto dto, CancellationToken ct = default)
     {
-        var orderItems = new List<OrderItem>();
+        var orderItems = new List<OrderItem>(dto.OrderItems.Count);
         var productIds = dto.OrderItems.Select(x => x.ProductId);
 
         var productsDict = await _unitOfWork.Products
@@ -98,7 +98,7 @@ internal class OrderService : IOrderService
         {
             if (!productsDict.TryGetValue(itemDto.ProductId, out var product) || product == null)
             {
-                return DataResult<OrderDto>.Failure(DomainErrors.Product.NotFound(itemDto.ProductId));
+                return DataResult<long>.Failure(DomainErrors.Product.NotFound(itemDto.ProductId));
             }
 
             orderItems.Add(OrderItem.Create(itemDto.ProductId, itemDto.Quantity, product.Price, product));
@@ -109,7 +109,7 @@ internal class OrderService : IOrderService
         await _unitOfWork.Orders.CreateAsync(order, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
-        return DataResult<OrderDto>.Success(_mapper.Map<OrderDto>(order));
+        return DataResult<long>.Success(order.Id);
     }
 
     public async Task<DataResult<OrderDto>> GetByIdAsync(long orderId, CancellationToken ct = default)

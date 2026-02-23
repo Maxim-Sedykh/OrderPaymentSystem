@@ -37,7 +37,7 @@ public class OrdersController : PrincipalAccessController
         var response = await _orderService.CreateAsync(AuthorizedUserId, dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return CreatedAtAction(nameof(GetById), new { id = response.Data.Id }, response.Data);
+            return CreatedAtAction(nameof(GetById), new { id = response.Data }, response.Data);
         }
         return BadRequest(response.Error);
     }
