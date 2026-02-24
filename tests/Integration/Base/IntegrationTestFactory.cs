@@ -60,7 +60,7 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
                 ["JwtSettings:JwtKey"] = "7f3a5b8c2d1e4f9a0b6c3d8e5f2a1b4c7d9e0f2b5a8c1d4e7f9b0a3c6d2e5f8b",
                 ["AdminSettings:Login"] = TestConstants.AdminLogin,
                 ["AdminSettings:Password"] = TestConstants.AdminPassword
-            });
+            }!);
         });
 
         // ConfigureTestServices позволяет переопределить регистрации сервисов,

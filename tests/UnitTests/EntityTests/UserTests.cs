@@ -24,7 +24,7 @@ public class UserTests
     [InlineData("", "pass")]
     [InlineData("login", null)]
     [InlineData("login", "")]
-    public void Create_InvalidData_ShouldThrowBusinessException(string login, string passwordHash)
+    public void Create_InvalidData_ShouldThrowBusinessException(string? login, string? passwordHash)
     {
         // Act
         Action act = () => User.Create(login, passwordHash);
@@ -49,7 +49,7 @@ public class UserTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void ChangePassword_InvalidNewPassword_ShouldThrowBusinessException(string newPasswordHash)
+    public void ChangePassword_InvalidNewPassword_ShouldThrowBusinessException(string? newPasswordHash)
     {
         // Arrange
         var user = User.Create("test", "oldhash");

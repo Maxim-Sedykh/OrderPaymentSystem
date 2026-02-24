@@ -12,6 +12,11 @@
     <Project Path="src/Presentation/OrderPaymentSystem.Api/OrderPaymentSystem.Api.csproj" />
   </Folder>
   </Folder>
+  <Folder Name="/build/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="nuget.config" />
+  </Folder>
   <Folder Name="/deploy/">
     <File Path=".env" />
     <File Path=".env.template" />

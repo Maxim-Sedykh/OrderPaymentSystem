@@ -22,7 +22,7 @@ public class RoleTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Create_InvalidName_ShouldThrowBusinessException(string name)
+    public void Create_InvalidName_ShouldThrowBusinessException(string? name)
     {
         // Act
         Action act = () => Role.Create(name);
@@ -48,7 +48,7 @@ public class RoleTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void UpdateName_InvalidNewName_ShouldThrowBusinessException(string newName)
+    public void UpdateName_InvalidNewName_ShouldThrowBusinessException(string? newName)
     {
         // Arrange
         var role = Role.Create("ValidRole");
