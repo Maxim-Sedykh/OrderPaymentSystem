@@ -5,6 +5,7 @@
 		<PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
 		<PackageReference Include="MockQueryable.Moq" />
 		<PackageReference Include="Moq" />
+		<PackageReference Include="Serilog" />
 	</ItemGroup>
 
 	<ItemGroup>

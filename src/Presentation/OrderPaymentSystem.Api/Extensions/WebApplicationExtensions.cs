@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using OrderPaymentSystem.Application.Interfaces.Auth;
 using OrderPaymentSystem.Application.Settings;
 using OrderPaymentSystem.DAL.Persistence;
 using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Entities;
+using System.Text.Json;
 
 namespace OrderPaymentSystem.Api.Extensions;
 
@@ -92,5 +94,35 @@ public static class WebApplicationExtensions
         context.UserRoles.Add(userRole);
 
         await context.SaveChangesAsync();
+    }
+
+    public static void UseHealthChecksConfiguration(this WebApplication app)
+    {
+        app.MapHealthChecks("/health", new HealthCheckOptions
+        {
+            ResponseWriter = async (context, report) =>
+            {
+                context.Response.ContentType = "application/json";
+
+                var response = new
+                {
+                    status = report.Status.ToString(),
+                    totalDuration = report.TotalDuration.TotalMilliseconds.ToString("F2") + "ms",
+                    checks = report.Entries.Select(x => new
+                    {
+                        component = x.Key,
+                        status = x.Value.Status.ToString(),
+                        description = x.Value.Description,
+                        duration = x.Value.Duration.TotalMilliseconds.ToString("F2") + "ms",
+                        error = x.Value.Exception?.Message
+                    })
+                };
+
+                await context.Response.WriteAsync(JsonSerializer.Serialize(response, new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                }));
+            }
+        });
     }
 }

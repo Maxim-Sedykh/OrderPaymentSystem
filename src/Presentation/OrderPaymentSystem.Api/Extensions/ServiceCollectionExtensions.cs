@@ -2,19 +2,23 @@
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using OrderPaymentSystem.Api.HealthChecks;
 using OrderPaymentSystem.Api.Swagger;
+using OrderPaymentSystem.Application.DependencyInjection;
 using OrderPaymentSystem.Application.Settings;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
+using OrderPaymentSystem.DAL.DependencyInjection;
 using OrderPaymentSystem.Domain.Settings;
 using Prometheus;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
-using OrderPaymentSystem.DAL.DependencyInjection;
-using OrderPaymentSystem.Application.DependencyInjection;
 
 namespace OrderPaymentSystem.Api.Extensions;
 
@@ -25,23 +29,19 @@ public static class ServiceCollectionExtensions
 {
     public static void AddApiInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Settings
         services.Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)));
         services.Configure<RedisSettings>(configuration.GetSection(nameof(RedisSettings)));
         services.Configure<AdminSettings>(configuration.GetSection(nameof(AdminSettings)));
+        services.Configure<ElasticsearchSettings>(configuration.GetSection(ElasticsearchSettings.SectionName));
 
-        // Common API
         services.AddEndpointsApiExplorer();
         services.AddControllers();
 
-        // Metrics
         services.UseHttpClientMetrics();
 
-        // Validations
         services.AddValidatorsFromAssemblyContaining<RegisterUserValidator>();
         services.AddFluentValidationAutoValidation();
 
-        // Custom Layers
         services.AddDataAccessLayer(configuration);
         services.AddApplication();
     }
@@ -110,5 +110,27 @@ public static class ServiceCollectionExtensions
             var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
             if (File.Exists(xmlPath)) options.IncludeXmlComments(xmlPath);
         });
+    }
+
+    public static void AddHealthChecksConfiguration(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHttpClient();
+
+        services.AddHealthChecks()
+            .AddNpgSql(
+                configuration.GetConnectionString("PostgresSQL")
+                    ?? throw new InvalidOperationException("Postgres connection string not found"),
+                name: "postgres",
+                tags: ["db", "sql"])
+            .AddRedis(
+                redisConnectionString: configuration.GetSection(nameof(RedisSettings))[nameof(RedisSettings.Url)]
+                    ?? throw new InvalidOperationException("Redis URL not found"),
+                name: "redis",
+                tags: ["cache"])
+            .AddCheck<CustomElasticsearchHealthCheck>(
+                "elasticsearch-custom-url",
+                failureStatus: HealthStatus.Unhealthy,
+                tags: ["logging", "search"]
+            );
     }
 }

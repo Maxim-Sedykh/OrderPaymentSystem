@@ -14,6 +14,8 @@ try
     builder.Services.AddAuthConfiguration(builder.Configuration);
     builder.Services.AddSwaggerConfiguration();
 
+    builder.Services.AddHealthChecksConfiguration(builder.Configuration);
+
     var app = builder.Build();
 
     app.UseSwaggerUiConfiguration();
@@ -23,6 +25,8 @@ try
     app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
     app.UseHttpsRedirection();
 
+    app.UseHealthChecksConfiguration();
+
     app.UseMetricServer();
     app.UseHttpMetrics();
 
@@ -31,7 +35,6 @@ try
 
     await app.ApplyDatabaseMigrationsAsync();
 
-    app.MapGet("/ping", () => Results.Ok("pong"));
     app.MapMetrics();
     app.MapControllers();
 

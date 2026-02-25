@@ -2,8 +2,10 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-
   <ItemGroup>
+    <PackageVersion Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
     <PackageVersion Include="Microsoft.NET.Sdk" Version="7.0.100" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
@@ -36,7 +38,7 @@
     <PackageVersion Include="Mapster.DependencyInjection" Version="1.0.1" />
     <PackageVersion Include="MessagePack" Version="3.1.4" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="Serilog" Version="4.3.1-dev-02395" />
+    <PackageVersion Include="Serilog" Version="4.3.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageVersion Include="Elastic.Serilog.Sinks" Version="9.0.0" />
