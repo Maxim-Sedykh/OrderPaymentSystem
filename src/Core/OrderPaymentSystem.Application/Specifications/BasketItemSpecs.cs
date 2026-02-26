@@ -4,7 +4,7 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
 
-public static class BasketItemSpecs
+internal static class BasketItemSpecs
 {
     public static BaseSpecification<BasketItem> WithProduct(this BaseSpecification<BasketItem> spec)
         => spec.AddInclude(q => q.Include(o => o.Product));

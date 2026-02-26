@@ -16,6 +16,8 @@ try
 
     builder.Services.AddHealthChecksConfiguration(builder.Configuration);
 
+    builder.Services.AddHangfireJobs(builder.Configuration);
+
     var app = builder.Build();
 
     app.UseSwaggerUiConfiguration();
@@ -34,6 +36,8 @@ try
     app.UseAuthorization();
 
     await app.ApplyDatabaseMigrationsAsync();
+
+    app.UseHangfireJobsConfig();
 
     app.MapMetrics();
     app.MapControllers();

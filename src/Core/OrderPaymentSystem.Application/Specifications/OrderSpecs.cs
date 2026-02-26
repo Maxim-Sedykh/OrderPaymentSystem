@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OrderPaymentSystem.Domain.Entities;
+using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
@@ -14,6 +15,12 @@ public static class OrderSpecs
 
     public static BaseSpecification<Order> ById(long id)
         => new(x => x.Id == id);
+
+    public static BaseSpecification<Order> ByStatus(OrderStatus status)
+        => new(x => x.Status == status);
+
+    public static BaseSpecification<Order> CreatedBefore(this BaseSpecification<Order> spec, DateTime thresholdDate)
+        => spec.And(x => x.CreatedAt <= thresholdDate);
 
     public static BaseSpecification<Order> ByUserIdNoTracking(Guid id)
     {

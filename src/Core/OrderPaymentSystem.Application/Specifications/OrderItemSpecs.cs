@@ -4,7 +4,7 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
 
-public static class OrderItemSpecs
+internal static class OrderItemSpecs
 {
     public static BaseSpecification<OrderItem> ById(long id)
         => new(x => x.Id == id);

@@ -13,7 +13,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace OrderPaymentSystem.Application.Services;
+namespace OrderPaymentSystem.Application.Services.Auth;
 
 /// <summary>
 /// Сервис для работы с JWT-токенами

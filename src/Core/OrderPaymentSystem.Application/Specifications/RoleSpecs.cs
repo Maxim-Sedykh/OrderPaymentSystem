@@ -3,7 +3,7 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
 
-public static class RoleSpecs
+internal static class RoleSpecs
 {
     public static BaseSpecification<Role> ById(int id)
         => new(x => x.Id == id);

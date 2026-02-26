@@ -12,7 +12,7 @@ using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Result;
 
-namespace OrderPaymentSystem.Application.Services;
+namespace OrderPaymentSystem.Application.Services.Auth;
 
 /// <summary>
 /// Сервис авторизации и аутентификации
@@ -76,7 +76,7 @@ internal class AuthService : IAuthService
                 refreshTokenExpire.UtcDateTime,
                 now.UtcDateTime);
 
-            await _unitOfWork.UserToken.CreateAsync(newUserToken, ct);
+            await _unitOfWork.UserTokens.CreateAsync(newUserToken, ct);
         }
         else
         {

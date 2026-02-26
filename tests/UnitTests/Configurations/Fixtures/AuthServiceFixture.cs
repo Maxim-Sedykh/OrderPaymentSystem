@@ -6,7 +6,7 @@ using Moq;
 using OrderPaymentSystem.Application.Interfaces.Auth;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Services;
+using OrderPaymentSystem.Application.Services.Auth;
 using OrderPaymentSystem.Application.Settings;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Entities;
@@ -35,7 +35,7 @@ internal class AuthServiceFixture
     {
         Uow.Setup(u => u.Users).Returns(UserRepo.Object);
         Uow.Setup(u => u.Roles).Returns(RoleRepo.Object);
-        Uow.Setup(u => u.UserToken).Returns(TokenRepo.Object);
+        Uow.Setup(u => u.UserTokens).Returns(TokenRepo.Object);
         Uow.Setup(u => u.UserRoles).Returns(UserRoleRepo.Object);
         Uow.Setup(u => u.BeginTransactionAsync(It.IsAny<CancellationToken>())).ReturnsAsync(Transaction.Object);
 

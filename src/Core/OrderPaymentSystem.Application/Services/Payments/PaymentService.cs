@@ -7,7 +7,7 @@ using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Result;
 
-namespace OrderPaymentSystem.Application.Services;
+namespace OrderPaymentSystem.Application.Services.Payments;
 
 internal class PaymentService : IPaymentService
 {

@@ -14,8 +14,10 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasIndex(p => p.Name);
 
         builder
-			.Property(p => p.RowVersion)
-			.IsRowVersion();
+            .Property(p => p.RowVersion)
+            .IsRowVersion()
+            .IsRequired()
+            .ValueGeneratedOnAddOrUpdate();
 
         builder.Property(p => p.Name)
 			.IsRequired()

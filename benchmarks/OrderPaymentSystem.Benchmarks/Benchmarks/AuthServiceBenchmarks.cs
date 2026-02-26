@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.Application.DTOs.Auth;
 using OrderPaymentSystem.Application.Interfaces.Auth;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Services;
+using OrderPaymentSystem.Application.Services.Auth;
 using OrderPaymentSystem.Benchmarks.Base;
 using OrderPaymentSystem.DAL.Auth;
 using OrderPaymentSystem.DAL.Persistence;

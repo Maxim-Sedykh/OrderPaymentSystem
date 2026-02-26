@@ -16,7 +16,7 @@ public interface IUnitOfWork
     IRoleRepository Roles { get; }
     IUserRepository Users { get; }
     IUserRoleRepository UserRoles { get; }
-    IUserTokenRepository UserToken { get; }
+    IUserTokenRepository UserTokens { get; }
 
     /// <summary>
     /// Сохранить состояние сущности в БД

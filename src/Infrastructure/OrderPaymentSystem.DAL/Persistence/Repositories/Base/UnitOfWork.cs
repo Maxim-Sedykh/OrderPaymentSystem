@@ -60,7 +60,7 @@ public class UnitOfWork : IUnitOfWork
     public IRoleRepository Roles => _roles ??= GetRepository<IRoleRepository>();
     public IUserRepository Users => _users ??= GetRepository<IUserRepository>();
     public IUserRoleRepository UserRoles => _userRoles ??= GetRepository<IUserRoleRepository>();
-    public IUserTokenRepository UserToken => _userToken ??= GetRepository<IUserTokenRepository>();
+    public IUserTokenRepository UserTokens => _userToken ??= GetRepository<IUserTokenRepository>();
 
     /// <inheritdoc/>
     public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)

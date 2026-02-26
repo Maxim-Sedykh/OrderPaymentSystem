@@ -10,7 +10,7 @@ using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Result;
 
-namespace OrderPaymentSystem.Application.Services;
+namespace OrderPaymentSystem.Application.Services.Products;
 
 /// <summary>
 /// Сервис отвечающий за работу с товарами (Product)

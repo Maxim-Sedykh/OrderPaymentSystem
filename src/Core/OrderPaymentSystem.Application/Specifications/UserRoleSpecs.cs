@@ -3,7 +3,7 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
 
-public static class UserRoleSpecs
+internal static class UserRoleSpecs
 {
     public static BaseSpecification<UserRole> ByUserIdRoleId(Guid userId, int roleId)
         => new(x => x.UserId == userId && x.RoleId == roleId);

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Services;
+using OrderPaymentSystem.Application.Services.Products;
 using OrderPaymentSystem.Benchmarks.Base;
 using OrderPaymentSystem.Benchmarks.Mocks;
 using OrderPaymentSystem.DAL.Cache;

@@ -1,7 +1,7 @@
 ﻿using MapsterMapper;
 using Moq;
 using OrderPaymentSystem.Application.Interfaces.Databases;
-using OrderPaymentSystem.Application.Services;
+using OrderPaymentSystem.Application.Services.BasketItems;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Shared.Specifications;

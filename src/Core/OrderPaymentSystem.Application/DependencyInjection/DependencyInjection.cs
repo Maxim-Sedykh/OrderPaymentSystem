@@ -2,7 +2,13 @@
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.Application.Interfaces.Services;
-using OrderPaymentSystem.Application.Services;
+using OrderPaymentSystem.Application.Services.Auth;
+using OrderPaymentSystem.Application.Services.BasketItems;
+using OrderPaymentSystem.Application.Services.Maintenance;
+using OrderPaymentSystem.Application.Services.Orders;
+using OrderPaymentSystem.Application.Services.Payments;
+using OrderPaymentSystem.Application.Services.Products;
+using OrderPaymentSystem.Application.Services.Roles;
 
 namespace OrderPaymentSystem.Application.DependencyInjection;
 
@@ -14,6 +20,7 @@ public static class DependencyInjection
     public static void AddApplication(this IServiceCollection services)
     {
         InitServices(services);
+        InitMaintenanceServices(services);
 
         InitMapsterMapping(services);
     }
@@ -29,6 +36,12 @@ public static class DependencyInjection
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<IBasketItemService, BasketItemService>();
         services.AddScoped<IUserRoleService, UserRoleService>();
+    }
+
+    private static void InitMaintenanceServices(this IServiceCollection services)
+    {
+        services.AddScoped<IOrderMaintenanceService, OrderMaintenanceService>();
+        services.AddScoped<ITokenMaintenanceService, TokenMaintenanceService>();
     }
 
     private static void InitMapsterMapping(this IServiceCollection services)

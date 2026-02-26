@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Time.Testing;
 using Moq;
 using OrderPaymentSystem.Application.Interfaces.Databases;
-using OrderPaymentSystem.Application.Services;
+using OrderPaymentSystem.Application.Services.Auth;
 using OrderPaymentSystem.Application.Settings;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;

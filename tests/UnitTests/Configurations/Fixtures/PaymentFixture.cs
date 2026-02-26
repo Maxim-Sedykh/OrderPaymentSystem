@@ -2,7 +2,7 @@
 using Moq;
 using OrderPaymentSystem.Application.DTOs.Payment;
 using OrderPaymentSystem.Application.Interfaces.Databases;
-using OrderPaymentSystem.Application.Services;
+using OrderPaymentSystem.Application.Services.Payments;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Shared.Specifications;

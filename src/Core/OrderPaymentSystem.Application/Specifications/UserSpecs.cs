@@ -4,7 +4,7 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
 
-public static class UserSpecs
+internal static class UserSpecs
 {
     public static BaseSpecification<User> WithRoles(this BaseSpecification<User> spec)
         => spec.AddInclude(u => u.Include(u => u.Roles));

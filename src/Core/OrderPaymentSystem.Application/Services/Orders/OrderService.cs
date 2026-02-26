@@ -12,7 +12,7 @@ using OrderPaymentSystem.Shared.Exceptions;
 using OrderPaymentSystem.Shared.Result;
 using Order = OrderPaymentSystem.Domain.Entities.Order;
 
-namespace OrderPaymentSystem.Application.Services;
+namespace OrderPaymentSystem.Application.Services.Orders;
 
 internal class OrderService : IOrderService
 {

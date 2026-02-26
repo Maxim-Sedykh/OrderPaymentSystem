@@ -8,10 +8,8 @@ namespace OrderPaymentSystem.DAL.Interceptors;
 
 public class AuditInterceptor : SaveChangesInterceptor
 {
-    public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
-            DbContextEventData eventData,
-            InterceptionResult<int> result,
-            CancellationToken cancellationToken = default)
+    public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result,
+        CancellationToken cancellationToken = new CancellationToken())
     {
         var dbContext = eventData.Context;
         if (dbContext == null)
@@ -19,42 +17,22 @@ public class AuditInterceptor : SaveChangesInterceptor
             return base.SavingChangesAsync(eventData, result, cancellationToken);
         }
 
-        ProcessAuditableEntities(dbContext);
-
-        return base.SavingChangesAsync(eventData, result, cancellationToken);
-    }
-
-    private static void ProcessAuditableEntities(DbContext dbContext)
-    {
-        DateTime currentTimeUtc = DateTime.UtcNow;
-
-        foreach (var entry in dbContext.ChangeTracker.Entries<IAuditable>())
+        var entries = dbContext.ChangeTracker.Entries<IAuditable>()
+            .Where(x => x.State == EntityState.Added || x.State == EntityState.Modified)
+            .ToList();
+        foreach (var entry in entries)
         {
-            if (entry.State != EntityState.Added && entry.State != EntityState.Modified && !entry.HasChangedOwnedType())
-            {
-                continue;
-            }
-
             if (entry.State == EntityState.Added)
             {
-                SetPropertyDateTime(entry.Entity, nameof(IAuditable.CreatedAt), currentTimeUtc);
+                entry.Property(x => x.CreatedAt).CurrentValue = DateTime.UtcNow;
             }
 
-            if (entry.State == EntityState.Modified || entry.State == EntityState.Added || entry.HasChangedOwnedType())
+            if (entry.State == EntityState.Modified)
             {
-                SetPropertyDateTime(entry.Entity, nameof(IAuditable.UpdatedAt), currentTimeUtc);
+                entry.Property(x => x.UpdatedAt).CurrentValue = DateTime.UtcNow;
             }
         }
-    }
 
-    private static void SetPropertyDateTime(IAuditable entity, string propertyName, DateTime value)
-    {
-        PropertyInfo property = entity.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance) 
-            ?? entity.GetType().GetProperty(propertyName, BindingFlags.NonPublic | BindingFlags.Instance);
-
-        if (property != null && property.CanWrite)
-        {
-            property.SetValue(entity, value);
-        }
+        return base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 }
