@@ -52,20 +52,6 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
     {
         builder.UseEnvironment("Test");
 
-        builder.ConfigureAppConfiguration(config =>
-        {
-            config.AddInMemoryCollection(new Dictionary<string, string>
-            {
-                ["ConnectionStrings:PostgresSQL"] = _dbContainer.GetConnectionString(),
-                ["ElasticConfiguration:Uri"] = _esContainer.GetConnectionString(),
-                ["RedisSettings:Url"] = _redisContainer.GetConnectionString(),
-                ["RedisSettings:InstanceName"] = "OrderPaymentSystemTest",
-                ["JwtSettings:JwtKey"] = "7f3a5b8c2d1e4f9a0b6c3d8e5f2a1b4c7d9e0f2b5a8c1d4e7f9b0a3c6d2e5f8b",
-                ["AdminSettings:Login"] = TestConstants.AdminLogin,
-                ["AdminSettings:Password"] = TestConstants.AdminPassword
-            }!);
-        });
-
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
@@ -98,6 +84,15 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
         await _dbContainer.StartAsync();
         await _redisContainer.StartAsync();
         await _esContainer.StartAsync();
+
+        Environment.SetEnvironmentVariable("ConnectionStrings__PostgresSQL", _dbContainer.GetConnectionString());
+        Environment.SetEnvironmentVariable("ElasticConfiguration__Uri", _esContainer.GetConnectionString());
+        Environment.SetEnvironmentVariable("RedisSettings__Url", _redisContainer.GetConnectionString());
+        Environment.SetEnvironmentVariable("RedisSettings__InstanceName", "OrderPaymentSystemTest");
+        Environment.SetEnvironmentVariable("JwtSettings__JwtKey", "7f3a5b8c2d1e4f9a0b6c3d8e5f2a1b4c7d9e0f2b5a8c1d4e7f9b0a3c6d2e5f8b");
+        Environment.SetEnvironmentVariable("AdminSettings__Login", TestConstants.AdminLogin);
+        Environment.SetEnvironmentVariable("AdminSettings__Password", TestConstants.AdminPassword);
+        Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Test");
 
         var client = CreateClient();
     }

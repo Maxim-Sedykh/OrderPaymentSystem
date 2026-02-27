@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OrderPaymentSystem.DAL.Persistence.Constants;
 using OrderPaymentSystem.Domain.Entities;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using static OrderPaymentSystem.Domain.Constants.ValidationConstants.Product;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
@@ -13,7 +14,8 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasKey(p => p.Id);
         builder.HasIndex(p => p.Name);
 
-        builder.Property(p => p.RowVersion)
+        builder.Property<uint>("xmin")
+			.HasColumnName("xmin")
 			.IsRowVersion();
 
         builder.Property(p => p.Name)

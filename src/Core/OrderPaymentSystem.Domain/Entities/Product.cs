@@ -51,11 +51,6 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
     /// </summary>
     public int StockQuantity { get; private set; }
 
-    /// <summary>
-    /// Поле которое хранит версию кортежа. Для контроля паралеллизма.
-    /// </summary>
-    public uint RowVersion { get; private set; }
-
     private Product() { }
 
     private Product(int id, string name, string description, decimal price, int stockQuantity)

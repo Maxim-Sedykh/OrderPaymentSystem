@@ -14,7 +14,10 @@ try
     builder.Services.AddAuthConfiguration(builder.Configuration);
     builder.Services.AddSwaggerConfiguration();
 
-    builder.Services.AddHealthChecksConfiguration(builder.Configuration);
+    if (!builder.Environment.IsEnvironment("Test"))
+    {
+        builder.Services.AddHealthChecksConfiguration(builder.Configuration);
+    }
 
     builder.Services.AddHangfireJobs(builder.Configuration);
 
@@ -27,10 +30,10 @@ try
     app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
     app.UseHttpsRedirection();
 
-    app.UseHealthChecksConfiguration();
-
     if (!app.Environment.IsEnvironment("Test"))
     {
+        app.UseHealthChecksConfiguration();
+
         app.UseMetricServer();
         app.UseHttpMetrics();
         app.UseHangfireJobsConfig();

@@ -29,7 +29,7 @@ public class UserTokenServiceBenchmarks : BaseBenchmark
     /// <inheritdoc/>
     protected override void RegisterServices(IServiceCollection services)
     {
-        services.AddScoped<IUserTokenService, UserTokenService>();
+        services.AddScoped<UserTokenService>();
     }
 
     /// <inheritdoc/>
