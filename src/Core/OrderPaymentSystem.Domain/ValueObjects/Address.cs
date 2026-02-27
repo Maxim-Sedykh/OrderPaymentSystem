@@ -1,7 +1,4 @@
-﻿using OrderPaymentSystem.Domain.Errors;
-using OrderPaymentSystem.Shared.Exceptions;
-
-namespace OrderPaymentSystem.Domain.ValueObjects;
+﻿namespace OrderPaymentSystem.Domain.ValueObjects;
 
 /// <summary>
 /// Представляет объект значения "Адрес" с улицей, городом, почтовым индексом и страной.

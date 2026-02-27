@@ -1,7 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using OrderPaymentSystem.Application.Interfaces.Services;
 using OrderPaymentSystem.Application.Services.Auth;
 using OrderPaymentSystem.Benchmarks.Base;
 using System.Security.Claims;

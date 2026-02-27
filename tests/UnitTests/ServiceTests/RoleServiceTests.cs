@@ -4,9 +4,7 @@ using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.Role;
 using OrderPaymentSystem.Application.Services.Roles;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Specifications;
-using OrderPaymentSystem.UnitTests.Configurations.Factories;
 using OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests;

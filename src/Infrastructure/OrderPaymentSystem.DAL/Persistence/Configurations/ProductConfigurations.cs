@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using OrderPaymentSystem.DAL.Persistence.Constants;
 using OrderPaymentSystem.Domain.Entities;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
 using static OrderPaymentSystem.Domain.Constants.ValidationConstants.Product;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
