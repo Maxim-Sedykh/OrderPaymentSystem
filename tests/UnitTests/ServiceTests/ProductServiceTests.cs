@@ -2,24 +2,34 @@
 using Moq;
 using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.Product;
+using OrderPaymentSystem.Application.Services.Products;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Specifications;
 using OrderPaymentSystem.UnitTests.Configurations.Factories;
 using OrderPaymentSystem.UnitTests.Configurations.Fixtures;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests;
 
+/// <summary>
+/// Тесты сервиса <see cref="ProductService"/>
+/// </summary>
 public class ProductServiceTests
 {
     private readonly ProductFixture _fixture;
 
+    /// <summary>
+    /// Конструктор. Инициализация фикстуры
+    /// </summary>
     public ProductServiceTests()
     {
         _fixture = new ProductFixture();
     }
 
+    /// <summary>
+    /// Получить товар по Id когда он найден в кэше - должно быть успешным и не должно трогать базу данных
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task GetByIdAsync_WhenInCache_ShouldReturnFromCacheAndNotTouchDb()
     {
@@ -37,7 +47,12 @@ public class ProductServiceTests
         result.Data.Should().Be(cachedProduct);
         _fixture.ProductRepo.Verify(r => r.GetProjectedAsync<ProductDto>(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>()), Times.Never);
     }
-
+    
+    /// <summary>
+    /// Создание товара с валидными данными должно быть успешным
+    /// И должно инвалидировать глобальный кэш для всех товаров
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task CreateAsync_WhenValid_ShouldSaveAndInvalidateGlobalCache()
     {
@@ -54,6 +69,11 @@ public class ProductServiceTests
         _fixture.VerifyCacheRemoved(CacheKeys.Product.All);
     }
 
+
+    /// <summary>
+    /// Обновление товара, когда он существует и с валидными данными должно быть успешным
+    /// И должно убрать кэш по этому товару, инвалидировать его
+    /// </summary>
     [Fact]
     public async Task UpdateAsync_WhenExists_ShouldUpdateAndInvalidateSpecificCache()
     {
@@ -75,6 +95,9 @@ public class ProductServiceTests
         _fixture.VerifyCacheRemoved(CacheKeys.Product.ById(product.Id));
     }
 
+    /// <summary>
+    /// Удаление товара по Id - должно удалить его из бд и из кэша
+    /// </summary>
     [Fact]
     public async Task DeleteByIdAsync_WhenExists_ShouldRemoveAndInvalidateCache()
     {
@@ -92,6 +115,9 @@ public class ProductServiceTests
         _fixture.VerifyCacheRemoved(CacheKeys.Product.ById(product.Id));
     }
 
+    /// <summary>
+    /// Получение товара по Id когда он не найден в БД и в кэше - должно быть неудачным.
+    /// </summary>
     [Fact]
     public async Task GetByIdAsync_WhenNotFoundInCacheAndDb_ShouldReturnError()
     {

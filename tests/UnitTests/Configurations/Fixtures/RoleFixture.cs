@@ -9,6 +9,9 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
+/// <summary>
+/// Настройка зависимостей и создание <see cref="RoleService"/>
+/// </summary>
 internal class RoleFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
@@ -37,13 +40,13 @@ internal class RoleFixture
 
     public RoleFixture SetupCacheGet<T>(string key, T value) where T : class
     {
-        Cache.Setup(c => c.GetOrCreateAsync(key, It.IsAny<Func<CancellationToken, Task<T>>>())).ReturnsAsync(value);
+        Cache.Setup(c => c.GetOrCreateAsync(key, It.IsAny<Func<CancellationToken, Task<T>>>()!)).ReturnsAsync(value);
         return this;
     }
 
     public RoleFixture SetupMapping<TS, TD>(TD dest)
     {
-        Mapper.Setup(m => m.Map<TD>(It.IsAny<TS>())).Returns(dest);
+        Mapper.Setup(m => m.Map<TD>(It.IsAny<TS>()!)).Returns(dest);
         return this;
     }
 

@@ -9,6 +9,9 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
+/// <summary>
+/// Настройка зависимостей и создание <see cref="OrderItemService"/>
+/// </summary>
 internal class OrderItemFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
@@ -28,7 +31,7 @@ internal class OrderItemFixture
         Service = new OrderItemService(Uow.Object, Mapper.Object, Mock.Of<ILogger<OrderItemService>>());
     }
 
-    public OrderItemFixture SetupOrder(Order order)
+    public OrderItemFixture SetupOrder(Order? order)
     {
         OrderRepo.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Order>>(), It.IsAny<CancellationToken>()))
                  .ReturnsAsync(order);
@@ -51,7 +54,7 @@ internal class OrderItemFixture
 
     public OrderItemFixture SetupMapping<TSource, TDest>(TDest dest)
     {
-        Mapper.Setup(m => m.Map<TDest>(It.IsAny<TSource>())).Returns(dest);
+        Mapper.Setup(m => m.Map<TDest>(It.IsAny<TSource>()!)).Returns(dest);
         return this;
     }
 

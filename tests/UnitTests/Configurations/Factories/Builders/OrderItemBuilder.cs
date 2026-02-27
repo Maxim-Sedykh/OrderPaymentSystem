@@ -2,6 +2,9 @@
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 
+/// <summary>
+/// Билдер для построения мокового элемента заказа
+/// </summary>
 public class OrderItemBuilder
 {
     private long _id = 1;
@@ -10,7 +13,9 @@ public class OrderItemBuilder
     private decimal _price = 100m;
     private Product _product = TestDataFactory.Product.Build();
 
-    public OrderItemBuilder WithId(long id) { _id = id; return this; }
+    /// <summary>
+    /// Добавить товар
+    /// </summary>
     public OrderItemBuilder WithProduct(Product product)
     {
         _product = product;
@@ -18,8 +23,16 @@ public class OrderItemBuilder
         _price = product.Price;
         return this;
     }
+
+    /// <summary>
+    /// Добавить количество
+    /// </summary>
     public OrderItemBuilder WithQuantity(int quantity) { _quantity = quantity; return this; }
 
+    /// <summary>
+    /// Построить, создать объект.
+    /// </summary>
+    /// <returns>Созданный элемент заказа</returns>
     public OrderItem Build()
     {
         var orderItem = OrderItem.CreateExisting(_id, _productId, _quantity, _price, _product);

@@ -10,7 +10,7 @@ public class BaseResult
     /// Конструктор для создания объекта результата внутри класса
     /// </summary>
     /// <param name="error"></param>
-    protected BaseResult(Error error = null)
+    protected BaseResult(Error? error = null)
     {
         Error = error;
     }
@@ -23,7 +23,7 @@ public class BaseResult
     /// <summary>
     /// Ошибка
     /// </summary>
-    public Error Error { get; }
+    public Error? Error { get; }
 
     /// <summary>
     /// Создание успешного результата

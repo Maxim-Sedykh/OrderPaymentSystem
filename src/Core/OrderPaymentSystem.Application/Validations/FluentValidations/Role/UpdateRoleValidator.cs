@@ -6,8 +6,14 @@ using static OrderPaymentSystem.Domain.Constants.ValidationConstants.Role;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Role;
 
+/// <summary>
+/// Валидатор для <see cref="UpdateRoleDto"/>
+/// </summary>
 public class UpdateRoleValidator : AbstractValidator<UpdateRoleDto>
 {
+    /// <summary>
+    /// Конструктор валидатора, создание правил для полей DTO <see cref="UpdateRoleDto"/>
+    /// </summary>
     public UpdateRoleValidator()
     {
         RuleFor(x => x.Name)

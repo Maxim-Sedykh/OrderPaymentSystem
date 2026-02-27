@@ -34,12 +34,12 @@ public class BasketItem : BaseEntity<long>, IAuditable
     /// <summary>
     /// Владелец корзины - пользователь
     /// </summary>
-    public User User { get; private set; }
+    public User? User { get; private set; }
 
     /// <summary>
     /// Товар
     /// </summary>
-    public Product Product { get; private set; }
+    public Product? Product { get; private set; }
 
     private BasketItem() { }
 
@@ -58,11 +58,18 @@ public class BasketItem : BaseEntity<long>, IAuditable
         Quantity = quantity;
     }
 
+    /// <summary>
+    /// Присвоить товар элементу. Используется для тестов.
+    /// </summary>
+    /// <param name="product">Товар</param>
     internal void SetProduct(Product product)
     {
         Product = product; 
     }
 
+    /// <summary>
+    /// Создать "существующий элемент корзины с кастомным Id". Используется для тестов.
+    /// </summary>
     internal static BasketItem CreateExisting(long id, Guid userId, int productId, int quantity, IStockInfo stockInfo)
     {
         ValidateIds(userId, productId);
@@ -107,6 +114,12 @@ public class BasketItem : BaseEntity<long>, IAuditable
         Quantity = newQuantity;
     }
 
+    /// <summary>
+    /// Валидировать входные данные
+    /// </summary>
+    /// <param name="stockInfo">Информация о наличии товара на складе</param>
+    /// <param name="quantity">Запрашиваемое количество</param>
+    /// <param name="productId">Id товара</param>
     private static void Validate(IStockInfo stockInfo, int quantity, int productId)
     {
         if (!stockInfo.IsStockQuantityAvailable(quantity))
@@ -116,6 +129,11 @@ public class BasketItem : BaseEntity<long>, IAuditable
             throw new BusinessException(DomainErrors.General.QuantityPositive());
     }
 
+    /// <summary>
+    /// Валидировать идентификаторы
+    /// </summary>
+    /// <param name="userId">Id пользователя</param>
+    /// <param name="productId">Id товара</param>
     private static void ValidateIds(Guid userId, int productId)
     {
         if (userId == Guid.Empty)

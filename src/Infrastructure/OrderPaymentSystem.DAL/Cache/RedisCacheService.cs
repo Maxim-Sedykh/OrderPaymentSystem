@@ -7,7 +7,8 @@ using OrderPaymentSystem.Application.Interfaces.Cache;
 namespace OrderPaymentSystem.DAL.Cache;
 
 /// <summary>
-/// Реализация сервиса для работы с распределенным кэшем
+/// Реализация сервиса для работы с распределенным кэшем. Использую MessagePack,
+/// чтобы сериализация строки с кэшем в объекты происходило быстрее.
 /// </summary>
 public sealed class RedisCacheService : ICacheService
 {
@@ -37,7 +38,7 @@ public sealed class RedisCacheService : ICacheService
     }
 
     /// <inheritdoc/>
-    public async Task<T> GetAsync<T>(string key, CancellationToken cancellationToken = default) where T : class
+    public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default) where T : class?
     {
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
 
@@ -61,10 +62,10 @@ public sealed class RedisCacheService : ICacheService
     }
 
     /// <inheritdoc/>
-    public async Task<T> GetOrCreateAsync<T>(string key,
-        Func<CancellationToken, Task<T>> factory,
-        DistributedCacheEntryOptions options = null,
-        CancellationToken cancellationToken = default) where T : class
+    public async Task<T?> GetOrCreateAsync<T>(string key,
+        Func<CancellationToken, Task<T?>> factory,
+        DistributedCacheEntryOptions? options = null,
+        CancellationToken cancellationToken = default) where T : class?
     {
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
         ArgumentNullException.ThrowIfNull(factory, nameof(factory));
@@ -90,8 +91,8 @@ public sealed class RedisCacheService : ICacheService
     /// <inheritdoc/>
     public async Task SetAsync<T>(string key,
         T value,
-        DistributedCacheEntryOptions options = null,
-        CancellationToken cancellationToken = default) where T : class
+        DistributedCacheEntryOptions? options = null,
+        CancellationToken cancellationToken = default) where T : class?
     {
         ArgumentException.ThrowIfNullOrEmpty(key, nameof(key));
         ArgumentNullException.ThrowIfNull(value, nameof(value));

@@ -3,7 +3,9 @@ using OrderPaymentSystem.Domain.Enum;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 
-
+/// <summary>
+/// Билдер для построения мокового платежа
+/// </summary>
 public class PaymentBuilder
 {
     private long _id = 1;
@@ -12,11 +14,19 @@ public class PaymentBuilder
     private decimal _amountPaid = 0m;
     private PaymentStatus _status = PaymentStatus.Pending;
 
-    public PaymentBuilder WithId(long id) { _id = id; return this; }
-    public PaymentBuilder WithOrder(long orderId) { _orderId = orderId; return this; }
+    /// <summary>
+    /// Добавить цену для оплаты
+    /// </summary>
     public PaymentBuilder ToPay(decimal amount) { _amountToPay = amount; return this; }
-    public PaymentBuilder Paid(decimal amount) { _amountPaid = amount; return this; }
+
+    /// <summary>
+    /// Добавить статус платежа
+    /// </summary>
     public PaymentBuilder WithStatus(PaymentStatus status) { _status = status; return this; }
 
+    /// <summary>
+    /// Построить, создать объект.
+    /// </summary>
+    /// <returns>Созданный платёж</returns>
     public Payment Build() => Payment.CreateExisting(_id, _orderId, _amountPaid, _amountToPay, PaymentMethod.Cash, _status);
 }

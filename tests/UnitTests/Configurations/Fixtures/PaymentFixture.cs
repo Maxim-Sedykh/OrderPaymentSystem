@@ -10,6 +10,9 @@ using OrderPaymentSystem.UnitTests.Configurations.Factories;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
+/// <summary>
+/// Настройка зависимостей и создание <see cref="PaymentService"/>
+/// </summary>
 internal class PaymentFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();

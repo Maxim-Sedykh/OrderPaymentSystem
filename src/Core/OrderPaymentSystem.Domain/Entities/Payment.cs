@@ -50,7 +50,7 @@ public class Payment : BaseEntity<long>, IAuditable
     /// <summary>
     /// Заказ
     /// </summary>
-    public Order Order { get; protected set; }
+    public Order? Order { get; protected set; }
 
     private Payment() { }
 
@@ -83,6 +83,9 @@ public class Payment : BaseEntity<long>, IAuditable
         Status = status;
     }
 
+    /// <summary>
+    /// Создать существующий платёж. Используется только для тестов
+    /// </summary>
     internal static Payment CreateExisting(
         long id,
         long orderId,
@@ -100,6 +103,7 @@ public class Payment : BaseEntity<long>, IAuditable
     /// Создать платёж
     /// </summary>
     /// <param name="orderId">Id заказа</param>
+    /// <param name="amountPaid">Количество денег которое заплатили</param>
     /// <param name="amountToPay">Количество денег которое нужно заплатить</param>
     /// <param name="method">Метод платежа</param>
     /// <returns>Созданный платёж</returns>
@@ -135,6 +139,13 @@ public class Payment : BaseEntity<long>, IAuditable
         Status = PaymentStatus.Succeeded;
     }
 
+    /// <summary>
+    /// Валидировать создание платежа
+    /// </summary>
+    /// <param name="orderId">Id заказа</param>
+    /// <param name="amoundPaid">Заплаченное количество денег</param>
+    /// <param name="amountToPay">Количество денег, которое нужно было заплатить</param>
+    /// <exception cref="BusinessException"></exception>
     private static void ValidateCreate(long orderId, decimal amoundPaid, decimal amountToPay)
     {
         if (orderId < 0)

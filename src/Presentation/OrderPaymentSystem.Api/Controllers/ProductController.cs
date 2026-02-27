@@ -40,10 +40,10 @@ public class ProductController : ControllerBase
     ///     
     /// </remarks>
     /// <response code="200">Если товар был получен</response>
-    /// <response code="400">Если товар не был получен</response>
+    /// <response code="404">Если товар не был получен</response>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProductDto>> GetById(int id, CancellationToken cancellationToken)
     {
         var response = await _productService.GetByIdAsync(id, cancellationToken);
@@ -86,12 +86,12 @@ public class ProductController : ControllerBase
     ///     }
     ///     
     /// </remarks>
-    /// <response code="200">Если товар удалился</response>
-    /// <response code="400">Если товар не был удалён</response>
+    /// <response code="204">Если товар удалился</response>
+    /// <response code="404">Если товар не был удалён</response>
     [Authorize(Roles = "Admin")]
     [HttpDelete("{id}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<ActionResult> DeleteProduct(int id, CancellationToken cancellationToken)
     {
         var response = await _productService.DeleteByIdAsync(id, cancellationToken);
@@ -99,7 +99,7 @@ public class ProductController : ControllerBase
         {
             return NoContent();
         }
-        return BadRequest(response.Error);
+        return NotFound(response.Error);
     }
 
     /// <summary>
@@ -111,24 +111,25 @@ public class ProductController : ControllerBase
     /// 
     ///     POST
     ///     {
-    ///         "productname": "Гвозди",
+    ///         "name": "Гвозди",
     ///         "description": "Хорошие гвозди большого размера",
-    ///         "cost": 300
+    ///         "price": 300,
+    ///         "stockQuantity": 55,
     ///     }
     ///     
     /// </remarks>
-    /// <response code="200">Если товар создался</response>
+    /// <response code="201">Если товар создался</response>
     /// <response code="400">Если товар не был создан</response>
     [Authorize(Roles = "Admin")]
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<ProductDto>> Create(CreateProductDto dto, CancellationToken cancellationToken)
     {
         var response = await _productService.CreateAsync(dto, cancellationToken);
         if (response.IsSuccess)
         {
-            return CreatedAtAction(nameof(GetById), new { id = response.Data.Id }, response.Data);
+            return CreatedAtAction(nameof(GetById), new { id = response.Data!.Id }, response.Data);
         }
         return BadRequest(response.Error);
     }
@@ -144,10 +145,11 @@ public class ProductController : ControllerBase
     /// 
     ///     PUT
     ///     {
-    ///         "id": 1
-    ///         "productname": "Шурупы",
-    ///         "description": "Качественные шурупы из Китая большого размера",
-    ///         "cost": 400
+    ///         "id": 1,
+    ///         "name": "Гвозди",
+    ///         "description": "Хорошие гвозди большого размера",
+    ///         "price": 30,
+    ///         "stockQuantity": 55,
     ///     }
     ///     
     /// </remarks>

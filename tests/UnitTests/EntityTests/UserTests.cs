@@ -1,12 +1,17 @@
 ﻿using FluentAssertions;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.EntityTests;
 
+/// <summary>
+/// Тесты сущности <see cref="User"/>
+/// </summary>
 public class UserTests
 {
+    /// <summary>
+    /// Создание пользователя с валидными данными должно быть успешно
+    /// </summary>
     [Fact]
     public void Create_ValidData_ShouldReturnUserWithGeneratedId()
     {
@@ -19,6 +24,9 @@ public class UserTests
         user.Id.Should().NotBe(Guid.Empty);
     }
 
+    /// <summary>
+    /// Создание пользователя с невалидными данными должно вызывать BusinessException
+    /// </summary>
     [Theory]
     [InlineData(null, "pass")]
     [InlineData("", "pass")]
@@ -33,6 +41,9 @@ public class UserTests
         act.Should().Throw<BusinessException>();
     }
 
+    /// <summary>
+    /// Смена пароля с новым валидным паролем должна обновить пароль
+    /// </summary>
     [Fact]
     public void ChangePassword_ValidNewPassword_ShouldUpdatePasswordHash()
     {
@@ -45,7 +56,11 @@ public class UserTests
         // Assert
         user.PasswordHash.Should().Be("newhash");
     }
-
+    
+    /// <summary>
+    /// Смена пароля на инвалидный пароль должна вызывать BusinessException
+    /// </summary>
+    /// <param name="newPasswordHash"></param>
     [Theory]
     [InlineData(null)]
     [InlineData("")]

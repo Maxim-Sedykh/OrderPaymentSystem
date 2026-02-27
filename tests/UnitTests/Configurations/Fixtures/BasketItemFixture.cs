@@ -8,6 +8,9 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
+/// <summary>
+/// Настройка зависимостей и создание <see cref="BasketItemService"/>
+/// </summary>
 internal class BasketItemFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
@@ -25,7 +28,7 @@ internal class BasketItemFixture
         Service = new BasketItemService(Uow.Object, Mapper.Object);
     }
 
-    public BasketItemFixture SetupProduct(Product product)
+    public BasketItemFixture SetupProduct(Product? product)
     {
         ProductRepo.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<Product>>(), It.IsAny<CancellationToken>()))
                    .ReturnsAsync(product);
@@ -41,7 +44,7 @@ internal class BasketItemFixture
 
     public BasketItemFixture SetupMapping<TSource, TDest>(TDest destination)
     {
-        Mapper.Setup(m => m.Map<TDest>(It.IsAny<TSource>())).Returns(destination);
+        Mapper.Setup(m => m.Map<TDest>(It.IsAny<TSource>()!)).Returns(destination);
         return this;
     }
 

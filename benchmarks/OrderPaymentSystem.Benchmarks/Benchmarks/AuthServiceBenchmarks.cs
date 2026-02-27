@@ -13,15 +13,35 @@ using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.Benchmarks.Benchmarks;
 
+/// <summary>
+/// Бенчмарк <see cref="AuthService"/>.
+/// Замер производительности.
+/// </summary>
 [Config(typeof(BenchmarkerConfig))]
 [MemoryDiagnoser]
 public class AuthServiceBenchmarks : BaseBenchmark
 {
-    private IAuthService _authService;
-    private LoginUserDto _loginDto;
+    /// <summary>
+    /// Сервис аутентификации
+    /// </summary>
+    private IAuthService? _authService;
+
+    /// <summary>
+    /// DTO для логина
+    /// </summary>
+    private readonly LoginUserDto _loginDto = new(UserLogin, Password);
+
+    /// <summary>
+    /// Логин мокового пользователя
+    /// </summary>
     private const string UserLogin = "bench_user";
+
+    /// <summary>
+    /// Пароль мокового пользователя
+    /// </summary>
     private const string Password = "Password123!";
 
+    /// <inheritdoc/>
     protected override void RegisterServices(IServiceCollection services)
     {
         services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -29,11 +49,12 @@ public class AuthServiceBenchmarks : BaseBenchmark
         services.AddScoped<IAuthService, AuthService>();
     }
 
+    /// <inheritdoc/>
     public override async Task GlobalSetup()
     {
         await base.GlobalSetup();
 
-        using var scope = ServiceProvider.CreateScope();
+        using var scope = ServiceProvider!.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
@@ -47,10 +68,12 @@ public class AuthServiceBenchmarks : BaseBenchmark
         db.UserRoles.Add(UserRole.Create(user.Id, role.Id));
         await db.SaveChangesAsync();
 
-        _authService = ServiceScope.ServiceProvider.GetRequiredService<IAuthService>();
-        _loginDto = new LoginUserDto(UserLogin, Password);
+        _authService = ServiceScope!.ServiceProvider.GetRequiredService<IAuthService>();
     }
 
+    /// <summary>
+    /// Измерить скорость и производительность метода логина в AuthService
+    /// </summary>
     [Benchmark]
-    public async Task LoginAsync() => await _authService.LoginAsync(_loginDto);
+    public async Task LoginAsync() => await _authService!.LoginAsync(_loginDto);
 }

@@ -14,7 +14,7 @@ public interface ICacheService
     /// <param name="key">Ключ кэширования</param>
     /// <param name="ct">Токен отмены операции</param>
     /// <returns>Десериализованный объект или null, если не найден</returns>
-    Task<T> GetAsync<T>(string key, CancellationToken ct = default) where T: class;
+    Task<T?> GetAsync<T>(string key, CancellationToken ct = default) where T: class?;
 
     /// <summary>
     /// Получает объект из кэша или получает его из БД, если отсутствует
@@ -22,12 +22,13 @@ public interface ICacheService
     /// <typeparam name="T">Тип объекта который получаем из кэша</typeparam>
     /// <param name="key">Ключ кэширования</param>
     /// <param name="factory">Фабрика для создания объекта при его отсутствии в кэше</param>
+    /// <param name="options">Настройки для кэша</param>
     /// <param name="ct">Токен отмены операции</param>
     /// <returns>Кэшированный или созданный объект</returns>
-    Task<T> GetOrCreateAsync<T>(string key,
-        Func<CancellationToken, Task<T>> factory,
-        DistributedCacheEntryOptions options = null,
-        CancellationToken ct = default) where T : class;
+    Task<T?> GetOrCreateAsync<T>(string key,
+        Func<CancellationToken, Task<T?>> factory,
+        DistributedCacheEntryOptions? options = null,
+        CancellationToken ct = default) where T : class?;
 
     /// <summary>
     /// Добавление объекта в кэш
@@ -37,7 +38,10 @@ public interface ICacheService
     /// <param name="obj">Объект, который будет кэшироваться</param>
     /// <param name="options">Опции кэширования</param>
     /// <param name="ct">Токен отмены операции</param>
-    Task SetAsync<T>(string key, T obj, DistributedCacheEntryOptions options = null, CancellationToken ct = default) where T : class;
+    Task SetAsync<T>(string key,
+        T obj,
+        DistributedCacheEntryOptions? options = null,
+        CancellationToken ct = default) where T : class?;
 
     /// <summary>
     /// Убрать объект из кэша по ключу

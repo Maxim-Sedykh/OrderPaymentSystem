@@ -12,11 +12,10 @@ using OrderPaymentSystem.Application.DependencyInjection;
 using OrderPaymentSystem.Application.Settings;
 using OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
 using OrderPaymentSystem.DAL.DependencyInjection;
-using OrderPaymentSystem.Domain.Settings;
+using OrderPaymentSystem.DAL.Settings;
+using OrderPaymentSystem.Shared.Extensions;
 using Prometheus;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using System.Net;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 
@@ -27,6 +26,11 @@ namespace OrderPaymentSystem.Api.Extensions;
 /// </summary>
 public static class ServiceCollectionExtensions
 {
+    /// <summary>
+    /// Настроить основные сервисы API
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
+    /// <param name="configuration">Конфигурация</param>
     public static void AddApiInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<JwtSettings>(configuration.GetSection(nameof(JwtSettings)));
@@ -46,6 +50,12 @@ public static class ServiceCollectionExtensions
         services.AddApplication();
     }
 
+    /// <summary>
+    /// Настроить сервисы для авторизации аутентификации
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
+    /// <param name="configuration">Конфигурация</param>
+    /// <exception cref="InvalidOperationException">Если JwtSettings не указаны</exception>
     public static void AddAuthConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddAuthorization();
@@ -59,13 +69,18 @@ public static class ServiceCollectionExtensions
             var jwtSettings = configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>()
                              ?? throw new InvalidOperationException("JwtSettings not found");
 
+            if (jwtSettings.JwtKey!.IsNullOrEmpty())
+            {
+                throw new InvalidOperationException("Jwt key not found");
+            }
+
             o.Authority = jwtSettings.Authority;
             o.RequireHttpsMetadata = false;
             o.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidIssuer = jwtSettings.Issuer,
                 ValidAudience = jwtSettings.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.JwtKey)),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.JwtKey!)),
                 ValidateAudience = true,
                 ValidateIssuer = true,
                 ValidateLifetime = true,
@@ -74,6 +89,10 @@ public static class ServiceCollectionExtensions
         });
     }
 
+    /// <summary>
+    /// Настроить Swagger
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
     public static void AddSwaggerConfiguration(this IServiceCollection services)
     {
         services.AddApiVersioning(options =>
@@ -112,6 +131,12 @@ public static class ServiceCollectionExtensions
         });
     }
 
+    /// <summary>
+    /// Настроить HealthChecks
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
+    /// <param name="configuration">Конфигурации</param>
+    /// <exception cref="InvalidOperationException">Если конфиги не переданы</exception>
     public static void AddHealthChecksConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddHttpClient();

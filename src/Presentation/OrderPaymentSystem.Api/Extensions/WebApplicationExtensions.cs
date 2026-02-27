@@ -15,6 +15,10 @@ namespace OrderPaymentSystem.Api.Extensions;
 /// </summary>
 public static class WebApplicationExtensions
 {
+    /// <summary>
+    /// Настроить SwaggerUI
+    /// </summary>
+    /// <param name="app">Приложение</param>
     public static void UseSwaggerUiConfiguration(this WebApplication app)
     {
         if (app.Environment.IsDevelopment())
@@ -29,6 +33,10 @@ public static class WebApplicationExtensions
         }
     }
 
+    /// <summary>
+    /// Применить все миграции и настройки БД.
+    /// </summary>
+    /// <param name="app">Приложение</param>
     public static async Task ApplyDatabaseMigrationsAsync(this WebApplication app)
     {
         using var scope = app.Services.CreateScope();
@@ -54,6 +62,10 @@ public static class WebApplicationExtensions
         }
     }
 
+    /// <summary>
+    /// Засидить начальные данные в БД
+    /// </summary>
+    /// <param name="services">Провайдер для создания сервисов</param>
     private static async Task SeedIdentityDataAsync(IServiceProvider services)
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
@@ -67,12 +79,17 @@ public static class WebApplicationExtensions
         await EnsureAdminUser(context, passwordHasher, adminRole, adminSettings);
     }
 
-
+    /// <summary>
+    /// Создать роль с определённым названием, если она не существует.
+    /// </summary>
+    /// <param name="context">Контекст для работы с БД.</param>
+    /// <param name="roleName">Название роли которую создаём.</param>
+    /// <returns>Созданная роль.</returns>
     private static async Task<Role> EnsureCreatedRole(ApplicationDbContext context, string roleName)
     {
         var role = await context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
 
-        if (role == null)
+        if (role is null)
         {
             role = Role.Create(roleName);
             context.Roles.Add(role);
@@ -82,12 +99,24 @@ public static class WebApplicationExtensions
         return role;
     }
 
+    /// <summary>
+    /// Создать админа если его нет.
+    /// </summary>
+    /// <param name="context">Контекст для работы с БД.</param>
+    /// <param name="passwordHasher">Сервис для хэширования пароля.</param>
+    /// <param name="adminRole">Роль для администратора.</param>
+    /// <param name="adminSettings">Креды для админа.</param>
     private static async Task EnsureAdminUser(ApplicationDbContext context, IPasswordHasher passwordHasher, Role adminRole, AdminSettings adminSettings)
     {
+        if (adminSettings is null)
+        { 
+            throw new ArgumentNullException(nameof(adminSettings));
+        }
+
         if (await context.Users.AnyAsync(u => u.Login == adminSettings.Login))
             return;
 
-        var admin = User.Create(adminSettings.Login, passwordHasher.Hash(adminSettings.Password));
+        var admin = User.Create(adminSettings.Login!, passwordHasher.Hash(adminSettings.Password!));
         var userRole = UserRole.Create(admin.Id, adminRole.Id);
 
         context.Users.Add(admin);
@@ -96,6 +125,10 @@ public static class WebApplicationExtensions
         await context.SaveChangesAsync();
     }
 
+    /// <summary>
+    /// Настроить endpoint /health для проверки работоспособности API
+    /// </summary>
+    /// <param name="app">Приложение</param>
     public static void UseHealthChecksConfiguration(this WebApplication app)
     {
         app.MapHealthChecks("/health", new HealthCheckOptions

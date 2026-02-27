@@ -10,13 +10,16 @@ using OrderPaymentSystem.DAL.Interceptors;
 using OrderPaymentSystem.DAL.Persistence;
 using OrderPaymentSystem.DAL.Persistence.Repositories;
 using OrderPaymentSystem.DAL.Persistence.Repositories.Base;
+using OrderPaymentSystem.DAL.Settings;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories.Base;
 using OrderPaymentSystem.Domain.Entities;
-using OrderPaymentSystem.Domain.Settings;
 
 namespace OrderPaymentSystem.DAL.DependencyInjection;
 
+/// <summary>
+/// Класс для внедрения зависимостей слоя DAL в общее API
+/// </summary>
 public static class DependencyInjection
 {
     /// <summary>
@@ -42,6 +45,10 @@ public static class DependencyInjection
         services.InitCaching(configuration);
     }
 
+    /// <summary>
+    /// Зарегистрировать репозитории
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
     public static void InitRepositories(this IServiceCollection services)
     {
         var types = new List<Type>()
@@ -76,6 +83,10 @@ public static class DependencyInjection
         services.AddScoped<IUserTokenRepository, UserTokenRepository>();
     }
 
+    /// <summary>
+    /// Зарегистрировать UnitOfWork объект
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
     public static void InitUnitOfWork(this IServiceCollection services)
     {
         services.AddScoped<IUnitOfWork, UnitOfWork>(provider =>
@@ -90,9 +101,15 @@ public static class DependencyInjection
                 () => provider.GetRequiredService<IUserRepository>(),
                 () => provider.GetRequiredService<IUserRoleRepository>(),
                 () => provider.GetRequiredService<IUserTokenRepository>()
-    ));
+            )
+        );
     }
 
+    /// <summary>
+    /// Зарегистрировать кэширование Redis
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
+    /// <param name="configuration">Конфигурация</param>
     public static void InitCaching(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<ICacheService, RedisCacheService>();

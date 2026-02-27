@@ -3,6 +3,9 @@ using System.Security.Cryptography;
 
 namespace OrderPaymentSystem.DAL.Auth;
 
+/// <summary>
+/// Сервис для хэширования пароля
+/// </summary>
 public sealed class PasswordHasher : IPasswordHasher
 {
     private const int SaltSize = 16;
@@ -11,6 +14,7 @@ public sealed class PasswordHasher : IPasswordHasher
 
     private static readonly HashAlgorithmName Algorithm = HashAlgorithmName.SHA512;
 
+    /// <inheritdoc/>
     public string Hash(string password)
     {
         byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
@@ -19,6 +23,7 @@ public sealed class PasswordHasher : IPasswordHasher
         return $"{Convert.ToHexString(hash)}-{Convert.ToHexString(salt)}";
     }
 
+    /// <inheritdoc/>
     public bool Verify(string enteredPassword, string passwordHash)
     {
         string[] parts = passwordHash.Split('-');

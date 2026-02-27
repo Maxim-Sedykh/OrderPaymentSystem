@@ -10,6 +10,9 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
+/// <summary>
+/// Настройка зависимостей и создание <see cref="ProductService"/>
+/// </summary>
 internal class ProductFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
@@ -48,14 +51,14 @@ internal class ProductFixture
     {
         Cache.Setup(c => c.GetOrCreateAsync(
                 It.Is<string>(k => k == key),
-                It.IsAny<Func<CancellationToken, Task<T>>>()))
+                It.IsAny<Func<CancellationToken, Task<T>>>()!))
              .ReturnsAsync(value);
         return this;
     }
 
     public ProductFixture SetupMapping<TSrc, TDest>(TDest dest)
     {
-        Mapper.Setup(m => m.Map<TDest>(It.IsAny<TSrc>())).Returns(dest);
+        Mapper.Setup(m => m.Map<TDest>(It.IsAny<TSrc>()!)).Returns(dest);
         return this;
     }
 

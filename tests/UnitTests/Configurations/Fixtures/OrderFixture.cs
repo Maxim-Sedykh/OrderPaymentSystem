@@ -10,6 +10,9 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
+/// <summary>
+/// Настройка зависимостей и создание <see cref="OrderService"/>
+/// </summary>
 internal class OrderFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
@@ -54,7 +57,7 @@ internal class OrderFixture
 
     public OrderFixture SetupMapping<TSrc, TDest>(TDest dest)
     {
-        Mapper.Setup(m => m.Map<TDest>(It.IsAny<TSrc>())).Returns(dest);
+        Mapper.Setup(m => m.Map<TDest>(It.IsAny<TSrc>()!)).Returns(dest);
         return this;
     }
 

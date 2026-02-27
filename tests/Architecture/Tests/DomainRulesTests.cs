@@ -3,8 +3,15 @@ using OrderPaymentSystem.ArchitectureTests.Abstract;
 
 namespace OrderPaymentSystem.ArchitectureTests.Tests;
 
+/// <summary>
+/// Тестирование богатых доменных моделей.
+/// </summary>
 public class DomainRulesTests : BaseArchitectureTest
 {
+    /// <summary>
+    /// Все классы в папке Entities в проекте Domain должны иметь только приватные сеттеры.
+    /// Чтобы внешний код не мог туда передавать данные, и богатая доменная модель была самодостаточным API
+    /// </summary>
     [Fact]
     public void Entities_Should_Have_PrivateSetters()
     {

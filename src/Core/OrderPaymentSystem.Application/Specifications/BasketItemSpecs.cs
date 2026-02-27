@@ -4,6 +4,9 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
 
+/// <summary>
+/// Спецификации для сущности "Элемент корзины"
+/// </summary>
 internal static class BasketItemSpecs
 {
     public static BaseSpecification<BasketItem> WithProduct(this BaseSpecification<BasketItem> spec)

@@ -3,6 +3,9 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
 
+/// <summary>
+/// Спецификации для сущности "Товар"
+/// </summary>
 internal static class ProductSpecs
 {
     public static BaseSpecification<Product> ById(long id)

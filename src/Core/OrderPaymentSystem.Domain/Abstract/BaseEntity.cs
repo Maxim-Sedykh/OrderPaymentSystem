@@ -6,15 +6,13 @@ namespace OrderPaymentSystem.Domain.Abstract;
 /// Абстрактный базовый класс для всех сущностей предметной области, имеющих идентификатор.
 /// </summary>
 /// <typeparam name="TId">Тип идентификатора.</typeparam>
-public abstract class BaseEntity<TId> : IEntityId<TId>
+public abstract class BaseEntity<TId> : IEntityId<TId?>
     where TId : IEquatable<TId>
 {
     /// <summary>
     /// Уникальный идентификатор сущности.
-    /// Доступен для чтения извне (через IEntityId<TId>),
-    /// но может быть установлен только внутри класса (protected set) или ORM.
     /// </summary>
-    public TId Id { get; protected set; }
+    public TId? Id { get; protected set; }
 
     /// <summary>
     /// Защищенный конструктор по умолчанию.
@@ -44,19 +42,19 @@ public abstract class BaseEntity<TId> : IEntityId<TId>
     /// </summary>
     /// <param name="obj">Объект для сравнения с текущим объектом.</param>
     /// <returns>true, если указанный объект равен текущему объекту; в противном случае, false.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (ReferenceEquals(this, obj)) return true;
 
         if (obj is null || GetType() != obj.GetType()) return false;
 
         var other = (BaseEntity<TId>)obj;
-        if (Id.Equals(default(TId)) || other.Id.Equals(default(TId)))
+        if (Id is not null && (Id.Equals(default(TId)) || other.Id!.Equals(default)))
         {
             return false;
         }
 
-        return Id.Equals(other.Id);
+        return Id!.Equals(other.Id);
     }
 
     /// <summary>
@@ -66,13 +64,19 @@ public abstract class BaseEntity<TId> : IEntityId<TId>
     /// <returns>Хэш-код для данного экземпляра.</returns>
     public override int GetHashCode()
     {
-        if (Id.Equals(default(TId)))
+        if (Id is not null && Id.Equals(default(TId)))
         {
             return 0;
         }
-        return Id.GetHashCode();
+        return Id!.GetHashCode();
     }
 
+    /// <summary>
+    /// Переопределение оператора == для идентификатора сущности
+    /// </summary>
+    /// <param name="left">Левый Id</param>
+    /// <param name="right">Правый Id</param>
+    /// <returns>True если равны</returns>
     public static bool operator ==(BaseEntity<TId> left, BaseEntity<TId> right)
     {
         if (ReferenceEquals(left, right)) return true;
@@ -80,6 +84,12 @@ public abstract class BaseEntity<TId> : IEntityId<TId>
         return left.Equals(right);
     }
 
+    /// <summary>
+    /// Переопределение оператора != для идентификатора сущности
+    /// </summary>
+    /// <param name="left">Левый Id</param>
+    /// <param name="right">Правый Id</param>
+    /// <returns>True если не равны</returns>
     public static bool operator !=(BaseEntity<TId> left, BaseEntity<TId> right)
     {
         return !(left == right);

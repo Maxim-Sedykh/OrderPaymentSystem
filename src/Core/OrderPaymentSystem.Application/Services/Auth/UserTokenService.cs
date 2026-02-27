@@ -20,9 +20,9 @@ namespace OrderPaymentSystem.Application.Services.Auth;
 /// </summary>
 internal class UserTokenService : IUserTokenService
 {
-    private readonly string _jwtKey;
-    private readonly string _issuer;
-    private readonly string _audience;
+    private readonly string? _jwtKey;
+    private readonly string? _issuer;
+    private readonly string? _audience;
     private readonly int _refreshTokenLifeTimeInDays;
     private readonly int _accessTokenLifeTimeInMinutes;
     private readonly IUnitOfWork _unitOfWork;
@@ -33,7 +33,7 @@ internal class UserTokenService : IUserTokenService
         IUnitOfWork unitOfWork,
         TimeProvider timeProvider)
     {
-        _jwtKey = options.Value.JwtKey;
+        _jwtKey = options.Value.JwtKey ?? throw new ArgumentNullException(nameof(options));
         _issuer = options.Value.Issuer;
         _audience = options.Value.Audience;
         _refreshTokenLifeTimeInDays = options.Value.RefreshTokenValidityInDays;
@@ -45,7 +45,7 @@ internal class UserTokenService : IUserTokenService
     /// <inheritdoc/>
     public string GenerateAccessToken(IEnumerable<Claim> claims)
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey!));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var tokenDescriptor = new JwtSecurityToken(
@@ -69,9 +69,9 @@ internal class UserTokenService : IUserTokenService
     }
 
     /// <inheritdoc/>
-    public CollectionResult<Claim> GetClaimsFromUser(User user)
+    public CollectionResult<Claim> GetClaimsFromUser(User? user)
     {
-        if (user == null)
+        if (user is null)
         {
             return CollectionResult<Claim>.Failure(DomainErrors.User.WasNull());
         }
@@ -100,20 +100,20 @@ internal class UserTokenService : IUserTokenService
         var userResult = await GetValidUserForRefreshAsync(dto, ct);
         if (!userResult.IsSuccess)
         {
-            return DataResult<TokenDto>.Failure(userResult.Error);
+            return DataResult<TokenDto>.Failure(userResult.Error!);
         }
 
         var user = userResult.Data;
         var getNewClaimsResult = GetClaimsFromUser(user);
         if (!getNewClaimsResult.IsSuccess)
         {
-            return DataResult<TokenDto>.Failure(getNewClaimsResult.Error);
+            return DataResult<TokenDto>.Failure(getNewClaimsResult.Error!);
         }
 
         var newAccessToken = GenerateAccessToken(getNewClaimsResult.Data);
         var newRefreshToken = GenerateRefreshToken();
 
-        user.UserToken.UpdateRefreshTokenData(
+        user!.UserToken!.UpdateRefreshTokenData(
             newRefreshToken,
             _timeProvider.GetUtcNow().UtcDateTime.AddDays(_refreshTokenLifeTimeInDays),
             _timeProvider.GetUtcNow().UtcDateTime
@@ -143,10 +143,10 @@ internal class UserTokenService : IUserTokenService
         var claimsPrincipalResult = GetPrincipalFromExpiredToken(dto.AccessToken);
         if (!claimsPrincipalResult.IsSuccess)
         {
-            return DataResult<User>.Failure(claimsPrincipalResult.Error);
+            return DataResult<User>.Failure(claimsPrincipalResult.Error!);
         }
 
-        var login = claimsPrincipalResult.Data.Identity?.Name;
+        var login = claimsPrincipalResult?.Data?.Identity?.Name ?? string.Empty;
         if (string.IsNullOrEmpty(login))
         {
             return DataResult<User>.Failure(DomainErrors.General.InvalidToken());
@@ -154,7 +154,7 @@ internal class UserTokenService : IUserTokenService
 
         var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(login).ForAuth(), ct);
 
-        if (user?.UserToken == null)
+        if (user?.UserToken is null)
         {
             return DataResult<User>.Failure(DomainErrors.User.NotFoundByLogin(login));
         }
@@ -185,7 +185,7 @@ internal class UserTokenService : IUserTokenService
             ValidateAudience = true,
             ValidateIssuer = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey!)),
             ValidateLifetime = false,
             ValidAudience = _audience,
             ValidIssuer = _issuer,

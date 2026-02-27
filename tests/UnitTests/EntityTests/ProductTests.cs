@@ -1,12 +1,17 @@
 ﻿using FluentAssertions;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.EntityTests;
 
+/// <summary>
+/// Тесты сущности <see cref="Product"/>
+/// </summary>
 public class ProductTests
 {
+    /// <summary>
+    /// Создание товара с валидными данными должно быть успешно
+    /// </summary>
     [Fact]
     public void Create_WithValidData_ShouldReturnProduct()
     {
@@ -19,6 +24,9 @@ public class ProductTests
         product.StockQuantity.Should().Be(10);
     }
 
+    /// <summary>
+    /// Создание товара с инвалидными данными должно выбрасывать BusinessException
+    /// </summary>
     [Theory]
     [InlineData("", 100)]
     [InlineData("Name", 0)]
@@ -32,6 +40,9 @@ public class ProductTests
         act.Should().Throw<BusinessException>();
     }
 
+    /// <summary>
+    /// Уменьшение товара на складе должно уменьшать поле StockQuantity
+    /// </summary>
     [Fact]
     public void ReduceStockQuantity_WhenStockIsEnough_ShouldDecreaseQuantity()
     {
@@ -45,6 +56,9 @@ public class ProductTests
         product.StockQuantity.Should().Be(6);
     }
 
+    /// <summary>
+    /// Уменьшение товара на складе на число, которого нет на складе - должно выбрасывать BusinessException
+    /// </summary>
     [Fact]
     public void ReduceStockQuantity_WhenStockIsNotEnough_ShouldThrowBusinessException()
     {

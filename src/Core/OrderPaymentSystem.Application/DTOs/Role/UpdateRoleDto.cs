@@ -1,5 +1,7 @@
 ﻿namespace OrderPaymentSystem.Application.DTOs.Role;
 
-public record UpdateRoleDto(
-        string Name
-    );
+/// <summary>
+/// Модель для обновления данных роли
+/// </summary>
+/// <param name="Name">Новое название роли</param>
+public record UpdateRoleDto(string Name);

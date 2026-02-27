@@ -38,7 +38,7 @@ internal class UserRoleService : IUserRoleService
     {
         var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ById(userId).WithRoles(), ct);
 
-        if (user == null)
+        if (user is null)
         {
             return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(userId));
         }
@@ -55,7 +55,7 @@ internal class UserRoleService : IUserRoleService
         }
 
         var role = await _unitOfWork.Roles.GetFirstOrDefaultAsync(RoleSpecs.ByName(roleName), ct);
-        if (role == null)
+        if (role is null)
         {
             return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundByName(roleName));
         }
@@ -77,11 +77,12 @@ internal class UserRoleService : IUserRoleService
         CancellationToken ct = default)
     {
         var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ById(userId).WithRoles(), ct);
-        if (user == null) return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(userId));
+        if (user is null) return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(userId));
         var role = user.Roles.FirstOrDefault(x => x.Id == roleId);
-        if (role == null) return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundById(roleId));
+        if (role is null) return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundById(roleId));
 
         var userRole = await _unitOfWork.UserRoles.GetFirstOrDefaultAsync(UserRoleSpecs.ByUserIdRoleId(user.Id, role.Id), ct);
+        if (userRole is null) return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundByUser(user.Id));
 
         _unitOfWork.UserRoles.Remove(userRole);
         await _unitOfWork.SaveChangesAsync(ct);
@@ -98,19 +99,19 @@ internal class UserRoleService : IUserRoleService
         CancellationToken ct = default)
     {
         var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ById(userId).WithRoles(), ct);
-        if (user == null)
+        if (user is null)
         {
             return DataResult<UserRoleDto>.Failure(DomainErrors.User.NotFoundById(userId));
         }
 
         var currentRole = user.Roles.FirstOrDefault(x => x.Id == dto.FromRoleId);
-        if (currentRole == null)
+        if (currentRole is null)
         {
             return DataResult<UserRoleDto>.Failure(DomainErrors.Role.UserRoleNotFound(dto.FromRoleId));
         }
 
         var newRole = await _unitOfWork.Roles.GetFirstOrDefaultAsync(RoleSpecs.ById(dto.ToRoleId), ct);
-        if (newRole == null)
+        if (newRole is null)
         {
             return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundById(dto.ToRoleId));
         }
@@ -125,6 +126,7 @@ internal class UserRoleService : IUserRoleService
         try
         {
             var userRole = await _unitOfWork.UserRoles.GetFirstOrDefaultAsync(UserRoleSpecs.ByUserIdRoleId(user.Id, currentRole.Id), ct);
+            if (userRole is null) return DataResult<UserRoleDto>.Failure(DomainErrors.Role.NotFoundByUser(user.Id));
 
             _unitOfWork.UserRoles.Remove(userRole);
 

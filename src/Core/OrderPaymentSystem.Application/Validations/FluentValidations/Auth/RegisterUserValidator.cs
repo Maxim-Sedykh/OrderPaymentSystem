@@ -6,8 +6,14 @@ using static OrderPaymentSystem.Domain.Constants.ValidationConstants.User;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
 
+/// <summary>
+/// Валидатор для <see cref="RegisterUserDto"/>
+/// </summary>
 public class RegisterUserValidator : AbstractValidator<RegisterUserDto>
 {
+    /// <summary>
+    /// Конструктор валидатора, создание правил для полей DTO <see cref="RegisterUserDto"/>
+    /// </summary>
     public RegisterUserValidator()
     {
         RuleFor(x => x.Login)

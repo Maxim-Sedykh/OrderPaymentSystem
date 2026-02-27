@@ -1,12 +1,17 @@
 ﻿using FluentAssertions;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.EntityTests;
 
+/// <summary>
+/// Тесты сущности <see cref="Role"/>
+/// </summary>
 public class RoleTests
 {
+    /// <summary>
+    /// Обновление роли с валидным именем должно быть успешно
+    /// </summary>
     [Fact]
     public void Create_ValidName_ShouldSetProperties()
     {
@@ -18,6 +23,9 @@ public class RoleTests
         role.Id.Should().Be(default);
     }
 
+    /// <summary>
+    /// Создание роли с невалидным именем должно выбрасывать BusinessException
+    /// </summary>
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -31,6 +39,9 @@ public class RoleTests
         act.Should().Throw<BusinessException>();
     }
 
+    /// <summary>
+    /// Обновление роли с валидным именем должно быть успешно
+    /// </summary>
     [Fact]
     public void UpdateName_ValidName_ShouldUpdateProperty()
     {
@@ -44,6 +55,9 @@ public class RoleTests
         role.Name.Should().Be("NewName");
     }
 
+    /// <summary>
+    /// Обновление роли с невалидным именем должно выбрасывать BusinessException
+    /// </summary>
     [Theory]
     [InlineData(null)]
     [InlineData("")]

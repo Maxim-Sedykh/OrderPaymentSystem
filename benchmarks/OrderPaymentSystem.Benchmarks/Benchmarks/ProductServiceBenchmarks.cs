@@ -15,26 +15,47 @@ using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.Benchmarks.Benchmarks;
 
+/// <summary>
+/// Бенчмарк <see cref="ProductService"/>.
+/// Замер производительности.
+/// </summary>
 [Config(typeof(BenchmarkerConfig))]
 [MemoryDiagnoser]
 public class ProductServiceBenchmarks : BaseBenchmark
 {
-    private IProductService _productServiceWithCache;
-    private IProductService _productServiceNoCache;
-    private ApplicationDbContext _dbContext;
+    /// <summary>
+    /// Сервис для работы с товарами с поддержкой кэша
+    /// </summary>
+    private ProductService? _productServiceWithCache;
+
+    /// <summary>
+    /// Сервис для работы с товарами без кэша
+    /// </summary>
+    private ProductService? _productServiceNoCache;
+
+    /// <summary>
+    /// Контекст для работы с БД
+    /// </summary>
+    private ApplicationDbContext? _dbContext;
+
+    /// <summary>
+    /// Количество товаров которое будем получать
+    /// </summary>
     private const int ProductCount = 10000;
 
+    /// <inheritdoc/>
     protected override void RegisterServices(IServiceCollection services)
     {
         services.AddScoped<ICacheService, RedisCacheService>();
         services.AddScoped<IProductService, ProductService>();
     }
 
+    /// <inheritdoc/>
     public override async Task GlobalSetup()
     {
         await base.GlobalSetup();
 
-        _dbContext = ServiceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        _dbContext = ServiceScope!.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
         if (!await _dbContext.Products.AnyAsync())
         {
@@ -59,19 +80,27 @@ public class ProductServiceBenchmarks : BaseBenchmark
         await _productServiceWithCache.GetAllAsync();
     }
 
+    /// <summary>
+    /// Измерить скорость и производительность метода GetAllAsync в <see cref="ProductService"/>
+    /// C использованием кэша
+    /// </summary>
     [Benchmark]
     [BenchmarkCategory("Product_Read")]
     public async Task GetAll_WithRealCache()
     {
-        await _productServiceWithCache.GetAllAsync();
-        _dbContext.ChangeTracker.Clear();
+        await _productServiceWithCache!.GetAllAsync();
+        _dbContext!.ChangeTracker.Clear();
     }
 
+    /// <summary>
+    /// Измерить скорость и производительность метода GetAllAsync в <see cref="ProductService"/>
+    /// Без кэша
+    /// </summary>
     [Benchmark(Baseline = true)]
     [BenchmarkCategory("Product_Read")]
     public async Task GetAll_NoCache()
     {
-        await _productServiceNoCache.GetAllAsync();
-        _dbContext.ChangeTracker.Clear();
+        await _productServiceNoCache!.GetAllAsync();
+        _dbContext!.ChangeTracker.Clear();
     }
 }

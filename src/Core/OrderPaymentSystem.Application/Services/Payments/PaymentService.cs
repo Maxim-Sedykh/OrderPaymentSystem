@@ -9,6 +9,9 @@ using OrderPaymentSystem.Shared.Result;
 
 namespace OrderPaymentSystem.Application.Services.Payments;
 
+/// <summary>
+/// Сервис для работы с платежами
+/// </summary>
 internal class PaymentService : IPaymentService
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -20,10 +23,11 @@ internal class PaymentService : IPaymentService
         _mapper = mapper;
     }
 
+    /// <inheritdoc/>
     public async Task<BaseResult> CompletePaymentAsync(long paymentId, CompletePaymentDto dto, CancellationToken ct = default)
     {
         var payment = await _unitOfWork.Payments.GetFirstOrDefaultAsync(PaymentSpecs.ById(paymentId), ct);
-        if (payment == null)
+        if (payment is null)
         {
             return BaseResult.Failure(DomainErrors.Payment.NotFound(paymentId));
         }
@@ -35,6 +39,7 @@ internal class PaymentService : IPaymentService
         return BaseResult.Success();
     }
 
+    /// <inheritdoc/>
     public async Task<DataResult<PaymentDto>> CreateAsync(CreatePaymentDto dto, CancellationToken ct = default)
     {
         var paymentExists = await _unitOfWork.Payments.AnyAsync(PaymentSpecs.ByOrderId(dto.OrderId), ct);
@@ -44,7 +49,7 @@ internal class PaymentService : IPaymentService
         }
         
         var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(dto.OrderId), ct);
-        if (order == null)
+        if (order is null)
         { 
             return DataResult<PaymentDto>.Failure(DomainErrors.Order.NotFound(dto.OrderId));
         }
@@ -57,6 +62,7 @@ internal class PaymentService : IPaymentService
         return DataResult<PaymentDto>.Success(_mapper.Map<PaymentDto>(payment));
     }
 
+    /// <inheritdoc/>
     public async Task<DataResult<PaymentDto>> GetByIdAsync(long paymentId, CancellationToken ct = default)
     {
         var payment = await _unitOfWork.Payments
@@ -70,6 +76,7 @@ internal class PaymentService : IPaymentService
         return DataResult<PaymentDto>.Success(payment);
     }
 
+    /// <inheritdoc/>
     public async Task<CollectionResult<PaymentDto>> GetByOrderIdAsync(long orderId, CancellationToken ct = default)
     {
         var payments = await _unitOfWork.Payments

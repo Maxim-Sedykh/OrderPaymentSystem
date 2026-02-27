@@ -12,16 +12,28 @@ namespace OrderPaymentSystem.DAL.Persistence.Repositories.Base;
 /// <typeparam name="TEntity">Тип сущности</typeparam>
 public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
 {
+    /// <summary>
+    /// Контекст для работы с БД
+    /// </summary>
     protected readonly ApplicationDbContext _dbContext;
+
+    /// <summary>
+    /// <see cref="DbSet{TEntity}"/> для работы с запросами для сущности
+    /// </summary>
     protected readonly DbSet<TEntity> _table;
 
+    /// <summary>
+    /// Конструктор репозитория
+    /// </summary>
+    /// <param name="dbContext">Контекст базы данных</param>
     public BaseRepository(ApplicationDbContext dbContext)
     {
         _dbContext = dbContext;
         _table = _dbContext.Set<TEntity>();
     }
 
-    public async Task<TResult> GetProjectedAsync<TResult>(
+    /// <inheritdoc/>
+    public async Task<TResult?> GetProjectedAsync<TResult>(
         ISpecification<TEntity> spec,
         CancellationToken cancellationToken = default)
     {
@@ -31,13 +43,15 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task<TEntity> GetFirstOrDefaultAsync(ISpecification<TEntity> spec, CancellationToken ct = default)
+    /// <inheritdoc/>
+    public async Task<TEntity?> GetFirstOrDefaultAsync(ISpecification<TEntity> spec, CancellationToken ct = default)
     {
         return await SpecificationEvaluator<TEntity>
             .GetQuery(_table, spec)
             .FirstOrDefaultAsync(ct);
     }
 
+    /// <inheritdoc/>
     public async Task<List<TEntity>> GetListBySpecAsync(ISpecification<TEntity> spec, CancellationToken ct = default)
     {
         return await SpecificationEvaluator<TEntity>
@@ -45,6 +59,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
             .ToListAsync(ct);
     }
 
+    /// <inheritdoc/>
     public async Task<List<TValue>> GetListValuesAsync<TValue>(
         ISpecification<TEntity> spec,
         Expression<Func<TEntity, TValue>> selector,
@@ -56,7 +71,8 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
             .ToListAsync(ct);
     }
 
-    public async Task<TValue> GetValueAsync<TValue>(
+    /// <inheritdoc/>
+    public async Task<TValue?> GetValueAsync<TValue>(
         ISpecification<TEntity> spec,
         Expression<Func<TEntity, TValue>> selector,
         CancellationToken ct = default)
@@ -67,8 +83,9 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
             .FirstOrDefaultAsync(ct);
     }
 
+    /// <inheritdoc/>
     public async Task<List<TResult>> GetListProjectedAsync<TResult>(
-        ISpecification<TEntity> spec = null,
+        ISpecification<TEntity>? spec = null,
         CancellationToken cancellationToken = default)
     {
         return await SpecificationEvaluator<TEntity>
@@ -117,11 +134,18 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         _table.UpdateRange(entities);
     }
 
+    /// <inheritdoc/>
     public async Task<bool> AnyAsync(ISpecification<TEntity> spec, CancellationToken ct = default)
     {
         return await SpecificationEvaluator<TEntity>
             .GetQuery(_table, spec)
             .AnyAsync(ct);
+    }
+
+    /// <inheritdoc/>
+    public async Task<List<TEntity>> GetAll(CancellationToken ct = default)
+    {
+        return await _table.ToListAsync(ct);
     }
 
     /// <summary>
@@ -148,10 +172,5 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         {
             throw new ArgumentNullException(nameof(entities), "Entities is null");
         }
-    }
-
-    public async Task<List<TEntity>> GetAll(CancellationToken ct = default)
-    {
-        return await _table.ToListAsync(ct);
     }
 }

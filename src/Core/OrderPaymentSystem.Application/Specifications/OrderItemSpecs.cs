@@ -4,6 +4,9 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
 
+/// <summary>
+/// Спецификации для сущности "Элемент заказа"
+/// </summary>
 internal static class OrderItemSpecs
 {
     public static BaseSpecification<OrderItem> ById(long id)

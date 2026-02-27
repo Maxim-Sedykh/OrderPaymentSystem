@@ -1,5 +1,7 @@
 ﻿namespace OrderPaymentSystem.Application.DTOs.Role;
 
-public record CreateRoleDto(
-        string Name
-    );
+/// <summary>
+/// Модель данных для создания роли
+/// </summary>
+/// <param name="Name">Название роли</param>
+public record CreateRoleDto(string Name);

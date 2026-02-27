@@ -2,12 +2,17 @@
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Shared.Exceptions;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.EntityTests;
 
+/// <summary>
+/// Тесты сущности <see cref="Payment"/>
+/// </summary>
 public class PaymentTests
 {
+    /// <summary>
+    /// Обработка платежа с корректным денежным количеством должно быть успешно
+    /// </summary>
     [Fact]
     public void ProcessPayment_WithCorrectAmount_ShouldSucceed()
     {
@@ -22,6 +27,9 @@ public class PaymentTests
         payment.CashChange.Should().Be(0m);
     }
 
+    /// <summary>
+    /// Обработка платежа с недостающим денежным количеством должно выбрасывать BusinessException
+    /// </summary>
     [Fact]
     public void ProcessPayment_WithInsufficientAmount_ShouldThrowBusinessException()
     {
@@ -35,6 +43,9 @@ public class PaymentTests
         act.Should().Throw<BusinessException>();
     }
 
+    /// <summary>
+    /// Обработка платежа с неправильной сдачей должно выбрасывать BusinessException
+    /// </summary>
     [Fact]
     public void ProcessPayment_WrongCashChange_ShouldThrowBusinessException()
     {
@@ -42,7 +53,6 @@ public class PaymentTests
         var payment = Payment.Create(1, 1000m, 800m, PaymentMethod.Cash);
 
         // Act
-        // Оплачено 1000, цена 800, сдача должна быть 200, а мы передаем 100
         Action act = () => payment.ProcessPayment(1000m, 100m);
 
         // Assert

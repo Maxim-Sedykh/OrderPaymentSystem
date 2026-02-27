@@ -1,4 +1,5 @@
-﻿using OrderPaymentSystem.Application.DTOs.Auth;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using OrderPaymentSystem.Application.DTOs.Auth;
 using OrderPaymentSystem.Application.DTOs.Order;
 using OrderPaymentSystem.Application.DTOs.Product;
 using OrderPaymentSystem.Application.DTOs.Token;
@@ -9,11 +10,25 @@ using System.Net.Http.Json;
 
 namespace OrderPaymentSystem.IntegrationTests.Base;
 
+/// <summary>
+/// Базовый класс для интеграционных тестов.
+/// </summary>
 public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestFactory>
 {
+    /// <summary>
+    /// Http клиент для запросов.
+    /// </summary>
     protected readonly HttpClient Client;
+
+    /// <summary>
+    /// Фабрика для создания необходимых зависимостей для интеграционного теста.
+    /// </summary>
     protected readonly IntegrationTestFactory Factory;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="factory">Фабрика.</param>
     protected BaseIntegrationTest(IntegrationTestFactory factory)
     {
         Factory = factory;
@@ -26,25 +41,28 @@ public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestFactory
     /// <param name="login">Логин пользователя.</param>
     /// <param name="role">Роль пользователя ("User" или "Admin").</param>
     /// <param name="password">Пароль пользователя. Если null, используются дефолтные пароли из TestConstants.</param>
-    protected async Task AuthenticateAsync(string login = "admin", string role = "Admin", string password = null)
+    protected async Task AuthenticateAsync(string login = "admin", string role = "Admin", string password = TestConstants.AdminPassword)
     {
-        string userPassword = password ?? (role == DefaultRoles.User ? TestConstants.CommonUserPassword : TestConstants.AdminPassword);
-
-        if (role == TestConstants.UserRole)
+        if (role == DefaultRoles.User)
         {
-            var registerDto = new RegisterUserDto(login, userPassword, userPassword);
+            var registerDto = new RegisterUserDto(login, password, password);
             await Client.PostAsJsonAsync(TestConstants.ApiAuthRegister, registerDto);
         }
 
-        var loginDto = new LoginUserDto(login, userPassword);
+        var loginDto = new LoginUserDto(login, password);
         var response = await Client.PostAsJsonAsync(TestConstants.ApiAuthLogin, loginDto);
         response.EnsureSuccessStatusCode();
         var token = await response.Content.ReadFromJsonAsync<TokenDto>();
 
-        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token!.AccessToken);
+        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(JwtBearerDefaults.AuthenticationScheme, token!.AccessToken);
     }
 
-    protected async Task<ProductDto> GetProductAsync(int productId)
+    /// <summary>
+    /// Получить товар по Id.
+    /// </summary>
+    /// <param name="productId">Идентификатор товара.</param>
+    /// <returns><see cref="ProductDto"/> или null</returns>
+    protected async Task<ProductDto?> GetProductAsync(int productId)
     {
         var response = await Client.GetAsync($"{TestConstants.ApiProductsV1}/{productId}");
         if (!response.IsSuccessStatusCode) return null;
@@ -52,7 +70,12 @@ public abstract class BaseIntegrationTest : IClassFixture<IntegrationTestFactory
         return await response.Content.ReadFromJsonAsync<ProductDto>();
     }
 
-    protected async Task<OrderDto> GetOrderAsync(int orderId)
+    /// <summary>
+    /// Получить заказ по Id.
+    /// </summary>
+    /// <param name="orderId">Идентификатор заказа.</param>
+    /// <returns><see cref="OrderDto"/> или null</returns>
+    protected async Task<OrderDto?> GetOrderAsync(int orderId)
     {
         var response = await Client.GetAsync($"{TestConstants.ApiOrdersV1}/{orderId}");
         if (!response.IsSuccessStatusCode) return null;

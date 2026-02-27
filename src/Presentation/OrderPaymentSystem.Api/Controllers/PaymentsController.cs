@@ -6,6 +6,9 @@ using OrderPaymentSystem.Application.Interfaces.Services;
 
 namespace OrderPaymentSystem.Api.Controllers;
 
+/// <summary>
+/// Контроллер для работы с платежами
+/// </summary>
 [Authorize]
 [ApiController]
 [ApiVersion("1.0")]
@@ -14,11 +17,21 @@ public class PaymentsController : ControllerBase
 {
     private readonly IPaymentService _paymentService;
 
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="paymentService">Сервис для работы с платежами</param>
     public PaymentsController(IPaymentService paymentService)
     {
         _paymentService = paymentService;
     }
 
+    /// <summary>
+    /// Создать платёж
+    /// </summary>
+    /// <param name="dto">Модель создания</param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
+    /// <returns>Созданный платёж</returns>
     [HttpPost]
     public async Task<ActionResult<PaymentDto>> Create(CreatePaymentDto dto, CancellationToken cancellationToken)
     {
@@ -30,6 +43,12 @@ public class PaymentsController : ControllerBase
         return BadRequest(response.Error);
     }
 
+    /// <summary>
+    /// Получить платёж по Id
+    /// </summary>
+    /// <param name="id">Id платежа</param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
+    /// <returns>Платёж в виде <see cref="PaymentDto"/></returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<PaymentDto>> GetById(long id, CancellationToken cancellationToken)
     {
@@ -41,6 +60,12 @@ public class PaymentsController : ControllerBase
         return NotFound(response.Error);
     }
 
+    /// <summary>
+    /// Получить платежи заказа
+    /// </summary>
+    /// <param name="orderId">Id заказа</param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
+    /// <returns>Платежа по заказу</returns>
     [HttpGet("orders/{orderId}")]
     public async Task<ActionResult<IEnumerable<PaymentDto>>> GetByOrderId(long orderId, CancellationToken cancellationToken)
     {
@@ -52,6 +77,12 @@ public class PaymentsController : ControllerBase
         return BadRequest(response.Error);
     }
 
+    /// <summary>
+    /// Оплатить платёж
+    /// </summary>
+    /// <param name="id">Id платежа</param>
+    /// <param name="dto">Модель данных оплаты платежа</param>
+    /// <param name="cancellationToken">Токен отмены запроса</param>
     [HttpPost("{id}/complete")]
     public async Task<ActionResult> Complete(long id, CompletePaymentDto dto, CancellationToken cancellationToken)
     {

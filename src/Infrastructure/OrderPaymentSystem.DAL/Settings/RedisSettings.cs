@@ -1,8 +1,17 @@
-﻿namespace OrderPaymentSystem.Domain.Settings;
+﻿namespace OrderPaymentSystem.DAL.Settings;
 
+/// <summary>
+/// Настройки Redis
+/// </summary>
 public class RedisSettings
 {
-    public string Url { get; set; }
+    /// <summary>
+    /// Url до инстанса Redis
+    /// </summary>
+    public string? Url { get; set; }
 
-    public string InstanceName { get; set; }
+    /// <summary>
+    /// Название инстанса
+    /// </summary>
+    public string? InstanceName { get; set; }
 }

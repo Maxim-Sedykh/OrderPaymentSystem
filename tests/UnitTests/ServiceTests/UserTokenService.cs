@@ -1,18 +1,28 @@
 ﻿using FluentAssertions;
+using OrderPaymentSystem.Application.Services.Auth;
 using OrderPaymentSystem.UnitTests.Configurations.Factories;
 using OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests;
 
+/// <summary>
+/// Тесты сервиса <see cref="UserTokenService"/>
+/// </summary>
 public class UserTokenServiceTests
 {
     private readonly TokenFixture _fixture;
 
+    /// <summary>
+    /// Конструктор. Инициализация фикстуры
+    /// </summary>
     public UserTokenServiceTests() => _fixture = new TokenFixture();
 
+    /// <summary>
+    /// Генерация Access-токена должна иметь валидные данные
+    /// Чтобы из него можно быть извлечь Claims и Issuer
+    /// </summary>
     [Fact]
     public void GenerateAccessToken_ShouldHaveCorrectClaimsAndIssuer()
     {
@@ -29,6 +39,10 @@ public class UserTokenServiceTests
         jsonToken.Claims.Should().Contain(c => c.Type == ClaimTypes.Name && c.Value == "test");
     }
 
+    /// <summary>
+    /// Получение клеймов из пользователя.
+    /// В клеймах пользователя должны быть все его роли
+    /// </summary>
     [Fact]
     public void GetClaimsFromUser_WhenUserHasRoles_ShouldReturnAllClaims()
     {

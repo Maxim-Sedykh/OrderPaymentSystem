@@ -63,7 +63,7 @@ internal class RoleService : IRoleService
     {
         var role = await _unitOfWork.Roles.GetFirstOrDefaultAsync(RoleSpecs.ById(id), ct);
 
-        if (role == null)
+        if (role is null)
         {
             return BaseResult.Failure(DomainErrors.Role.NotFoundById(id));
         }
@@ -84,14 +84,14 @@ internal class RoleService : IRoleService
     {
         var role = await _unitOfWork.Roles.GetFirstOrDefaultAsync(RoleSpecs.ById(id), ct);
 
-        if (role == null)
+        if (role is null)
         {
             return DataResult<RoleDto>.Failure(DomainErrors.Role.NotFoundById(id));
         }
 
         if (role.Name == dto.Name)
         {
-            return DataResult<RoleDto>.Failure(DomainErrors.General.NoChanges());
+            return DataResult<RoleDto>.Success(_mapper.Map<RoleDto>(role));
         }
 
         role.UpdateName(dto.Name);
@@ -110,7 +110,7 @@ internal class RoleService : IRoleService
             async (token) => await _unitOfWork.Roles.GetListProjectedAsync<RoleDto>(ct: token),
             ct: ct);
 
-        if (roles.Count == 0)
+        if (roles!.Count == 0)
         {
             _logger.LogWarning("Roles not found in database");
 

@@ -1,22 +1,31 @@
 ﻿using FluentAssertions;
+using OrderPaymentSystem.Application.Services.Auth;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Result;
 using OrderPaymentSystem.UnitTests.Configurations.Factories;
 using OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 using System.Security.Claims;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests;
 
+/// <summary>
+/// Тесты сервиса <see cref="AuthService"/>
+/// </summary>
 public class AuthServiceTests
 {
     private readonly AuthServiceFixture _fixture;
 
+    /// <summary>
+    /// Конструктор. Инициализация фикстуры
+    /// </summary>
     public AuthServiceTests()
     {
         _fixture = new AuthServiceFixture();
     }
 
+    /// <summary>
+    /// Если авторизация прошла успешно - должен вернуться Refresh и Access токен
+    /// </summary>
     [Fact]
     public async Task LoginAsync_WhenCredentialsAreValid_ShouldReturnTokens()
     {
@@ -35,11 +44,14 @@ public class AuthServiceTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Data.AccessToken.Should().Be(expectedTokens.Access);
+        result.Data!.AccessToken.Should().Be(expectedTokens.Access);
         result.Data.RefreshToken.Should().Be(expectedTokens.Refresh);
         _fixture.VerifySaved();
     }
 
+    /// <summary>
+    /// Если данные пользователя не верны при авторизации - должна быть ошибка
+    /// </summary>
     [Fact]
     public async Task LoginAsync_WhenUserNotFound_ShouldReturnInvalidCredentialsError()
     {
@@ -56,6 +68,9 @@ public class AuthServiceTests
         _fixture.VerifyNotSaved();
     }
 
+    /// <summary>
+    /// При регистрации - если пользователь с запрошенным логином уже существует - должна быть ошибка
+    /// </summary>
     [Fact]
     public async Task RegisterAsync_WhenUserAlreadyExists_ShouldReturnFailure()
     {
@@ -68,10 +83,13 @@ public class AuthServiceTests
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Error.Code.Should().Be(DomainErrors.User.AlreadyExist(dto.Login).Code);
+        result.Error!.Code.Should().Be(DomainErrors.User.AlreadyExist(dto.Login).Code);
         _fixture.VerifyNotSaved();
     }
 
+    /// <summary>
+    /// При регистрации - если роль "User" отсуствует в базе, транзакия должна откатиться
+    /// </summary>
     [Fact]
     public async Task RegisterAsync_WhenDefaultRoleMissing_ShouldRollbackTransaction()
     {

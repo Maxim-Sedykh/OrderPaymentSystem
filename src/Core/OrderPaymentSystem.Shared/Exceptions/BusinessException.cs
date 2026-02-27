@@ -8,17 +8,34 @@ namespace OrderPaymentSystem.Shared.Exceptions;
 /// </summary>
 public class BusinessException : Exception
 {
+    /// <summary>
+    /// Код ошибки
+    /// </summary>
     public int ErrorCode { get; }
 
+    /// <summary>
+    /// Сообщение об ошибке по умолчанию
+    /// </summary>
     private const string DefaultMessage = "An unexpected business error occurred.";
 
-    public BusinessException(int errorCode, string message = DefaultMessage, Exception innerException = null)
+    /// <summary>
+    /// Создать исключение
+    /// </summary>
+    /// <param name="errorCode">Статус ошибки</param>
+    /// <param name="message">Сообщение об ошибке</param>
+    /// <param name="innerException">Внутреннее исключение, необязательный параметр</param>
+    public BusinessException(int errorCode, string message = DefaultMessage, Exception? innerException = null)
         : base(message, innerException)
     {
         ErrorCode = errorCode;
     }
 
-    public BusinessException(Error error, Exception innerException = null)
+    /// <summary>
+    /// Создать исключение по ошибке
+    /// </summary>
+    /// <param name="error">Ошибка</param>
+    /// <param name="innerException">Внутреннее исключение</param>
+    public BusinessException(Error error, Exception? innerException = null)
         : base(error.Message, innerException)
     {
         ErrorCode = error.Code;

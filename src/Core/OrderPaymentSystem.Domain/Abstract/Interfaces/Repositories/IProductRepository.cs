@@ -3,6 +3,9 @@ using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 
+/// <summary>
+/// Интерфейс репозитория для работы с <see cref="Product"/>
+/// </summary>
 public interface IProductRepository : IBaseRepository<Product>
 {
     /// <summary>

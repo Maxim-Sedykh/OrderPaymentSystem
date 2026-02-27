@@ -6,8 +6,14 @@ using static OrderPaymentSystem.Domain.Constants.ValidationConstants.Product;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Product;
 
+/// <summary>
+/// Валидатор для <see cref="CreateProductDto"/>
+/// </summary>
 public class CreateProductValidator : AbstractValidator<CreateProductDto>
 {
+    /// <summary>
+    /// Конструктор валидатора, создание правил для полей DTO <see cref="CreateProductDto"/>
+    /// </summary>
     public CreateProductValidator()
     {
         RuleFor(x => x.Name)

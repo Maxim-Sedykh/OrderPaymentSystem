@@ -1,11 +1,13 @@
 ﻿using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Shared.Specifications;
 
-namespace OrderPaymentSystem.Application.Specifications
+namespace OrderPaymentSystem.Application.Specifications;
+
+/// <summary>
+/// Спецификации для сущности "Токен пользователя"
+/// </summary>
+internal static class UserTokenSpecs
 {
-    internal static class UserTokenSpecs
-    {
-        public static BaseSpecification<UserToken> ExpiredBefore(this BaseSpecification<UserToken> spec, DateTime thresholdDate)
-            => spec.And(x => x.RefreshTokenExpireTime <= thresholdDate);
-    }
+    public static BaseSpecification<UserToken> ExpiredBefore(this BaseSpecification<UserToken> spec, DateTime thresholdDate)
+        => spec.And(x => x.RefreshTokenExpireTime <= thresholdDate);
 }

@@ -2,6 +2,7 @@
 using OrderPaymentSystem.Application.DTOs.Basket;
 using OrderPaymentSystem.Application.DTOs.Order;
 using OrderPaymentSystem.Application.DTOs.Product;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.ValueObjects;
 using OrderPaymentSystem.IntegrationTests.Base;
@@ -10,15 +11,27 @@ using System.Net.Http.Json;
 
 namespace OrderPaymentSystem.IntegrationTests.Tests;
 
+/// <summary>
+/// Тестирование основного сценария взаимодействия пользователя с системой.
+/// Функциональный тест.
+/// </summary>
 public class OrderFlowTests : BaseIntegrationTest
 {
+    /// <summary>
+    /// Конструктор
+    /// </summary>
+    /// <param name="factory">Фабрика для создания зависимостей.</param>
     public OrderFlowTests(IntegrationTestFactory factory) : base(factory) { }
 
+    /// <summary>
+    /// Прохождение по всему основному флоу пользователя в системе.
+    /// Регистрация, логин, создания элемнтов корзины, создания заказа, создания платежа, подтверждения заказа.
+    /// </summary>
     [Fact]
     public async Task Complete_Order_Flow_Should_Work_Correctly()
     {
         //Arrange & Act
-        await AuthenticateAsync(TestConstants.AdminLogin, TestConstants.AdminRole);
+        await AuthenticateAsync(TestConstants.AdminLogin, DefaultRoles.Admin);
 
         var productDto = new CreateProductDto("Laptop", "Pro", 2000m, 10);
         var createdProduct = await Factory.CreateProductAsync(productDto, Client);

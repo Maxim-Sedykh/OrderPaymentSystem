@@ -1,12 +1,17 @@
 ﻿using FluentAssertions;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.EntityTests;
 
+/// <summary>
+/// Тесты сущности <see cref="UserToken"/>
+/// </summary>
 public class UserTokenTests
 {
+    /// <summary>
+    /// Создание токена с временем истечения срока в прошлом должно вызывать BusinessException
+    /// </summary>
     [Fact]
     public void Create_WithPastExpiry_ShouldThrowBusinessException()
     {

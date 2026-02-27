@@ -10,7 +10,6 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <PlatformTarget>x64</PlatformTarget>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <WarningsNotAsErrors>CS1591;CS8618;CS8603;CS8625;CS8604;CS8765;CS1570;CS8602;CS1573;CS1572;CS8600;CS0162</WarningsNotAsErrors> <!-- Временно -->
     <SatelliteContract>true</SatelliteContract>
   </PropertyGroup>
 

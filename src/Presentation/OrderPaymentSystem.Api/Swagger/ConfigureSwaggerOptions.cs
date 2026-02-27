@@ -20,7 +20,7 @@ public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : 
     /// <param name="options">Настройки Swagger gen</param>
     public void Configure(SwaggerGenOptions options)
     {
-        var contactUri = new Uri("https://vk.com/maximsedykh2000");
+        var contactUri = new Uri("https://vk.com/selectfromusers");
 
         foreach (var description in provider.ApiVersionDescriptions)
         {

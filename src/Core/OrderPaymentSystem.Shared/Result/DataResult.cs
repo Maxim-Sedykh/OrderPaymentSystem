@@ -13,7 +13,7 @@ public class DataResult<T> : BaseResult
     /// </summary>
     /// <param name="data">Данные</param>
     /// <param name="error">Ошибка, необязательный параметр</param>
-    protected DataResult(T data, Error error = null)
+    protected DataResult(T? data, Error? error = null)
         : base(error)
     {
         Data = data;
@@ -22,7 +22,7 @@ public class DataResult<T> : BaseResult
     /// <summary>
     /// Данные
     /// </summary>
-    public T Data { get; }
+    public T? Data { get; }
 
     /// <summary>
     /// Создать успешный результат с данными
@@ -31,8 +31,19 @@ public class DataResult<T> : BaseResult
     public static DataResult<T> Success(T data) =>
         new(data);
 
+    /// <summary>
+    /// Создать ошибочный результат операции
+    /// </summary>
+    /// <param name="errorCode">Код об ошибке</param>
+    /// <param name="errorMessage">Сообщение об ошибке</param>
+    /// <returns><see cref="DataResult{T}"/></returns>
     public static new DataResult<T> Failure(int errorCode, string errorMessage) =>
         new(default, new Error(errorCode, errorMessage));
 
+    /// <summary>
+    /// Создать ошибочный результат операции
+    /// </summary>
+    /// <param name="error">Ошибка</param>
+    /// <returns><see cref="DataResult{T}"/></returns>
     public static new DataResult<T> Failure(Error error) => new(default, error);
 }

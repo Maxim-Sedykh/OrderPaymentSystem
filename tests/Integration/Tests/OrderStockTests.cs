@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.Application.DTOs.Order;
 using OrderPaymentSystem.Application.DTOs.Payment;
 using OrderPaymentSystem.DAL.Persistence;
+using OrderPaymentSystem.Domain.Constants;
 using OrderPaymentSystem.Domain.ValueObjects;
 using OrderPaymentSystem.IntegrationTests.Base;
 using OrderPaymentSystem.IntegrationTests.Constants;
@@ -10,10 +11,21 @@ using System.Net.Http.Json;
 
 namespace OrderPaymentSystem.IntegrationTests.Tests;
 
+/// <summary>
+/// Тестирование взаимодействия с заказами.
+/// </summary>
 public class OrderStockTests : BaseIntegrationTest
 {
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="factory">Фабрика теста.</param>
     public OrderStockTests(IntegrationTestFactory factory) : base(factory) { }
 
+    /// <summary>
+    /// Тестирование уменьшения количества товара на складе.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task CreateOrder_Should_Decrease_ProductStock_InDatabase()
     {
@@ -31,7 +43,7 @@ public class OrderStockTests : BaseIntegrationTest
             productId = product.Id;
         }
 
-        await AuthenticateAsync("buyer", TestConstants.UserRole, TestConstants.CommonUserPassword);
+        await AuthenticateAsync("buyer", DefaultRoles.User, TestConstants.CommonUserPassword);
 
         // Act
         var orderDto = new CreateOrderDto

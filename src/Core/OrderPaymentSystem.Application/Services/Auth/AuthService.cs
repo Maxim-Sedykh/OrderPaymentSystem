@@ -51,7 +51,7 @@ internal class AuthService : IAuthService
     public async Task<DataResult<TokenDto>> LoginAsync(LoginUserDto dto, CancellationToken ct = default)
     {
         var user = await _unitOfWork.Users.GetFirstOrDefaultAsync(UserSpecs.ByLogin(dto.Login).ForAuth(), ct);
-        if (user == null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
+        if (user is null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
         {
             return DataResult<TokenDto>.Failure(DomainErrors.User.InvalidCredentials());
         }
@@ -60,7 +60,7 @@ internal class AuthService : IAuthService
         var getClaimsResult = _userTokenService.GetClaimsFromUser(user);
         if (!getClaimsResult.IsSuccess)
         {
-            return DataResult<TokenDto>.Failure(getClaimsResult.Error);
+            return DataResult<TokenDto>.Failure(getClaimsResult.Error!);
         }
 
 
@@ -68,7 +68,7 @@ internal class AuthService : IAuthService
         var refreshToken = _userTokenService.GenerateRefreshToken();
         var refreshTokenExpire = now.AddDays(_tokenLifeTimeInDays);
 
-        if (user.UserToken == null)
+        if (user.UserToken is null)
         {
             var newUserToken = UserToken.Create(
                 user.Id,

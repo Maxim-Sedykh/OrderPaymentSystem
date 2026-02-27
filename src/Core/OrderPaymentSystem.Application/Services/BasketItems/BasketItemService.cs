@@ -24,7 +24,7 @@ internal class BasketItemService : IBasketItemService
     public async Task<DataResult<BasketItemDto>> CreateAsync(Guid userId, CreateBasketItemDto dto, CancellationToken ct = default)
     {
         var product = await _unitOfWork.Products.GetFirstOrDefaultAsync(ProductSpecs.ByIdNoTracking(dto.ProductId), ct);
-        if (product == null)
+        if (product is null)
         {
             return DataResult<BasketItemDto>.Failure(DomainErrors.Product.NotFound(dto.ProductId));
         }
@@ -40,7 +40,7 @@ internal class BasketItemService : IBasketItemService
     public async Task<BaseResult> DeleteByIdAsync(long basketItemId, CancellationToken ct = default)
     {
         var basketItem = await _unitOfWork.BasketItems.GetFirstOrDefaultAsync(BasketItemSpecs.ById(basketItemId), ct);
-        if (basketItem == null)
+        if (basketItem is null)
         {
             return BaseResult.Failure(DomainErrors.BasketItem.NotFound(basketItemId));
         }
@@ -62,12 +62,12 @@ internal class BasketItemService : IBasketItemService
     public async Task<DataResult<BasketItemDto>> UpdateQuantityAsync(long basketItemId, UpdateQuantityDto dto, CancellationToken ct = default)
     {
         var basketItem = await _unitOfWork.BasketItems.GetFirstOrDefaultAsync(BasketItemSpecs.ById(basketItemId).WithProduct(), ct);
-        if (basketItem == null)
+        if (basketItem is null)
         {
             return DataResult<BasketItemDto>.Failure(DomainErrors.BasketItem.NotFound(basketItemId));
         }
 
-        basketItem.UpdateQuantity(dto.NewQuantity, basketItem.ProductId, basketItem.Product);
+        basketItem.UpdateQuantity(dto.NewQuantity, basketItem.ProductId, basketItem.Product!);
         await _unitOfWork.SaveChangesAsync(ct);
 
         return DataResult<BasketItemDto>.Success(_mapper.Map<BasketItemDto>(basketItem));

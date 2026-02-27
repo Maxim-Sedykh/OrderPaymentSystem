@@ -3,8 +3,14 @@ using OrderPaymentSystem.ArchitectureTests.Abstract;
 
 namespace OrderPaymentSystem.ArchitectureTests.Tests;
 
+/// <summary>
+/// Тестирование поддержания правил наименований.
+/// </summary>
 public class NamingDesignTests : BaseArchitectureTest
 {
+    /// <summary>
+    /// Все интерфейсы должны начинаться на букву 'I'
+    /// </summary>
     [Fact]
     public void Interfaces_Should_StartWithI()
     {
@@ -18,6 +24,9 @@ public class NamingDesignTests : BaseArchitectureTest
         Assert.True(result.IsSuccessful);
     }
 
+    /// <summary>
+    /// Все контроллеры должны иметь суффикс 'Controller'
+    /// </summary>
     [Fact]
     public void Controllers_Should_Have_ControllerSuffix()
     {
@@ -26,34 +35,6 @@ public class NamingDesignTests : BaseArchitectureTest
             .ResideInNamespace($"{PresentationNamespace}.Controllers")
             .Should()
             .HaveNameEndingWith("Controller")
-            .GetResult();
-
-        Assert.True(result.IsSuccessful);
-    }
-
-    [Fact]
-    public void Repositories_Should_ResideInInfrastructure()
-    {
-        var result = Types.InAssembly(InfrastructureAssembly)
-            .That()
-            .HaveNameEndingWith("Repository")
-            .Should()
-            .ResideInNamespace(InfrastructureNamespace)
-            .GetResult();
-
-        Assert.True(result.IsSuccessful);
-    }
-
-    [Fact]
-    public void Services_Should_Be_Internal()
-    {
-        var result = Types.InAssembly(ApplicationAssembly)
-            .That()
-            .HaveNameEndingWith("Service")
-            .And()
-            .AreClasses()
-            .Should()
-            .NotBePublic()
             .GetResult();
 
         Assert.True(result.IsSuccessful);

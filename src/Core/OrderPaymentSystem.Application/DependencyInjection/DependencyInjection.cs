@@ -2,6 +2,7 @@
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.Application.Interfaces.Services;
+using OrderPaymentSystem.Application.Interfaces.Services.Maintenance;
 using OrderPaymentSystem.Application.Services.Auth;
 using OrderPaymentSystem.Application.Services.BasketItems;
 using OrderPaymentSystem.Application.Services.Maintenance;
@@ -17,6 +18,10 @@ namespace OrderPaymentSystem.Application.DependencyInjection;
 /// </summary>
 public static class DependencyInjection
 {
+    /// <summary>
+    /// Зарегистрировать все зависимости из слоя Application
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
     public static void AddApplication(this IServiceCollection services)
     {
         InitServices(services);
@@ -25,6 +30,10 @@ public static class DependencyInjection
         InitMapsterMapping(services);
     }
 
+    /// <summary>
+    /// Зарегистрировать сервисы с бизнес-логикой
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
     private static void InitServices(this IServiceCollection services)
     {
         services.AddScoped<IProductService, ProductService>();
@@ -38,12 +47,20 @@ public static class DependencyInjection
         services.AddScoped<IUserRoleService, UserRoleService>();
     }
 
+    /// <summary>
+    /// Зарегистрировать сервисы которые работают по расписанию
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
     private static void InitMaintenanceServices(this IServiceCollection services)
     {
         services.AddScoped<IOrderMaintenanceService, OrderMaintenanceService>();
         services.AddScoped<ITokenMaintenanceService, TokenMaintenanceService>();
     }
 
+    /// <summary>
+    /// Зарегистрировать Mapster
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
     private static void InitMapsterMapping(this IServiceCollection services)
     {
         var config = TypeAdapterConfig.GlobalSettings;

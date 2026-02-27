@@ -35,7 +35,6 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="dto"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
-    /// <returns></returns>
     [HttpPost("register")]
     public async Task<ActionResult> Register(RegisterUserDto dto, CancellationToken cancellationToken)
     {
@@ -52,7 +51,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="dto"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
-    /// <returns></returns>
+    /// <returns><see cref="TokenDto"/></returns>
     [HttpPost("login")]
     public async Task<ActionResult<TokenDto>> Login(LoginUserDto dto, CancellationToken cancellationToken)
     {
@@ -69,7 +68,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="dto"></param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
-    /// <returns></returns>
+    /// <returns><see cref="TokenDto"/></returns>
     [HttpPost("refresh")]
     public async Task<ActionResult<TokenDto>> RefreshToken(TokenDto dto, CancellationToken cancellationToken)
     {

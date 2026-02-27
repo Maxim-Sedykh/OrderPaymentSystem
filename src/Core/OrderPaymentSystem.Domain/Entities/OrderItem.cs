@@ -38,12 +38,12 @@ public class OrderItem : BaseEntity<long>
     /// <summary>
     /// Товар
     /// </summary>
-    public Product Product { get; private set; }
+    public Product? Product { get; private set; }
 
     /// <summary>
     /// Заказ
     /// </summary>
-    public Order Order { get; private set; }
+    public Order? Order { get; private set; }
 
     private OrderItem() { }
 
@@ -64,6 +64,9 @@ public class OrderItem : BaseEntity<long>
         ItemTotalSum = productPrice * quantity;
     }
 
+    /// <summary>
+    /// Создать существующий элемент заказа. Используется только для тестов
+    /// </summary>
     internal static OrderItem CreateExisting(long id, int productId, int quantity, decimal productPrice, IStockInfo stockInfo)
     {
         Validate(productId, quantity, stockInfo, productPrice);
@@ -71,6 +74,10 @@ public class OrderItem : BaseEntity<long>
         return new OrderItem(id, productId, quantity, productPrice, productPrice * quantity);
     }
 
+    /// <summary>
+    /// Присвоить товар элементу. Используется для тестов.
+    /// </summary>
+    /// <param name="product">Товар</param>
     internal void SetProduct(Product product)
     {
         Product = product;
@@ -82,6 +89,7 @@ public class OrderItem : BaseEntity<long>
     /// <param name="productId">Id товара</param>
     /// <param name="quantity">Количество товара</param>
     /// <param name="productPrice">Стоимость товара</param>
+    /// <param name="stockInfo">Количество товара на складе</param>
     /// <returns>Созданный элемент заказа</returns>
     public static OrderItem Create(int productId, int quantity, decimal productPrice, IStockInfo stockInfo)
     {
@@ -94,6 +102,8 @@ public class OrderItem : BaseEntity<long>
     /// Обновить количество товара
     /// </summary>
     /// <param name="newQuantity">Новое количество товара</param>
+    /// <param name="productId">Id товара</param>
+    /// <param name="productStockInfo">Количество товара на складе</param>
     public void UpdateQuantity(int newQuantity, int productId, IStockInfo productStockInfo)
     {
         if (Quantity == newQuantity)
@@ -107,6 +117,14 @@ public class OrderItem : BaseEntity<long>
         ItemTotalSum = ProductPrice * Quantity;
     }
 
+    /// <summary>
+    /// Валидировать входные данные
+    /// </summary>
+    /// <param name="productId">Id товара</param>
+    /// <param name="quantity">Запрашиваемое количество товара</param>
+    /// <param name="stockInfo">Количество товара на складе</param>
+    /// <param name="productPrice">Цена товара</param>
+    /// <exception cref="BusinessException"></exception>
     private static void Validate(int productId, int quantity, IStockInfo stockInfo, decimal? productPrice = null)
     {
         if (productId <= 0)

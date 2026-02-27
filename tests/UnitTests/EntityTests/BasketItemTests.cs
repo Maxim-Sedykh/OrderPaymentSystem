@@ -3,14 +3,19 @@ using Moq;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.EntityTests;
 
+/// <summary>
+/// Тесты сущности <see cref="BasketItem"/>
+/// </summary>
 public class BasketItemTests
 {
     private readonly Mock<IStockInfo> _stockMock = new();
 
+    /// <summary>
+    /// Создание элемента с валидными данными должно проходить успешно
+    /// </summary>
     [Fact]
     public void Create_ValidItem_ShouldSetProperties()
     {
@@ -30,6 +35,9 @@ public class BasketItemTests
         basketItem.Id.Should().Be(default);
     }
 
+    /// <summary>
+    /// Создание элемента с невалидными данными должно выкидывать BusinessException
+    /// </summary>
     [Theory]
     [InlineData("00000000-0000-0000-0000-000000000000", 1, 5)]
     [InlineData("b2d7b42a-a9a2-4a7b-a4b2-2b8b9b8b9b8b", 0, 5)]
@@ -47,6 +55,9 @@ public class BasketItemTests
         act.Should().Throw<BusinessException>();
     }
 
+    /// <summary>
+    /// Создание элемента, когда товара на складе не хватает должно выкидывать BusinessException
+    /// </summary>
     [Fact]
     public void Create_WhenStockNotAvailable_ShouldThrowBusinessException()
     {
@@ -63,6 +74,9 @@ public class BasketItemTests
         act.Should().Throw<BusinessException>();
     }
 
+    /// <summary>
+    /// Обновление количества товара с валидными количеством должно проходить успешно
+    /// </summary>
     [Fact]
     public void UpdateQuantity_WithValidNewQuantity_ShouldUpdateQuantity()
     {
@@ -82,6 +96,9 @@ public class BasketItemTests
         basketItem.Quantity.Should().Be(newQuantity);
     }
 
+    /// <summary>
+    /// Обновление количества товара в элементе с нулевым количеством должно выбрасывать BusinessException
+    /// </summary>
     [Theory]
     [InlineData(0)]
     [InlineData(-5)]
@@ -100,6 +117,9 @@ public class BasketItemTests
         act.Should().Throw<BusinessException>();
     }
 
+    /// <summary>
+    /// Обновление количества товара в элементе с недостающим на складе количеством должно выбрасывать BusinessException
+    /// </summary>
     [Fact]
     public void UpdateQuantity_WhenNewQuantityNotAvailable_ShouldThrowBusinessException()
     {

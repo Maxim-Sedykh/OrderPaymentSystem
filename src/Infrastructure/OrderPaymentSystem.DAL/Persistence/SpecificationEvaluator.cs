@@ -3,9 +3,19 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.DAL.Persistence;
 
+/// <summary>
+/// Переводчик спецификаций в <see cref="IQueryable{T}"/>
+/// </summary>
+/// <typeparam name="T">Тип сущности</typeparam>
 public static class SpecificationEvaluator<T> where T : class
 {
-    public static IQueryable<T> GetQuery(IQueryable<T> inputQuery, ISpecification<T> spec)
+    /// <summary>
+    /// Получить запрос из спецификации
+    /// </summary>
+    /// <param name="inputQuery">Начальный запрос</param>
+    /// <param name="spec">Спецификация</param>
+    /// <returns>Обновлённый запрос</returns>
+    public static IQueryable<T> GetQuery(IQueryable<T> inputQuery, ISpecification<T>? spec)
     {
         var query = inputQuery;
 

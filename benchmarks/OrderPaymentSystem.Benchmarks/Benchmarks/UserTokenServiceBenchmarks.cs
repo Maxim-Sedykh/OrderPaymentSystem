@@ -8,22 +8,35 @@ using System.Security.Claims;
 
 namespace OrderPaymentSystem.Benchmarks.Benchmarks;
 
+/// <summary>
+/// Бенчмарк <see cref="UserTokenService"/>.
+/// Замер производительности.
+/// </summary>
 [Config(typeof(BenchmarkerConfig))]
 [MemoryDiagnoser]
 public class UserTokenServiceBenchmarks : BaseBenchmark
 {
-    private IUserTokenService _tokenService;
-    private List<Claim> _claims;
+    /// <summary>
+    /// Сервис для работы с токенами
+    /// </summary>
+    private UserTokenService? _tokenService;
 
+    /// <summary>
+    /// Лист клеймов, по которому будет создаваться Access-токен
+    /// </summary>
+    private List<Claim> _claims = [];
+
+    /// <inheritdoc/>
     protected override void RegisterServices(IServiceCollection services)
     {
         services.AddScoped<IUserTokenService, UserTokenService>();
     }
 
+    /// <inheritdoc/>
     public override async Task GlobalSetup()
     {
         await base.GlobalSetup();
-        _tokenService = ServiceScope.ServiceProvider.GetRequiredService<IUserTokenService>();
+        _tokenService = ServiceScope!.ServiceProvider.GetRequiredService<UserTokenService>();
         _claims =
         [
             new Claim(ClaimTypes.Name, "user"),
@@ -31,6 +44,10 @@ public class UserTokenServiceBenchmarks : BaseBenchmark
         ];
     }
 
+    /// <summary>
+    /// Измерить скорость и производительность метода GenerateAccessToken в <see cref="UserTokenService"/>.
+    /// Без кэша
+    /// </summary>
     [Benchmark]
-    public string GenerateToken() => _tokenService.GenerateAccessToken(_claims);
+    public string GenerateToken() => _tokenService!.GenerateAccessToken(_claims);
 }

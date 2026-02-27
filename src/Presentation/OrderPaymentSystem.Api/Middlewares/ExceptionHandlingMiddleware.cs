@@ -48,7 +48,7 @@ public class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> lo
         };
 
         httpContext.Response.ContentType = MediaTypeNames.Application.Json;
-        httpContext.Response.StatusCode = response.Error.Code;
+        httpContext.Response.StatusCode = response.Error!.Code;
 
         await httpContext.Response.WriteAsJsonAsync(response);
     }

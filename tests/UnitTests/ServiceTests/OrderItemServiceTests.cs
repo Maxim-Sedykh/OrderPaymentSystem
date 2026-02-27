@@ -1,23 +1,33 @@
 ﻿using FluentAssertions;
 using OrderPaymentSystem.Application.DTOs;
 using OrderPaymentSystem.Application.DTOs.OrderItem;
+using OrderPaymentSystem.Application.Services.Orders;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.UnitTests.Configurations.Factories;
 using OrderPaymentSystem.UnitTests.Configurations.Fixtures;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests;
 
+/// <summary>
+/// Тесты сервиса <see cref="OrderItemService"/>
+/// </summary>
 public class OrderItemServiceTests
 {
     private readonly OrderItemFixture _fixture;
 
+    /// <summary>
+    /// Конструктор. Инициализация фикстуры
+    /// </summary>
     public OrderItemServiceTests()
     {
         _fixture = new OrderItemFixture();
     }
 
+    /// <summary>
+    /// При создании элемента заказа с валидными данными - 
+    /// Он должен добавиться в заказ и должна пересчитаться TotalAmount у заказа
+    /// </summary>
     [Fact]
     public async Task CreateAsync_WhenValid_ShouldAddItemToOrderAndRecalculateTotal()
     {
@@ -40,6 +50,10 @@ public class OrderItemServiceTests
         _fixture.VerifySaved();
     }
 
+    /// <summary>
+    /// Удаление элемента из заказа где этот элемент существует
+    /// Должно быть успешным, и так же уменьшать TotalAmount у заказа
+    /// </summary>
     [Fact]
     public async Task DeleteByIdAsync_WhenItemExists_ShouldRemoveFromOrderAndDecrementTotal()
     {
@@ -61,6 +75,9 @@ public class OrderItemServiceTests
         _fixture.VerifySaved();
     }
 
+    /// <summary>
+    /// Обновление количества товара в элементе должно пересчитать TotalAmount у заказа
+    /// </summary>
     [Fact]
     public async Task UpdateQuantityAsync_WhenValid_ShouldUpdateItemAndOrderTotal()
     {
@@ -84,6 +101,9 @@ public class OrderItemServiceTests
         _fixture.VerifySaved();
     }
 
+    /// <summary>
+    /// Создание элемента для заказа которого не существует - должно завершиться с ошибкой
+    /// </summary>
     [Fact]
     public async Task CreateAsync_WhenOrderNotFound_ShouldReturnError()
     {

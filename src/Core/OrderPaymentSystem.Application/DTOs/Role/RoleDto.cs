@@ -1,6 +1,8 @@
 ﻿namespace OrderPaymentSystem.Application.DTOs.Role;
 
-public record RoleDto(
-        long Id,
-        string Name
-    );
+/// <summary>
+/// Модель для представления роли
+/// </summary>
+/// <param name="Id">Id роли</param>
+/// <param name="Name">Название роли</param>
+public record RoleDto(long Id, string Name);

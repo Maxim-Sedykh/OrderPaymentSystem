@@ -185,11 +185,11 @@ namespace OrderPaymentSystem.DAL.Persistence.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<byte[]>("RowVersion")
+                    b.Property<uint>("RowVersion")
                         .IsConcurrencyToken()
-                        .IsRequired()
                         .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
 
                     b.Property<int>("StockQuantity")
                         .HasColumnType("integer");
@@ -416,8 +416,7 @@ namespace OrderPaymentSystem.DAL.Persistence.Migrations
                 {
                     b.Navigation("Items");
 
-                    b.Navigation("Payment")
-                        .IsRequired();
+                    b.Navigation("Payment");
                 });
 
             modelBuilder.Entity("OrderPaymentSystem.Domain.Entities.Product", b =>
@@ -433,8 +432,7 @@ namespace OrderPaymentSystem.DAL.Persistence.Migrations
 
                     b.Navigation("Orders");
 
-                    b.Navigation("UserToken")
-                        .IsRequired();
+                    b.Navigation("UserToken");
                 });
 #pragma warning restore 612, 618
         }

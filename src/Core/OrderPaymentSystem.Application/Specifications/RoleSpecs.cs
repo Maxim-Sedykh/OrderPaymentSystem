@@ -3,6 +3,9 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
 
+/// <summary>
+/// Спецификации для сущности "Роль"
+/// </summary>
 internal static class RoleSpecs
 {
     public static BaseSpecification<Role> ById(int id)

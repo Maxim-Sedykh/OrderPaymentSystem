@@ -1,12 +1,17 @@
 ﻿using FluentAssertions;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.EntityTests;
 
+/// <summary>
+/// Тесты сущности <see cref="UserRole"/>
+/// </summary>
 public class UserRoleTests
 {
+    /// <summary>
+    /// Создание роли для пользователя с валидными данными должно быть успешно
+    /// </summary>
     [Fact]
     public void Create_ValidData_ShouldSetProperties()
     {
@@ -22,6 +27,9 @@ public class UserRoleTests
         userRole.RoleId.Should().Be(roleId);
     }
 
+    /// <summary>
+    /// Создание роли для пользователя с невалидными данными должно выбрасывать BusinessException
+    /// </summary>
     [Theory]
     [InlineData("00000000-0000-0000-0000-000000000000", 1)]
     [InlineData("b2d7b42a-a9a2-4a7b-a4b2-2b8b9b8b9b8b", 0)]

@@ -29,15 +29,17 @@ try
 
     app.UseHealthChecksConfiguration();
 
-    app.UseMetricServer();
-    app.UseHttpMetrics();
+    if (!app.Environment.IsEnvironment("Test"))
+    {
+        app.UseMetricServer();
+        app.UseHttpMetrics();
+        app.UseHangfireJobsConfig();
+    }
 
     app.UseAuthentication();
     app.UseAuthorization();
 
     await app.ApplyDatabaseMigrationsAsync();
-
-    app.UseHangfireJobsConfig();
 
     app.MapMetrics();
     app.MapControllers();

@@ -1,25 +1,34 @@
 ﻿using FluentAssertions;
 using Moq;
 using OrderPaymentSystem.Application.DTOs.Payment;
+using OrderPaymentSystem.Application.Services.Payments;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Exceptions;
 using OrderPaymentSystem.UnitTests.Configurations.Factories;
 using OrderPaymentSystem.UnitTests.Configurations.Fixtures;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests;
 
+/// <summary>
+/// Тесты сервиса <see cref="PaymentService"/>
+/// </summary>
 public class PaymentServiceTests
 {
     private readonly PaymentFixture _fixture;
 
+    /// <summary>
+    /// Конструктор. Инициализация фикстуры
+    /// </summary>
     public PaymentServiceTests()
     {
         _fixture = new PaymentFixture();
     }
 
+    /// <summary>
+    /// Создание платежа с валидными данными должно быть успешно
+    /// </summary>
     [Fact]
     public async Task CreateAsync_WhenValid_ShouldCreatePayment()
     {
@@ -41,6 +50,10 @@ public class PaymentServiceTests
         _fixture.VerifySaved();
     }
 
+    /// <summary>
+    /// Создание платежа на заказ, если он уже существует - должно быть с ошибкой
+    /// Так как у заказа может быть только один неотменённый платёж
+    /// </summary>
     [Fact]
     public async Task CreateAsync_WhenPaymentAlreadyExists_ShouldReturnError()
     {
@@ -56,6 +69,9 @@ public class PaymentServiceTests
         _fixture.VerifyNotSaved();
     }
 
+    /// <summary>
+    /// Завершение подтверждения платежа с валидными данными должно быть успешно
+    /// </summary>
     [Fact]
     public async Task CompletePaymentAsync_WhenValidAmount_ShouldSucceed()
     {
@@ -76,6 +92,10 @@ public class PaymentServiceTests
         _fixture.VerifySaved();
     }
 
+
+    /// <summary>
+    /// Завершение подтверждения платежа где оплаты недостаточно - должно выбрасывать BusinessException
+    /// </summary>
     [Fact]
     public async Task CompletePaymentAsync_WhenAmountIsInsufficient_ShouldThrowBusinessException()
     {
@@ -94,6 +114,10 @@ public class PaymentServiceTests
         _fixture.VerifyNotSaved();
     }
 
+    /// <summary>
+    /// Получение платёжа по Id когда он существует - должно быть успешно
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task GetByIdAsync_WhenExists_ShouldReturnDto()
     {

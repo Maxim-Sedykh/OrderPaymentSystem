@@ -5,8 +5,14 @@ using OrderPaymentSystem.Domain.Errors;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Auth;
 
+/// <summary>
+/// Валидатор для <see cref="LoginUserDto"/>
+/// </summary>
 public class LoginUserValidator : AbstractValidator<LoginUserDto>
 {
+    /// <summary>
+    /// Конструктор валидатора, создание правил для полей DTO <see cref="LoginUserDto"/>
+    /// </summary>
     public LoginUserValidator()
     {
         RuleFor(x => x.Login)

@@ -10,6 +10,10 @@ namespace OrderPaymentSystem.Api.Extensions;
 /// </summary>
 public static class SerilogExtensions
 {
+    /// <summary>
+    /// Зарегистрировать логгирование в ElasticSearch
+    /// </summary>
+    /// <param name="builder"><see cref="WebApplicationBuilder"/></param>
     public static void AddSerilogConfiguration(this WebApplicationBuilder builder)
     {
         Log.Logger = new LoggerConfiguration()

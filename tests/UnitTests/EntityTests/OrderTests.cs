@@ -5,14 +5,20 @@ using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.ValueObjects;
 using OrderPaymentSystem.Shared.Exceptions;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.EntityTests;
 
+/// <summary>
+/// Тесты сущности <see cref="Order"/>
+/// </summary>
 public class OrderTests
 {
     private readonly Mock<IStockInfo> _stockMock = new();
 
+    /// <summary>
+    /// Создание заказа с валидными данными должно быть успешно.
+    /// Заказ должен иметь статус Pending, и правильно расчитанную TotalAmount
+    /// </summary>
     [Fact]
     public void Create_ValidOrder_ShouldHavePendingStatusAndCorrectTotal()
     {
@@ -29,6 +35,9 @@ public class OrderTests
         order.TotalAmount.Should().Be(1000m);
     }
 
+    /// <summary>
+    /// Подтверждение товара с валидными данными должно изменить статус на Confirmed
+    /// </summary>
     [Fact]
     public void ConfirmOrder_WhenPendingAndHasPayment_ShouldChangeStatus()
     {
@@ -45,6 +54,9 @@ public class OrderTests
         order.Status.Should().Be(OrderStatus.Confirmed);
     }
 
+    /// <summary>
+    /// Поменять статус заказа на "Доставлен", когда к нему не привязан товар должен выбрасывать BusinessException
+    /// </summary>
     [Fact]
     public void ShipOrder_WhenNoPayment_ShouldThrowBusinessException()
     {
@@ -60,6 +72,9 @@ public class OrderTests
         act.Should().Throw<BusinessException>();
     }
 
+    /// <summary>
+    /// Добавление нового элемента заказа должно пересчитывать TotalAmount
+    /// </summary>
     [Fact]
     public void UpdateOrderItem_AddingNewItem_ShouldRecalculateTotalAmount()
     {

@@ -33,9 +33,9 @@ internal class OrderItemService : IOrderItemService
     public async Task<DataResult<OrderItemDto>> CreateAsync(long orderId, CreateOrderItemDto dto, CancellationToken ct = default)
     {
         var (order, product) = await GetOrderAndProductAsync(orderId, dto.ProductId, ct);
-        if (order == null)
+        if (order is null)
             return DataResult<OrderItemDto>.Failure(DomainErrors.Order.NotFound(orderId));
-        if (product == null)
+        if (product is null)
             return DataResult<OrderItemDto>.Failure(DomainErrors.Product.NotFound(dto.ProductId));
 
         var orderItem = OrderItem.Create(product.Id, dto.Quantity, product.Price, product);
@@ -51,14 +51,14 @@ internal class OrderItemService : IOrderItemService
     public async Task<BaseResult> DeleteByIdAsync(long id, CancellationToken ct = default)
     {
         var orderItem = await _unitOfWork.OrderItems.GetFirstOrDefaultAsync(OrderItemSpecs.ById(id), ct);
-        if (orderItem == null)
+        if (orderItem is null)
         {
             return BaseResult.Failure(DomainErrors.Order.ItemNotFound(id));
         }
 
         var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(orderItem.OrderId).WithItems(), ct);
 
-        if (order == null)
+        if (order is null)
         {
             _logger.LogError("Matched order not found for order item with id: {OrderItemId}", id);
 
@@ -86,25 +86,25 @@ internal class OrderItemService : IOrderItemService
     {
         var orderItem = await _unitOfWork.OrderItems.GetFirstOrDefaultAsync(OrderItemSpecs.ById(orderItemId).WithProduct(), ct);
 
-        if (orderItem == null)
+        if (orderItem is null)
         {
             return DataResult<OrderItemDto>.Failure(DomainErrors.Order.ItemNotFound(orderItemId));
         }
 
         var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(orderItem.OrderId).WithItems(), ct);
 
-        if (order == null)
+        if (order is null)
         {
             _logger.LogError("Associated order not found for order item ID: {OrderItemId}. This indicates a data inconsistency.", orderItemId);
             return DataResult<OrderItemDto>.Failure(DomainErrors.Order.NotFound(orderItem.OrderId));
         }
 
-        order.UpdateOrderItemQuantity(orderItemId, dto.NewQuantity, orderItem.Product);
+        order.UpdateOrderItemQuantity(orderItemId, dto.NewQuantity, orderItem.Product!);
 
         await _unitOfWork.SaveChangesAsync(ct);
 
         var updatedOrderItem = order.Items.FirstOrDefault(oi => oi.Id == orderItemId);
-        if (updatedOrderItem == null)
+        if (updatedOrderItem is null)
         {
             _logger.LogError("Failed to retrieve updated order item after saving for OrderItemId: {OrderItemId}", orderItemId);
             return DataResult<OrderItemDto>.Failure(DomainErrors.Order.ItemNotFound(orderItemId));
@@ -120,7 +120,7 @@ internal class OrderItemService : IOrderItemService
     /// <param name="productId">Id товара</param>
     /// <param name="ct">Токен отмены операции</param>
     /// <returns>Заказ и товар</returns>
-    private async Task<(Order order, Product product)> GetOrderAndProductAsync(long orderId, int productId, CancellationToken ct)
+    private async Task<(Order? order, Product? product)> GetOrderAndProductAsync(long orderId, int productId, CancellationToken ct)
     {
         var order = await _unitOfWork.Orders
             .GetFirstOrDefaultAsync(OrderSpecs.ById(orderId).WithItems(), ct);

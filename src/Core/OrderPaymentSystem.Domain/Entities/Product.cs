@@ -13,12 +13,12 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
     /// <summary>
     /// Название товара
     /// </summary>
-    public string Name { get; private set; }
+    public string Name { get; private set; } = string.Empty;
 
     /// <summary>
     /// Описание товара
     /// </summary>
-    public string Description { get; private set; }
+    public string Description { get; private set; } = string.Empty;
 
     /// <summary>
     /// Стоимость единицы товара
@@ -31,7 +31,14 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
     /// <inheritdoc/>
     public DateTime? UpdatedAt { get; private set; }
 
-    private readonly List<OrderItem> _orderItems = new();
+    /// <summary>
+    /// Внутренняя коллекция элементов заказа
+    /// </summary>
+    private readonly List<OrderItem> _orderItems = [];
+
+    /// <summary>
+    /// Элементы заказа, только для чтения.
+    /// </summary>
     public virtual IReadOnlyCollection<OrderItem> OrderItems => _orderItems.AsReadOnly();
 
     /// <summary>
@@ -39,9 +46,15 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
     /// </summary>
     public ICollection<BasketItem> BasketItems { get; private set; } = [];
 
+    /// <summary>
+    /// Количество товара на складе
+    /// </summary>
     public int StockQuantity { get; private set; }
 
-    public byte[] RowVersion { get; private set; }
+    /// <summary>
+    /// Поле которое хранит версию кортежа. Для контроля паралеллизма.
+    /// </summary>
+    public uint RowVersion { get; private set; }
 
     private Product() { }
 
@@ -62,6 +75,9 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
         StockQuantity = stockQuantity;
     }
 
+    /// <summary>
+    /// Создать существующий товар. Используется только для тестов
+    /// </summary>
     internal static Product CreateExisting(int id, string name, string description, decimal price, int stockQuantity)
     {
         Validate(name, price);
@@ -75,6 +91,7 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
     /// <param name="name">Название товара</param>
     /// <param name="description">Описание товара</param>
     /// <param name="price">Стоимость единицы товара</param>
+    /// <param name="stockQuantity">Количество товара на складе</param>
     /// <returns>Созданный товар</returns>
     public static Product Create(string name, string description, decimal price, int stockQuantity)
     {
@@ -89,6 +106,7 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
     /// <param name="name">Название товара</param>
     /// <param name="description">Описание товара</param>
     /// <param name="newPrice">Новая стоимость единицы товара</param>
+    /// <param name="stockQuantity">Количество товара на складе</param>
     public void UpdateDetails(string name, string description, decimal newPrice, int stockQuantity)
     {
         Validate(name, newPrice);
@@ -111,11 +129,17 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
         Price = newPrice;
     }
 
+    /// <inheritdoc/>
     public bool IsStockQuantityAvailable(int requestedQuantity)
     {
         return StockQuantity >= requestedQuantity;
     }
 
+    /// <summary>
+    /// Снизить количество товара на складе.
+    /// </summary>
+    /// <param name="quantityToReduce">Количество для понижения</param>
+    /// <exception cref="BusinessException"></exception>
     public void ReduceStockQuantity(int quantityToReduce)
     {
         if (quantityToReduce <= 0)
@@ -131,6 +155,12 @@ public class Product : BaseEntity<int>, IAuditable, IStockInfo
         StockQuantity -= quantityToReduce;
     }
 
+    /// <summary>
+    /// Валидировать входные данные
+    /// </summary>
+    /// <param name="name">Название товара</param>
+    /// <param name="price">Цена товара</param>
+    /// <exception cref="BusinessException"></exception>
     private static void Validate(string name, decimal price)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new BusinessException(DomainErrors.Validation.Required(nameof(name)));

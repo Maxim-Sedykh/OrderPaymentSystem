@@ -42,7 +42,7 @@ public class Order : BaseEntity<long>, IAuditable
     /// <summary>
     /// Адрес доставки заказа
     /// </summary>
-    public Address DeliveryAddress { get; private set; }
+    public Address? DeliveryAddress { get; private set; }
 
     /// <inheritdoc/>
     public DateTime CreatedAt { get; }
@@ -58,12 +58,12 @@ public class Order : BaseEntity<long>, IAuditable
     /// <summary>
     /// Платёж по заказу
     /// </summary>
-    public Payment Payment { get; private set; }
+    public Payment? Payment { get; private set; }
 
     /// <summary>
     /// Пользователь который совершает заказ
     /// </summary>
-    public User User { get; private set; }
+    public User? User { get; private set; }
 
     private Order() { }
 
@@ -83,11 +83,18 @@ public class Order : BaseEntity<long>, IAuditable
         TotalAmount = totalAmountSum;
     }
 
+    /// <summary>
+    /// Назначить платёж. Используется только для тестов.
+    /// </summary>
+    /// <param name="payment"></param>
     internal void SetPayment(Payment payment)
     {
         Payment = payment;
     }
 
+    /// <summary>
+    /// Создать существующий заказ. Используется только для тестов
+    /// </summary>
     internal static Order CreateExisting(long id,
         Guid userId,
         Address address,
@@ -197,7 +204,7 @@ public class Order : BaseEntity<long>, IAuditable
 
         var existingItem = _items.FirstOrDefault(x => x.ProductId == productId);
 
-        if (existingItem != null)
+        if (existingItem is not null)
         {
             var newQuantity = existingItem.Quantity + quantityChange;
             if (newQuantity <= 0)
@@ -224,7 +231,13 @@ public class Order : BaseEntity<long>, IAuditable
 
         RecalculateTotalAmount();
     }
-
+    
+    /// <summary>
+    /// Добавить элемент к заказу
+    /// </summary>
+    /// <param name="item">Элемент заказа</param>
+    /// <param name="stockInfo">Количество на складе</param>
+    /// <exception cref="BusinessException"></exception>
     public void AddOrderItem(OrderItem item, IStockInfo stockInfo)
     {
         if (!stockInfo.IsStockQuantityAvailable(item.Quantity))
@@ -235,6 +248,10 @@ public class Order : BaseEntity<long>, IAuditable
         RecalculateTotalAmount();
     }
 
+    /// <summary>
+    /// Удалить элемент из заказа
+    /// </summary>
+    /// <param name="item">Элемент</param>
     public void RemoveOrderItem(OrderItem item)
     {
         _items.Remove(item);
@@ -242,9 +259,15 @@ public class Order : BaseEntity<long>, IAuditable
         RecalculateTotalAmount();
     }
 
+    /// <summary>
+    /// Обновить количество в элементе заказа
+    /// </summary>
+    /// <param name="orderItemId">Id элемента заказа</param>
+    /// <param name="newQuantity">Новое количество товара</param>
+    /// <param name="stockInfo">Количество товара на складе</param>
     public void UpdateOrderItemQuantity(long orderItemId, int newQuantity, IStockInfo stockInfo)
     {
-        var orderItem = _items.FirstOrDefault(x => x.Id == orderItemId);
+        var orderItem = _items.FirstOrDefault(x => x.Id == orderItemId) ?? throw new BusinessException(DomainErrors.Order.ItemNotFound(orderItemId));
         orderItem.UpdateQuantity(newQuantity, orderItem.ProductId, stockInfo);
 
         RecalculateTotalAmount();
@@ -255,7 +278,7 @@ public class Order : BaseEntity<long>, IAuditable
     /// </summary>
     public void RecalculateTotalAmount()
     {
-        if (_items == null || !_items.Any())
+        if (_items == null || _items.Count == 0)
         {
             TotalAmount = 0;
             return;
@@ -263,20 +286,31 @@ public class Order : BaseEntity<long>, IAuditable
 
         TotalAmount = _items.Sum(item => item.Quantity * item.ProductPrice);
     }
-
+    
+    /// <summary>
+    /// Валидировать заказ, чтобы далее взаимодействовать с ним
+    /// </summary>
+    /// <exception cref="BusinessException"></exception>
     private void EnsureCanProcess()
     {
         if (_items.IsNullOrEmpty()) throw new BusinessException(DomainErrors.Order.ItemsEmpty());
         if (!PaymentId.HasValue) throw new BusinessException(DomainErrors.Validation.Required(nameof(PaymentId)));
     }
 
+    /// <summary>
+    /// Валидировать создание заказа
+    /// </summary>
+    /// <param name="userId">Id пользователя который создал заказ</param>
+    /// <param name="address">Адрес доставки</param>
+    /// <param name="items">Элементы заказа</param>
+    /// <exception cref="BusinessException"></exception>
     private static void ValidateCreate(Guid userId, Address address, IEnumerable<OrderItem> items)
     {
         if (userId == Guid.Empty) throw new BusinessException(DomainErrors.Validation.InvalidFormat(nameof(userId)));
         if (address == null) throw new BusinessException(DomainErrors.Order.DeliveryAddressRequired());
 
         var itemList = items?.ToList();
-        if (itemList.IsNullOrEmpty())
+        if (itemList!.IsNullOrEmpty())
             throw new BusinessException(DomainErrors.Order.ItemsEmpty());
     }
 }

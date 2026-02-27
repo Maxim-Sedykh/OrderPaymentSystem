@@ -2,21 +2,30 @@
 using Moq;
 using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.Role;
+using OrderPaymentSystem.Application.Services.Roles;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Shared.Specifications;
 using OrderPaymentSystem.UnitTests.Configurations.Factories;
 using OrderPaymentSystem.UnitTests.Configurations.Fixtures;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests;
 
+/// <summary>
+/// Тесты сервиса <see cref="RoleService"/>
+/// </summary>
 public class RoleServiceTests
 {
     private readonly RoleFixture _fixture;
 
+    /// <summary>
+    /// Конструктор. Инициализация фикстуры
+    /// </summary>
     public RoleServiceTests() => _fixture = new RoleFixture();
 
+    /// <summary>
+    /// Создание роли должно инвалидировать глобальный кэш по ролям
+    /// </summary>
     [Fact]
     public async Task CreateAsync_WhenNewRole_ShouldSaveAndInvalidateCache()
     {
@@ -34,22 +43,9 @@ public class RoleServiceTests
         _fixture.VerifyCacheRemoved(CacheKeys.Role.All);
     }
 
-    [Fact]
-    public async Task UpdateAsync_WhenNameIsSame_ShouldReturnNoChangesError()
-    {
-        // Arrange
-        var role = TestDataFactory.Role.WithName("Admin").Build();
-        _fixture.SetupRole(role);
-
-        // Act
-        var result = await _fixture.Service.UpdateAsync(role.Id, new UpdateRoleDto("Admin"));
-
-        // Assert
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be(DomainErrors.General.NoChanges());
-        _fixture.VerifyNotSaved();
-    }
-
+    /// <summary>
+    /// Получение всех ролей если они закэшированы - должно быть из кэша
+    /// </summary>
     [Fact]
     public async Task GetAllAsync_WhenCached_ShouldReturnFromCache()
     {

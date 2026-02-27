@@ -14,6 +14,9 @@ using Order = OrderPaymentSystem.Domain.Entities.Order;
 
 namespace OrderPaymentSystem.Application.Services.Orders;
 
+/// <summary>
+/// Сервис для работы с заказами
+/// </summary>
 internal class OrderService : IOrderService
 {
     private readonly IUnitOfWork _unitOfWork;
@@ -30,6 +33,7 @@ internal class OrderService : IOrderService
         _unitOfWork = unitOfWork;
     }
 
+    /// <inheritdoc/>
     public async Task<BaseResult> CompleteProcessingAsync(long orderId, long paymentId, CancellationToken ct = default)
     {
         await using var transaction = await _unitOfWork.BeginTransactionAsync(ct);
@@ -38,13 +42,13 @@ internal class OrderService : IOrderService
         {
             var spec = OrderSpecs.ById(orderId).ForShip();
             var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(spec, ct);
-            if (order == null)
+            if (order is null)
             {
                 return BaseResult.Failure(DomainErrors.Order.NotFound(orderId));
             }
 
             var payment = await _unitOfWork.Payments.GetFirstOrDefaultAsync(PaymentSpecs.ById(paymentId), ct);
-            if (payment == null)
+            if (payment is null)
             {
                 return BaseResult.Failure(DomainErrors.Payment.NotFound(paymentId));
             }
@@ -56,7 +60,7 @@ internal class OrderService : IOrderService
 
             foreach (var orderItem in order.Items)
             {
-                orderItem.Product.ReduceStockQuantity(orderItem.Quantity);
+                orderItem.Product!.ReduceStockQuantity(orderItem.Quantity);
             }
 
             order.AssignPayment(paymentId);
@@ -86,6 +90,7 @@ internal class OrderService : IOrderService
         }
     }
 
+    /// <inheritdoc/>
     public async Task<DataResult<long>> CreateAsync(Guid userId, CreateOrderDto dto, CancellationToken ct = default)
     {
         var orderItems = new List<OrderItem>(dto.OrderItems.Count);
@@ -96,7 +101,7 @@ internal class OrderService : IOrderService
 
         foreach (var itemDto in dto.OrderItems)
         {
-            if (!productsDict.TryGetValue(itemDto.ProductId, out var product) || product == null)
+            if (!productsDict.TryGetValue(itemDto.ProductId, out var product) || product is null)
             {
                 return DataResult<long>.Failure(DomainErrors.Product.NotFound(itemDto.ProductId));
             }
@@ -104,7 +109,7 @@ internal class OrderService : IOrderService
             orderItems.Add(OrderItem.Create(itemDto.ProductId, itemDto.Quantity, product.Price, product));
         }
 
-        var order = Order.Create(userId, dto.DeliveryAddress, orderItems);
+        var order = Order.Create(userId, dto.DeliveryAddress!, orderItems);
 
         await _unitOfWork.Orders.CreateAsync(order, ct);
         await _unitOfWork.SaveChangesAsync(ct);
@@ -112,6 +117,7 @@ internal class OrderService : IOrderService
         return DataResult<long>.Success(order.Id);
     }
 
+    /// <inheritdoc/>
     public async Task<DataResult<OrderDto>> GetByIdAsync(long orderId, CancellationToken ct = default)
     {
         var order = await _unitOfWork.Orders
@@ -125,6 +131,7 @@ internal class OrderService : IOrderService
         return DataResult<OrderDto>.Success(order);
     }
 
+    /// <inheritdoc/>
     public async Task<CollectionResult<OrderDto>> GetByUserIdAsync(Guid userId, CancellationToken ct = default)
     {
         var orders = await _unitOfWork.Orders
@@ -133,16 +140,17 @@ internal class OrderService : IOrderService
         return CollectionResult<OrderDto>.Success(orders);
     }
 
+    /// <inheritdoc/>
     public async Task<BaseResult> ShipOrderAsync(long orderId, CancellationToken ct = default)
     {
         var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(orderId).ForShip(), ct);
 
-        if (order == null)
+        if (order is null)
         {
             return BaseResult.Failure(DomainErrors.Order.NotFound(orderId));
         }
 
-        if (order.Payment == null 
+        if (order.Payment is null 
             || order.Payment.Status != PaymentStatus.Succeeded)
         {
             return BaseResult.Failure(DomainErrors.Order.CannotBeConfirmedWithoutPayment());
@@ -155,11 +163,12 @@ internal class OrderService : IOrderService
         return BaseResult.Success();
     }
 
+    /// <inheritdoc/>
     public async Task<BaseResult> UpdateBulkOrderItemsAsync(long orderId, UpdateBulkOrderItemsDto dto, CancellationToken ct = default)
     {
         var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(orderId).WithItems(),
             ct);
-        if (order == null)
+        if (order is null)
         {
             return BaseResult.Failure(DomainErrors.Order.NotFound(orderId));
         }
@@ -191,10 +200,11 @@ internal class OrderService : IOrderService
         return BaseResult.Success();
     }
 
+    /// <inheritdoc/>
     public async Task<BaseResult> UpdateStatusAsync(long orderId, UpdateOrderStatusDto dto, CancellationToken ct = default)
     {
         var order = await _unitOfWork.Orders.GetFirstOrDefaultAsync(OrderSpecs.ById(orderId), ct);
-        if (order == null)
+        if (order is null)
         {
             return BaseResult.Failure(DomainErrors.Order.NotFound(orderId));
         }

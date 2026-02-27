@@ -18,10 +18,10 @@
     <File Path="nuget.config" />
   </Folder>
   <Folder Name="/deploy/">
-    <File Path=".env" />
-    <File Path=".env.template" />
+    <File Path="deploy/.env" />
+    <File Path="deploy/.env.template" />
     <File Path="deploy/prometheus.yml" />
-    <File Path="docker-compose.yml" />
+    <File Path="deploy/docker-compose.yml" />
   </Folder>
   <Folder Name="/benchmarks/">
     <Project Path="benchmarks/OrderPaymentSystem.Benchmarks/OrderPaymentSystem.Benchmarks.csproj" />

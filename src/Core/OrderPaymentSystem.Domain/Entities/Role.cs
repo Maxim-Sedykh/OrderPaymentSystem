@@ -12,9 +12,16 @@ public class Role : BaseEntity<int>
     /// <summary>
     /// Название роли
     /// </summary>
-    public string Name { get; private set; }
+    public string Name { get; private set; } = string.Empty;
 
+    /// <summary>
+    /// Внутренняя коллекция пользователей
+    /// </summary>
     private readonly List<User> _users = new();
+
+    /// <summary>
+    /// Пользователи у которых есть эта роль. Только для чтения.
+    /// </summary>
     public IReadOnlyCollection<User> Users => _users.AsReadOnly();
 
     private Role() { }
@@ -30,6 +37,9 @@ public class Role : BaseEntity<int>
         Name = name;
     }
 
+    /// <summary>
+    /// Создать существующую роль. Используется только для тестов
+    /// </summary>
     internal static Role CreateExisting(int id, string name)
     {
         if (id < 0)
@@ -46,7 +56,7 @@ public class Role : BaseEntity<int>
     /// </summary>
     /// <param name="name">Название</param>
     /// <returns>Созданная роль</returns>
-    public static Role Create(string name)
+    public static Role Create(string? name)
     {
         if (string.IsNullOrWhiteSpace(name))
             throw new BusinessException(DomainErrors.Validation.Required(nameof(Name)));
@@ -59,7 +69,7 @@ public class Role : BaseEntity<int>
     /// </summary>
     /// <param name="newName">Новое название</param>
     /// <returns>Результат обновления</returns>
-    public void UpdateName(string newName)
+    public void UpdateName(string? newName)
     {
         if (newName == Name)
         {

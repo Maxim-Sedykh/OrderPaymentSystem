@@ -1,25 +1,34 @@
 ﻿using FluentAssertions;
 using OrderPaymentSystem.Application.DTOs;
 using OrderPaymentSystem.Application.DTOs.Basket;
+using OrderPaymentSystem.Application.Services.BasketItems;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Domain.Resources;
 using OrderPaymentSystem.Shared.Exceptions;
 using OrderPaymentSystem.UnitTests.Configurations.Factories;
 using OrderPaymentSystem.UnitTests.Configurations.Fixtures;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests;
 
+/// <summary>
+/// Тесты сервиса <see cref="BasketItemService"/>
+/// </summary>
 public class BasketItemServiceTests
 {
     private readonly BasketItemFixture _fixture;
 
+    /// <summary>
+    /// Конструктор. Инициализация фикстуры
+    /// </summary>
     public BasketItemServiceTests()
     {
         _fixture = new BasketItemFixture();
     }
 
+    /// <summary>
+    /// Создание элемента, когда товар в элементе найден - должно быть успешным
+    /// </summary>
     [Fact]
     public async Task CreateAsync_WhenProductExists_ShouldReturnSuccess()
     {
@@ -37,11 +46,14 @@ public class BasketItemServiceTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Data.Quantity.Should().Be(dto.Quantity);
+        result.Data!.Quantity.Should().Be(dto.Quantity);
         _fixture.VerifyBasketItemCreated();
         _fixture.VerifySaved();
     }
 
+    /// <summary>
+    /// Создание элемента, когда товар в элементе не найден - должно быть в ошибкой
+    /// </summary>
     [Fact]
     public async Task CreateAsync_WhenProductNotFound_ShouldReturnError()
     {
@@ -57,6 +69,9 @@ public class BasketItemServiceTests
         _fixture.VerifyNotSaved();
     }
 
+    /// <summary>
+    /// Удаление элемента по Id когда он существует должно быть успешным
+    /// </summary>
     [Fact]
     public async Task DeleteByIdAsync_WhenItemExists_ShouldRemoveItem()
     {
@@ -73,6 +88,9 @@ public class BasketItemServiceTests
         _fixture.VerifySaved();
     }
 
+    /// <summary>
+    /// Обновление количества запрошенного товара с новым валидным количеством товара должно быть успешным
+    /// </summary>
     [Fact]
     public async Task UpdateQuantityAsync_WhenDataIsValid_ShouldUpdateQuantity()
     {
@@ -92,6 +110,9 @@ public class BasketItemServiceTests
         _fixture.VerifySaved();
     }
 
+    /// <summary>
+    /// Обновление количества запрошенного товара с новым инвалидным количеством товара должно быть с ошибкой
+    /// </summary>
     [Fact]
     public async Task UpdateQuantityAsync_WhenQuantityIsInvalid_ShouldThrowBusinessException()
     {

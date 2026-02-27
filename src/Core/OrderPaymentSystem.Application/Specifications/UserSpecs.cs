@@ -4,6 +4,9 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
 
+/// <summary>
+/// Спецификации для сущности "Пользователь"
+/// </summary>
 internal static class UserSpecs
 {
     public static BaseSpecification<User> WithRoles(this BaseSpecification<User> spec)

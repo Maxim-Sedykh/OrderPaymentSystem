@@ -1,5 +1,8 @@
 ﻿namespace OrderPaymentSystem.Domain.Enum;
 
+/// <summary>
+/// Статус платежа
+/// </summary>
 public enum PaymentStatus
 {
     /// <summary>

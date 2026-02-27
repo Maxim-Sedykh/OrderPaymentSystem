@@ -5,8 +5,14 @@ using OrderPaymentSystem.Domain.Errors;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.Order;
 
+/// <summary>
+/// Валидатор для <see cref="UpdateOrderItemDto"/>
+/// </summary>
 public class UpdateOrderItemValidator : AbstractValidator<UpdateOrderItemDto>
 {
+    /// <summary>
+    /// Конструктор валидатора, создание правил для полей DTO <see cref="UpdateOrderItemDto"/>
+    /// </summary>
     public UpdateOrderItemValidator()
     {
         RuleFor(x => x.ProductId)

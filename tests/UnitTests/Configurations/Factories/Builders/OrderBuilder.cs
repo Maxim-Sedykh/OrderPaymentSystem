@@ -4,6 +4,9 @@ using OrderPaymentSystem.Domain.ValueObjects;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 
+/// <summary>
+/// Билдер для построения мокового заказа
+/// </summary>
 public class OrderBuilder
 {
     private long _id = 1;
@@ -12,10 +15,20 @@ public class OrderBuilder
     private List<OrderItem> _items = new();
     private Address _address = new("Default St", "City", "123", "Country");
 
-    public OrderBuilder WithId(long id) { _id = id; return this; }
+    /// <summary>
+    /// Добавить статус
+    /// </summary>
     public OrderBuilder WithStatus(OrderStatus status) { _status = status; return this; }
+
+    /// <summary>
+    /// Добавиь элементы заказа
+    /// </summary>
     public OrderBuilder WithItems(params OrderItem[] items) { _items.AddRange(items); return this; }
 
+    /// <summary>
+    /// Построить, создать объект.
+    /// </summary>
+    /// <returns>Созданный заказ</returns>
     public Order Build()
     {
         var order = Order.CreateExisting(_id, _userId, _address, _items, _items.Sum(i => i.ItemTotalSum), _status);

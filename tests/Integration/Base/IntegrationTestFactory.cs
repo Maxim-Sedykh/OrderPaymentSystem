@@ -17,44 +17,47 @@ using Testcontainers.Redis;
 
 namespace OrderPaymentSystem.IntegrationTests.Base;
 
+/// <summary>
+/// Фабрика для создания всех зависимостей в интеграционном тесте.
+/// </summary>
 public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
-    // Конфигурация PostgreSQL контейнера
+    /// <summary>
+    /// Тестовый Docker-контейнер PostgreSQL
+    /// </summary>
     private readonly PostgreSqlContainer _dbContainer = new PostgreSqlBuilder(ContainerImages.Postgres)
         .WithEnvironment("PARENT_PROCESS_ID", "")
-        .WithDatabase("OrderPaymentSystemTest") // Имя тестовой базы данных
-        .WithUsername("postgres") // Имя пользователя для подключения
-        .WithPassword("postgres") // Пароль для подключения
-        .WithCleanUp(true) // Автоматически удалять контейнер после тестов
+        .WithDatabase("OrderPaymentSystemTest")
+        .WithUsername("postgres")
+        .WithPassword("postgres")
+        .WithCleanUp(true)
         .Build();
 
-    // Конфигурация Redis контейнера
+    /// <summary>
+    /// Тестовый Docker-контейнер Redis
+    /// </summary>
     private readonly RedisContainer _redisContainer = new RedisBuilder(ContainerImages.Redis)
-        .WithCleanUp(true) // Автоматически удалять контейнер после тестов
+        .WithCleanUp(true)
         .Build();
 
+    /// <summary>
+    /// Тестовый Docker-контейнер ElasticSearch
+    /// </summary>
     private readonly ElasticsearchContainer _esContainer = new ElasticsearchBuilder(ContainerImages.Elasticsearch)
             .WithCleanUp(true)
             .Build();
 
-    /// <summary>
-    /// Переопределяем метод для настройки хоста и сервисов.
-    /// Здесь происходит подмена зависимостей для интеграционных тестов.
-    /// </summary>
+    /// <inheritdoc/>
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Test");
 
         builder.ConfigureAppConfiguration(config =>
         {
-            // Здесь мы можем добавить или переопределить ключи конфигурации
-            // Важно: AddInMemoryCollection добавляет в конец, переопределяя предыдущие значения
             config.AddInMemoryCollection(new Dictionary<string, string>
             {
-                // Подменяем строку подключения к PostgreSQL
                 ["ConnectionStrings:PostgresSQL"] = _dbContainer.GetConnectionString(),
-                ["Elasticsearch:Url"] = _esContainer.GetConnectionString(),
-                // Подменяем настройки Redis (если они читаются как URL)
+                ["ElasticConfiguration:Uri"] = _esContainer.GetConnectionString(),
                 ["RedisSettings:Url"] = _redisContainer.GetConnectionString(),
                 ["RedisSettings:InstanceName"] = "OrderPaymentSystemTest",
                 ["JwtSettings:JwtKey"] = "7f3a5b8c2d1e4f9a0b6c3d8e5f2a1b4c7d9e0f2b5a8c1d4e7f9b0a3c6d2e5f8b",
@@ -63,8 +66,6 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
             }!);
         });
 
-        // ConfigureTestServices позволяет переопределить регистрации сервисов,
-        // которые были сделаны в ConfigureServices вашего приложения.
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
@@ -80,11 +81,6 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
 
             services.AddStackExchangeRedisCache(options =>
             {
-                // Эти options будут уже заполнены из IConfiguration.
-                // Мы можем оставить их пустыми, или проставить значения по умолчанию,
-                // но они будут перезаписаны IConfiguration.
-                // Если InstanceName не будет переопределен в IConfiguration,
-                // то он возьмется отсюда.
                 options.Configuration = _redisContainer.GetConnectionString();
                 options.InstanceName = "OrderPaymentSystemTest";
             });
@@ -99,13 +95,10 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
     /// </summary>
     public async Task InitializeAsync()
     {
-        // Запускаем PostgreSQL контейнер
         await _dbContainer.StartAsync();
         await _redisContainer.StartAsync();
         await _esContainer.StartAsync();
 
-        // 2. ПРИНУДИТЕЛЬНО запускаем сервер через создание клиента
-        // Это инициализирует сервер до того, как мы полезем в Services
         var client = CreateClient();
     }
 
@@ -115,17 +108,20 @@ public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLife
     /// </summary>
     public new async Task DisposeAsync()
     {
-        // Останавливаем и удаляем PostgreSQL контейнер
         await _dbContainer.StopAsync();
-        // Останавливаем и удаляем Redis контейнер
         await _redisContainer.StopAsync();
         await _esContainer.StopAsync();
 
-        // Не забываем освободить ресурсы WebApplicationFactory
         await base.DisposeAsync();
     }
 
-    public async Task<ProductDto> CreateProductAsync(CreateProductDto productDto, HttpClient client)
+    /// <summary>
+    /// Создать товар
+    /// </summary>
+    /// <param name="productDto">Модель создания товара</param>
+    /// <param name="client">Клиент для http запроса на создание</param>
+    /// <returns><see cref="ProductDto"/> или null</returns>
+    public async Task<ProductDto?> CreateProductAsync(CreateProductDto productDto, HttpClient client)
     {
         var response = await client.PostAsJsonAsync(TestConstants.ApiProductsV1, productDto);
         response.EnsureSuccessStatusCode();

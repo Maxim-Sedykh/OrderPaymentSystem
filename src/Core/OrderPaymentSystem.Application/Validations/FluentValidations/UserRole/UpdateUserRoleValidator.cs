@@ -5,8 +5,14 @@ using OrderPaymentSystem.Domain.Errors;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.UserRole;
 
+/// <summary>
+/// Валидатор для <see cref="UpdateUserRoleDto"/>
+/// </summary>
 public class UpdateUserRoleValidator : AbstractValidator<UpdateUserRoleDto>
 {
+    /// <summary>
+    /// Конструктор валидатора, создание правил для полей DTO <see cref="UpdateUserRoleDto"/>
+    /// </summary>
     public UpdateUserRoleValidator()
     {
         RuleLevelCascadeMode = CascadeMode.Stop;

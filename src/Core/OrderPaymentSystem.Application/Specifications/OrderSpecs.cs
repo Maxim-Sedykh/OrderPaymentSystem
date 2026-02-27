@@ -5,7 +5,10 @@ using OrderPaymentSystem.Shared.Specifications;
 
 namespace OrderPaymentSystem.Application.Specifications;
 
-public static class OrderSpecs
+/// <summary>
+/// Спецификации для сущности "Заказ"
+/// </summary>
+internal static class OrderSpecs
 {
     public static BaseSpecification<Order> WithItems(this BaseSpecification<Order> spec)
         => spec.AddInclude(q => q.Include(o => o.Items));

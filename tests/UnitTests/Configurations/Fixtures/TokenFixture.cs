@@ -7,6 +7,9 @@ using OrderPaymentSystem.Application.Settings;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
+/// <summary>
+/// Настройка зависимостей и создание <see cref="UserTokenService"/>
+/// </summary>
 internal class TokenFixture
 {
     public UserTokenService Service { get; }

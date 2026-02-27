@@ -14,24 +14,43 @@ using Testcontainers.Redis;
 
 namespace OrderPaymentSystem.Benchmarks.Base;
 
+/// <summary>
+/// Базовый класс для бенчмарков, с базовыми настройками для каждого бенчмарка.
+/// </summary>
 [Config(typeof(BenchmarkerConfig))]
 [MemoryDiagnoser]
 [Orderer(BenchmarkDotNet.Order.SummaryOrderPolicy.FastestToSlowest)]
 [RankColumn]
 public abstract class BaseBenchmark
 {
+    /// <summary>
+    /// Тестовый контейнер PostgreSQL
+    /// </summary>
     private static readonly PostgreSqlContainer _postgreSqlContainer = new PostgreSqlBuilder("postgres:15-alpine")
         .WithDatabase("benchmark_db")
         .WithUsername("postgres")
         .WithPassword("postgres")
         .Build();
 
+    /// <summary>
+    /// Тестовый контейнер Redis
+    /// </summary>
     private static readonly RedisContainer _redisContainer = new RedisBuilder("redis:alpine")
         .Build();
 
-    protected IServiceProvider ServiceProvider { get; private set; }
-    protected IServiceScope ServiceScope { get; private set; }
+    /// <summary>
+    /// ServiceProvider. Для получения объекта из DI.
+    /// </summary>
+    protected IServiceProvider? ServiceProvider { get; private set; }
 
+    /// <summary>
+    /// Контекст объектов. Их область видимости.
+    /// </summary>
+    protected IServiceScope? ServiceScope { get; private set; }
+
+    /// <summary>
+    /// Настройка зависимостей.
+    /// </summary>
     [GlobalSetup]
     public virtual async Task GlobalSetup()
     {
@@ -76,8 +95,15 @@ public abstract class BaseBenchmark
         await db.Database.EnsureCreatedAsync();
     }
 
+    /// <summary>
+    /// Зарегистрировать специфичные для определённого бенчмарка сервисы
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
     protected abstract void RegisterServices(IServiceCollection services);
 
+    /// <summary>
+    /// Очистка внешних ресурсов бенчмарка
+    /// </summary>
     [GlobalCleanup]
     public virtual async Task GlobalCleanup()
     {

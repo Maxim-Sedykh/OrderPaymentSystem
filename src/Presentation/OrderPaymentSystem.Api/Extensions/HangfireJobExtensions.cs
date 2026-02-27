@@ -4,8 +4,16 @@ using OrderPaymentSystem.Api.Jobs;
 
 namespace OrderPaymentSystem.Api.Extensions;
 
+/// <summary>
+/// Расширения для добавления фоновых задач Hangfire
+/// </summary>
 public static class HangfireJobExtensions
 {
+    /// <summary>
+    /// Зарегистрировать фоновые задачи HangFire
+    /// </summary>
+    /// <param name="services">Коллекция сервисов</param>
+    /// <param name="configuration">Конфиг</param>
     public static IServiceCollection AddHangfireJobs(this IServiceCollection services, IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("PostgresSQL");
@@ -24,6 +32,11 @@ public static class HangfireJobExtensions
         return services;
     }
 
+    /// <summary>
+    /// Добавить и настроить конкретные фоновые задачи
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
     public static IApplicationBuilder UseHangfireJobsConfig(this IApplicationBuilder app)
     {
         app.UseHangfireDashboard("/hangfire");
@@ -37,7 +50,7 @@ public static class HangfireJobExtensions
         RecurringJob.AddOrUpdate<AuthJobs>(
             "cleanup-expired-tokens",
             job => job.CleanupTokens(CancellationToken.None),
-            "0 3 * * *"
+            Cron.Weekly
         );
 
         return app;

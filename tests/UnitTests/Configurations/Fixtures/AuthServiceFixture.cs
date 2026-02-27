@@ -17,6 +17,9 @@ using System.Security.Claims;
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 
+/// <summary>
+/// Настройка зависимостей и создание <see cref="AuthService"/>
+/// </summary>
 internal class AuthServiceFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
@@ -50,7 +53,7 @@ internal class AuthServiceFixture
             jwtOptions);
     }
 
-    public AuthServiceFixture SetupUserByLogin(User user)
+    public AuthServiceFixture SetupUserByLogin(User? user)
     {
         UserRepo.Setup(r => r.GetFirstOrDefaultAsync(It.IsAny<BaseSpecification<User>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(user);

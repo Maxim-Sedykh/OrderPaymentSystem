@@ -62,7 +62,7 @@ internal class ProductService : IProductService
     {
         var product = await _unitOfWork.Products.GetFirstOrDefaultAsync(ProductSpecs.ById(id), ct);
 
-        if (product == null)
+        if (product is null)
         {
             return BaseResult.Failure(DomainErrors.Product.NotFound(id));
         }
@@ -108,7 +108,7 @@ internal class ProductService : IProductService
     {
         var product = await _unitOfWork.Products.GetFirstOrDefaultAsync(ProductSpecs.ById(id), ct);
 
-        if (product == null)
+        if (product is null)
         {
             return DataResult<ProductDto>.Failure(DomainErrors.Product.NotFound(id));
         }

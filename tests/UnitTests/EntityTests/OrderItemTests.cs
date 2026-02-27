@@ -3,14 +3,19 @@ using Moq;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Entities;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Shared.Exceptions;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.EntityTests;
 
+/// <summary>
+/// Тесты сущности <see cref="OrderItem"/>
+/// </summary>
 public class OrderItemTests
 {
     private readonly Mock<IStockInfo> _stockMock = new();
 
+    /// <summary>
+    /// Создание элемента заказа с валидными данными должно быть успешно, и общая сумма должны высчитываться правильно
+    /// </summary>
     [Fact]
     public void Create_ValidItem_ShouldCalculateTotalAndCheckStock()
     {
@@ -27,6 +32,9 @@ public class OrderItemTests
         item.ItemTotalSum.Should().Be(500m);
     }
 
+    /// <summary>
+    /// Создание элемента с инвалидными данными должно выбрасывать BusinessException
+    /// </summary>
     [Theory]
     [InlineData(0, 5, 100)]
     [InlineData(1, 0, 100)]
@@ -43,6 +51,9 @@ public class OrderItemTests
         act.Should().Throw<BusinessException>();
     }
 
+    /// <summary>
+    /// Создание элемента когда на складе нет доступного товара должно выбрасывать BusinessException
+    /// </summary>
     [Fact]
     public void Create_WhenStockNotAvailable_ShouldThrowBusinessException()
     {
@@ -56,6 +67,9 @@ public class OrderItemTests
         act.Should().Throw<BusinessException>();
     }
 
+    /// <summary>
+    /// Обновление количества товара в элементе должно пересчитать ItemTotalSum
+    /// </summary>
     [Fact]
     public void UpdateQuantity_WithValidNewQuantity_ShouldRecalculateTotal()
     {
@@ -71,6 +85,9 @@ public class OrderItemTests
         item.ItemTotalSum.Should().Be(1000m);
     }
 
+    /// <summary>
+    /// Обновление количества товара элемента когда на складе нет доступного товара должно выбрасывать BusinessException
+    /// </summary>
     [Fact]
     public void UpdateQuantity_WhenStockNotAvailable_ShouldThrowBusinessException()
     {

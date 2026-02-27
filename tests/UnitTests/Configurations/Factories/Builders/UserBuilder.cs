@@ -2,6 +2,9 @@
 
 namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 
+/// <summary>
+/// Билдер для построения мокового пользователя
+/// </summary>
 public class UserBuilder
 {
     private Guid _id = Guid.NewGuid();
@@ -9,10 +12,15 @@ public class UserBuilder
     private string _passwordHash = "hashed_password";
     private List<Role> _roles = new();
 
-    public UserBuilder WithId(Guid id) { _id = id; return this; }
+    /// <summary>
+    /// Добавить логин
+    /// </summary>
     public UserBuilder WithLogin(string login) { _login = login; return this; }
-    public UserBuilder WithRoles(params Role[] roles) { _roles.AddRange(roles); return this; }
 
+    /// <summary>
+    /// Построить, создать объект.
+    /// </summary>
+    /// <returns>Созданный пользователь</returns>
     public User Build()
     {
         var user = User.CreateExisting(_id, _login, _passwordHash);

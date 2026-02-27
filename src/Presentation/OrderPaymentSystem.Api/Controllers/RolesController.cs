@@ -31,7 +31,7 @@ public class RolesController : ControllerBase
     /// <summary>
     /// Создание роли
     /// </summary>
-    /// <param name="dto"></param>
+    /// <param name="dto">Модель данных для создания</param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// 
@@ -41,10 +41,10 @@ public class RolesController : ControllerBase
     ///     }
     ///     
     /// </remarks>
-    /// <response code="200">Если роль создалась</response>
+    /// <response code="201">Если роль создалась</response>
     /// <response code="400">Если роль не была создана</response>
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<RoleDto>> CreateRole(CreateRoleDto dto, CancellationToken cancellationToken)
     {
@@ -59,11 +59,10 @@ public class RolesController : ControllerBase
     /// <summary>
     /// Обновление роли
     /// </summary>
-    /// <param name="id"></param>
-    /// <param name="dto"></param>
+    /// <param name="id">Id роли для обновления</param>
+    /// <param name="dto">Модель с данными для обновления</param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
-    /// Request for update role:
     /// 
     ///     PUT
     ///     {
@@ -90,7 +89,7 @@ public class RolesController : ControllerBase
     /// <summary>
     /// Удаление роли с указанием идентификатора
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="id">Id роли</param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <remarks>
     /// 
@@ -100,7 +99,7 @@ public class RolesController : ControllerBase
     ///     }
     ///     
     /// </remarks>
-    /// <response code="200">Если роль удалилась</response>
+    /// <response code="204">Если роль удалилась</response>
     /// <response code="400">Если роль не была удалена</response>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]

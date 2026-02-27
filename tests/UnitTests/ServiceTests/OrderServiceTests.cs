@@ -1,25 +1,35 @@
 ﻿using FluentAssertions;
 using Moq;
 using OrderPaymentSystem.Application.DTOs.Order;
+using OrderPaymentSystem.Application.Services.Orders;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Enum;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.Domain.ValueObjects;
 using OrderPaymentSystem.UnitTests.Configurations.Factories;
 using OrderPaymentSystem.UnitTests.Configurations.Fixtures;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests;
 
+/// <summary>
+/// Тесты сервиса <see cref="OrderService"/>
+/// </summary>
 public class OrderServiceTests
 {
     private readonly OrderFixture _fixture;
 
+    /// <summary>
+    /// Конструктор. Инициализация фикстуры
+    /// </summary>
     public OrderServiceTests()
     {
         _fixture = new OrderFixture();
     }
 
+    /// <summary>
+    /// Завершение обработки заказа, когда все данные валидны
+    /// Заказ должен быть с статусом Confirmed и товары на складе должны уменьшится
+    /// </summary>
     [Fact]
     public async Task CompleteProcessingAsync_WhenValid_ShouldConfirmOrderAndReduceStock()
     {
@@ -44,6 +54,9 @@ public class OrderServiceTests
         _fixture.VerifySaved();
     }
 
+    /// <summary>
+    /// Создание заказа с валидными данными должно быть успешно
+    /// </summary>
     [Fact]
     public async Task CreateAsync_WhenProductsExist_ShouldCreateOrder()
     {
@@ -74,6 +87,9 @@ public class OrderServiceTests
         _fixture.VerifySaved();
     }
 
+    /// <summary>
+    /// Метод <see cref="OrderService.ShipOrderAsync"/> должен поставить заказу статус Shipped
+    /// </summary>
     [Fact]
     public async Task ShipOrderAsync_WhenOrderIsConfirmedAndPaid_ShouldSetStatusShipped()
     {
@@ -95,6 +111,9 @@ public class OrderServiceTests
         _fixture.VerifySaved();
     }
 
+    /// <summary>
+    /// Доставка заказа при не найденом платеже должно быть с ошибкой
+    /// </summary>
     [Fact]
     public async Task ShipOrderAsync_WhenPaymentMissing_ShouldReturnError()
     {

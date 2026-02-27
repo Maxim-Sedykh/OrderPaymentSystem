@@ -8,10 +8,21 @@ using System.Net.Http.Json;
 
 namespace OrderPaymentSystem.IntegrationTests.Tests;
 
+/// <summary>
+/// Тестирование взаимодействия с товарами.
+/// </summary>
 public class ProductControllerTests : BaseIntegrationTest
 {
+    /// <summary>
+    /// Конструктор.
+    /// </summary>
+    /// <param name="factory">Фабрика теста.</param>
     public ProductControllerTests(IntegrationTestFactory factory) : base(factory) { }
 
+    /// <summary>
+    /// Создание товара в качестве пользователем с ролью Admin должно быть успехом.
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task CreateProduct_AsAdmin_ShouldReturnCreated()
     {
@@ -26,6 +37,10 @@ public class ProductControllerTests : BaseIntegrationTest
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
+    /// <summary>
+    /// Удаление товара обычным пользователем должно быть запрещено
+    /// </summary>
+    /// <returns></returns>
     [Fact]
     public async Task DeleteProduct_AsRegularUser_ShouldReturnForbidden()
     {

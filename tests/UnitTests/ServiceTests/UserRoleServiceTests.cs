@@ -2,20 +2,29 @@
 using Moq;
 using OrderPaymentSystem.Application.Constants;
 using OrderPaymentSystem.Application.DTOs.UserRole;
+using OrderPaymentSystem.Application.Services.Roles;
 using OrderPaymentSystem.Domain.Entities;
 using OrderPaymentSystem.Domain.Errors;
 using OrderPaymentSystem.UnitTests.Configurations.Factories;
 using OrderPaymentSystem.UnitTests.Configurations.Fixtures;
-using Xunit;
 
 namespace OrderPaymentSystem.UnitTests.ServiceTests;
 
+/// <summary>
+/// Тесты сервиса <see cref="UserRoleService"/>
+/// </summary>
 public class UserRoleServiceTests
 {
     private readonly UserRoleFixture _fixture;
 
+    /// <summary>
+    /// Конструктор. Инициализация фикстуры
+    /// </summary>
     public UserRoleServiceTests() => _fixture = new UserRoleFixture();
 
+    /// <summary>
+    /// Добавление роли для пользователя, у которого уже есть эта роль - должна быть с ошибкой
+    /// </summary>
     [Fact]
     public async Task CreateAsync_WhenUserAlreadyHasRole_ShouldReturnError()
     {
@@ -36,6 +45,9 @@ public class UserRoleServiceTests
         _fixture.VerifyNotSaved();
     }
 
+    /// <summary>
+    /// Обновление роли у пользователя когда всё валидно - транзакция должна фиксироваться
+    /// </summary>
     [Fact]
     public async Task UpdateAsync_WhenValid_ShouldCommitTransaction()
     {

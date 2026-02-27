@@ -12,7 +12,7 @@ public class CollectionResult<T> : DataResult<IReadOnlyCollection<T>>
     /// </summary>
     /// <param name="data">Коллекция данных</param>
     /// <param name="error">Ошибка выполнения операции</param>
-    private CollectionResult(IReadOnlyCollection<T> data, Error error = null)
+    private CollectionResult(IReadOnlyCollection<T> data, Error? error = null)
         : base(data, error)
     {
         Count = data?.Count ?? 0;
@@ -29,7 +29,7 @@ public class CollectionResult<T> : DataResult<IReadOnlyCollection<T>>
     /// </summary>
     /// <param name="data">Массив данных</param>
     /// <returns>Успешный результат с коллекцией данных</returns>
-    public static new CollectionResult<T> Success(IReadOnlyCollection<T> data)
+    public static new CollectionResult<T> Success(IReadOnlyCollection<T>? data)
     {
         ArgumentNullException.ThrowIfNull(data, nameof(data));
 

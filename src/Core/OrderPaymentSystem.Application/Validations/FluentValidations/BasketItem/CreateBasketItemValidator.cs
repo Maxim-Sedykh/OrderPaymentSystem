@@ -5,8 +5,14 @@ using OrderPaymentSystem.Domain.Errors;
 
 namespace OrderPaymentSystem.Application.Validations.FluentValidations.BasketItem;
 
+/// <summary>
+/// Валидатор для <see cref="CreateBasketItemDto"/>
+/// </summary>
 public class CreateBasketItemValidator : AbstractValidator<CreateBasketItemDto>
 {
+    /// <summary>
+    /// Конструктор валидатора, создание правил для полей DTO <see cref="CreateBasketItemDto"/>
+    /// </summary>
     public CreateBasketItemValidator()
     {
         RuleFor(x => x.ProductId)

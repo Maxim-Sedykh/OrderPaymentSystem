@@ -13,11 +13,8 @@ internal class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.HasKey(p => p.Id);
         builder.HasIndex(p => p.Name);
 
-        builder
-            .Property(p => p.RowVersion)
-            .IsRowVersion()
-            .IsRequired()
-            .ValueGeneratedOnAddOrUpdate();
+        builder.Property(p => p.RowVersion)
+			.IsRowVersion();
 
         builder.Property(p => p.Name)
 			.IsRequired()

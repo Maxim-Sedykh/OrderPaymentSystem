@@ -31,22 +31,13 @@ public class UserRoleController : ControllerBase
     /// <summary>
     /// Создание роли для пользователя
     /// </summary>
-    /// <param name="userId"></param>
-    /// <param name="dto"></param>
+    /// <param name="userId">Id пользователя</param>
+    /// <param name="roleName">Название роли</param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
-    /// <remarks>
-    /// 
-    ///     POST
-    ///     {
-    ///         "login": "User first",
-    ///         "roleName": "Admin",
-    ///     }
-    ///     
-    /// </remarks>
-    /// <response code="200">Если роль для пользователя создалась</response>
+    /// <response code="201">Если роль для пользователя создалась</response>
     /// <response code="400">Если роль для пользователя не была создана</response>
     [HttpPost("{userId}/roles")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<UserRoleDto>> AddRoleForUser(Guid userId,[FromBody] string roleName, CancellationToken cancellationToken)
     {
@@ -61,19 +52,9 @@ public class UserRoleController : ControllerBase
     /// <summary>
     /// Удаление роли у пользователя
     /// </summary>
-    /// <param name="roleId"></param>
-    /// <param name="userId"></param>
+    /// <param name="roleId">Id роли</param>
+    /// <param name="userId">Id пользователя</param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
-    /// <remarks>
-    /// Request for delete role for user
-    /// 
-    ///     POST
-    ///     {
-    ///         "login": "User first",
-    ///         "roleId": 1,
-    ///     }
-    ///     
-    /// </remarks>
     /// <response code="200">Если роль для пользователя удалилась</response>
     /// <response code="400">Если роль для пользователя не была удалена</response>
     [HttpDelete("{userId}/roles/{roleId}")]
@@ -92,8 +73,8 @@ public class UserRoleController : ControllerBase
     /// <summary>
     /// Обновление роли пользователя
     /// </summary>
-    /// <param name="userId"></param>
-    /// <param name="dto"></param>
+    /// <param name="userId">Id пользователя</param>
+    /// <param name="dto">Модель данных для обновления роли</param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     /// <response code="200">Если роль для пользователя обновилась</response>
     /// <response code="400">Если роль для пользователя не была удалена</response>
@@ -111,9 +92,9 @@ public class UserRoleController : ControllerBase
     }
 
     /// <summary>
-    /// Получить роли пользователя
+    /// Получить роли пользователя по его Id
     /// </summary>
-    /// <param name="userId"></param>
+    /// <param name="userId">Id пользователя</param>
     /// <param name="cancellationToken">Токен отмены запроса</param>
     [HttpGet("{userId}/roles")]
     [ProducesResponseType(StatusCodes.Status200OK)]
