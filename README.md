@@ -34,6 +34,8 @@
 - MessagePack для оптимизированной сериализации данных из Redis
 - Prometheus и Graphana для сбора метрик
 
+<img width="1538" height="998" alt="image" src="https://github.com/user-attachments/assets/a23868f9-9090-4edd-b16c-5cfc348394b4" />
+
 ## Установка и запуск
 
 1. Клонируйте репозиторий на свой локальный компьютер.
@@ -65,7 +67,7 @@
 Скопируйте AccessToken из результата и авторизуйтесь с помощью окна авторизации
 
 <img src="https://github.com/Maxim-Sedykh/OrderPaymentSystem/assets/125740808/f210685b-2aa3-431a-9fda-e9aec838f6f7" width=33%>
-<img src="https://github.com/Maxim-Sedykh/OrderPaymentSystem/assets/125740808/3f496b19-cdfb-4bb3-891b-ba1cadff841f" width=33%>
+<img width="33%" height="456" alt="image" src="https://github.com/user-attachments/assets/f88a8e29-3dc2-4623-a8fe-7f2fe9b21e54" />
 <img src="https://github.com/Maxim-Sedykh/OrderPaymentSystem/assets/125740808/c108f201-8636-418d-b181-80d670e9e946" width=33%>
 
 Теперь вы можете использовать все API Методы и использовать весь функционал!
