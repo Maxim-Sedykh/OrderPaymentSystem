@@ -8,7 +8,7 @@ namespace OrderPaymentSystem.DAL.Persistence.Repositories.Base;
 /// Unit of work. Представляет единую входную точку для всего необходимого взаимодействия с БД.
 /// Объекты репозиториев создаются только при первом обращении к нему.
 /// </summary>
-public class UnitOfWork : IUnitOfWork
+public sealed class UnitOfWork : IUnitOfWork
 {
     /// <summary>
     /// Контекст для работы с БД

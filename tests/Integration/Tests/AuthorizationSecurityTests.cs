@@ -11,7 +11,7 @@ namespace OrderPaymentSystem.IntegrationTests.Tests;
 /// <summary>
 /// Тестирование аутентификации и авторизации
 /// </summary>
-public class AuthorizationSecurityTests : BaseIntegrationTest
+public sealed class AuthorizationSecurityTests : BaseIntegrationTest
 {
     /// <summary>
     /// Конструктор

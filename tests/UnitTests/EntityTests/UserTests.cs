@@ -7,7 +7,7 @@ namespace OrderPaymentSystem.UnitTests.EntityTests;
 /// <summary>
 /// Тесты сущности <see cref="User"/>
 /// </summary>
-public class UserTests
+public sealed class UserTests
 {
     /// <summary>
     /// Создание пользователя с валидными данными должно быть успешно

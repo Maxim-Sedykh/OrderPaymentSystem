@@ -3,7 +3,7 @@
 /// <summary>
 /// Модель для обновления элемента заказа
 /// </summary>
-public record UpdateOrderItemDto
+public sealed record UpdateOrderItemDto
 {
     /// <summary>
     /// Id товара

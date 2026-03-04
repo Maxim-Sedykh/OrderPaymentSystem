@@ -18,7 +18,7 @@ namespace OrderPaymentSystem.Application.Services.Auth;
 /// <summary>
 /// Сервис для работы с JWT-токенами
 /// </summary>
-internal class UserTokenService : IUserTokenService
+internal sealed class UserTokenService : IUserTokenService
 {
     private readonly string? _jwtKey;
     private readonly string? _issuer;

@@ -6,7 +6,7 @@ namespace OrderPaymentSystem.Application.DTOs.Order;
 /// <summary>
 /// Модель данных для создания заказа
 /// </summary>
-public record CreateOrderDto
+public sealed record CreateOrderDto
 {
     /// <summary>
     /// Элементы заказа в виде модели данных

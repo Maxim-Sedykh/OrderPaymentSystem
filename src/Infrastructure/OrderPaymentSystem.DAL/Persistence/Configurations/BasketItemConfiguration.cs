@@ -4,7 +4,7 @@ using OrderPaymentSystem.Domain.Entities;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
 
-internal class BasketItemConfiguration : IEntityTypeConfiguration<BasketItem>
+internal sealed class BasketItemConfiguration : IEntityTypeConfiguration<BasketItem>
 {
 	public void Configure(EntityTypeBuilder<BasketItem> builder)
 	{

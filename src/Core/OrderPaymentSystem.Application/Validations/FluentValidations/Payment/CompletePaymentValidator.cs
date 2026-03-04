@@ -8,7 +8,7 @@ namespace OrderPaymentSystem.Application.Validations.FluentValidations.Payment;
 /// <summary>
 /// Валидатор для <see cref="CompletePaymentDto"/>
 /// </summary>
-public class CompletePaymentValidator : AbstractValidator<CompletePaymentDto>
+public sealed class CompletePaymentValidator : AbstractValidator<CompletePaymentDto>
 {
     /// <summary>
     /// Конструктор валидатора, создание правил для полей DTO <see cref="CompletePaymentDto"/>

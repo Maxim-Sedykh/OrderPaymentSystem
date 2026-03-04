@@ -7,7 +7,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 /// <summary>
 /// Билдер для построения мокового заказа
 /// </summary>
-public class OrderBuilder
+public sealed class OrderBuilder
 {
     private long _id = 1;
     private Guid _userId = Guid.NewGuid();

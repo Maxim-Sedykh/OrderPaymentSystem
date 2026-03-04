@@ -6,7 +6,7 @@ namespace OrderPaymentSystem.ArchitectureTests.Tests;
 /// <summary>
 /// Тестирование поддержания Clean-архитектуры в проекте.
 /// </summary>
-public class ArchitectureTests : BaseArchitectureTest
+public sealed class ArchitectureTests : BaseArchitectureTest
 {
     /// <summary>
     /// Domain не должен ни от кого зависеть, все должны зависеть от Domain.

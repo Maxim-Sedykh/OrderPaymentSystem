@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 /// <summary>
 /// Билдер для построения мокового элемента корзины
 /// </summary>
-public class BasketItemBuilder
+public sealed class BasketItemBuilder
 {
     private long _id = 1;
     private Guid _userId = Guid.NewGuid();

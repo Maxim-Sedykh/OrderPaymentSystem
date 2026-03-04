@@ -12,7 +12,7 @@ namespace OrderPaymentSystem.Application.Services.Payments;
 /// <summary>
 /// Сервис для работы с платежами
 /// </summary>
-internal class PaymentService : IPaymentService
+internal sealed class PaymentService : IPaymentService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;

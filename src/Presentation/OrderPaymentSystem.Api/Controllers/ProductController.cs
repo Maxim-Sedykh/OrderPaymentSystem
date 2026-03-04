@@ -13,7 +13,7 @@ namespace OrderPaymentSystem.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/products")]
 [ApiController]
-public class ProductController : ControllerBase
+public sealed class ProductController : ControllerBase
 {
     private readonly IProductService _productService;
 

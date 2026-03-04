@@ -11,7 +11,7 @@ namespace OrderPaymentSystem.Application.Services.Maintenance;
 /// <summary>
 /// Сервис для работы с Refresh-токеном в фоновых задачах
 /// </summary>
-internal class TokenMaintenanceService : ITokenMaintenanceService
+internal sealed class TokenMaintenanceService : ITokenMaintenanceService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly TimeProvider _timeProvider;

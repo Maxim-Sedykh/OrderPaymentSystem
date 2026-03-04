@@ -14,7 +14,7 @@ namespace OrderPaymentSystem.Application.Services.Orders;
 /// <summary>
 /// Сервис для работы с элементами заказов
 /// </summary>
-internal class OrderItemService : IOrderItemService
+internal sealed class OrderItemService : IOrderItemService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;

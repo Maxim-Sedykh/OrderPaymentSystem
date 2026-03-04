@@ -15,7 +15,7 @@ namespace OrderPaymentSystem.IntegrationTests.Tests;
 /// Тестирование основного сценария взаимодействия пользователя с системой.
 /// Функциональный тест.
 /// </summary>
-public class OrderFlowTests : BaseIntegrationTest
+public sealed class OrderFlowTests : BaseIntegrationTest
 {
     /// <summary>
     /// Конструктор

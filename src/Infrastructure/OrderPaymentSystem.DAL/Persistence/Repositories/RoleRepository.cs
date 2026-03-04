@@ -7,7 +7,7 @@ namespace OrderPaymentSystem.DAL.Persistence.Repositories;
 /// <summary>
 /// Репозиторий для работы с сущностью <see cref="Role"/>
 /// </summary>
-internal class RoleRepository : BaseRepository<Role>, IRoleRepository
+internal sealed class RoleRepository : BaseRepository<Role>, IRoleRepository
 {
     /// <summary>
     /// Конструктор репозитория

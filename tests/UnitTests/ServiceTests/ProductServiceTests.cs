@@ -14,7 +14,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests;
 /// <summary>
 /// Тесты сервиса <see cref="ProductService"/>
 /// </summary>
-public class ProductServiceTests
+public sealed class ProductServiceTests
 {
     private readonly ProductFixture _fixture;
 

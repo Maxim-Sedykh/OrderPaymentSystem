@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.Api.Jobs;
 /// <summary>
 /// Фоновая задача для данных связанных с авторизацией и аутентификацией пользователей.
 /// </summary>
-public class AuthJobs
+public sealed class AuthJobs
 {
     private readonly ITokenMaintenanceService _tokenMaintenance;
 

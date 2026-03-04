@@ -3,7 +3,7 @@
 /// <summary>
 /// Модель данных представления токена
 /// </summary>
-public class TokenDto
+public sealed class TokenDto
 {
     /// <summary>
     /// Access-токен, передаётся клиентом

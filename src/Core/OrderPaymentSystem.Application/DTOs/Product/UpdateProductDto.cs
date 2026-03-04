@@ -3,7 +3,7 @@
 /// <summary>
 /// Модель для обновления данных товара
 /// </summary>
-public class UpdateProductDto
+public sealed class UpdateProductDto
 {
     /// <summary>
     /// Название товара

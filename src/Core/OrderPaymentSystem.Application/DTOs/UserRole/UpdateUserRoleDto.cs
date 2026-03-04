@@ -5,7 +5,7 @@
 /// </summary>
 /// <param name="FromRoleId">Id старой роли</param>
 /// <param name="ToRoleId">Id новой роли</param>
-public record UpdateUserRoleDto(
+public sealed record UpdateUserRoleDto(
         int FromRoleId,
         int ToRoleId
     );

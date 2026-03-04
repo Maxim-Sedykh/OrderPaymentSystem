@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.Application.DTOs.Order;
 /// <summary>
 /// Модель данных для массового обновления элементов заказа
 /// </summary>
-public class UpdateBulkOrderItemsDto
+public sealed class UpdateBulkOrderItemsDto
 {
     /// <summary>
     /// Элементы заказа

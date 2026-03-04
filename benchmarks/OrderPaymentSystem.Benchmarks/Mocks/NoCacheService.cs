@@ -6,7 +6,7 @@ namespace OrderPaymentSystem.Benchmarks.Mocks;
 /// <summary>
 /// Заглушка сервиса кэширования.
 /// </summary>
-public class NoCacheService : ICacheService
+public sealed class NoCacheService : ICacheService
 {
     /// <summary>
     /// Возвращаем null из кэша, как будто объекта с ключом key нет в кэше

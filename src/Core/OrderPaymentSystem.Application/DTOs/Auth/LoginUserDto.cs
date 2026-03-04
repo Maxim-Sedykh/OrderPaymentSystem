@@ -5,4 +5,4 @@
 /// </summary>
 /// <param name="Login">Логин</param>
 /// <param name="Password">Введёный пароль</param>
-public record LoginUserDto(string Login, string Password);
+public sealed record LoginUserDto(string Login, string Password);

@@ -7,7 +7,7 @@ namespace OrderPaymentSystem.UnitTests.EntityTests;
 /// <summary>
 /// Тесты сущности <see cref="UserRole"/>
 /// </summary>
-public class UserRoleTests
+public sealed class UserRoleTests
 {
     /// <summary>
     /// Создание роли для пользователя с валидными данными должно быть успешно

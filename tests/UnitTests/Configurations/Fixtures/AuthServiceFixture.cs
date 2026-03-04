@@ -20,7 +20,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 /// <summary>
 /// Настройка зависимостей и создание <see cref="AuthService"/>
 /// </summary>
-internal class AuthServiceFixture
+internal sealed class AuthServiceFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
     public Mock<IUserRepository> UserRepo { get; } = new();

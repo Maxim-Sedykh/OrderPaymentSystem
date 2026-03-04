@@ -8,7 +8,7 @@ namespace OrderPaymentSystem.UnitTests.EntityTests;
 /// <summary>
 /// Тесты сущности <see cref="Payment"/>
 /// </summary>
-public class PaymentTests
+public sealed class PaymentTests
 {
     /// <summary>
     /// Обработка платежа с корректным денежным количеством должно быть успешно

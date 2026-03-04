@@ -3,7 +3,7 @@
 /// <summary>
 /// Модель данных для представления элемента заказа
 /// </summary>
-public class OrderItemDto
+public sealed class OrderItemDto
 {
     /// <summary>
     /// Id элемента заказа

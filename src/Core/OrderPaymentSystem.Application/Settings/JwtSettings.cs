@@ -4,7 +4,7 @@
 /// Представляет настройки конфигурации для JSON Web Token (JWT).
 /// Используется для параметров выпуска и проверки токенов.
 /// </summary>
-public class JwtSettings
+public sealed class JwtSettings
 {
     /// <summary>
     /// Издатель (Issuer) JWT токена. Указывает, кто выпустил токен.

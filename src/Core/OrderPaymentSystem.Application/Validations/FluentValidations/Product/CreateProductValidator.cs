@@ -9,7 +9,7 @@ namespace OrderPaymentSystem.Application.Validations.FluentValidations.Product;
 /// <summary>
 /// Валидатор для <see cref="CreateProductDto"/>
 /// </summary>
-public class CreateProductValidator : AbstractValidator<CreateProductDto>
+public sealed class CreateProductValidator : AbstractValidator<CreateProductDto>
 {
     /// <summary>
     /// Конструктор валидатора, создание правил для полей DTO <see cref="CreateProductDto"/>

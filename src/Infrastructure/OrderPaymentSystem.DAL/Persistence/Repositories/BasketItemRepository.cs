@@ -7,7 +7,7 @@ namespace OrderPaymentSystem.DAL.Persistence.Repositories;
 /// <summary>
 /// Репозиторий для работы с сущностью <see cref="BasketItem"/>
 /// </summary>
-internal class BasketItemRepository : BaseRepository<BasketItem>, IBasketItemRepository
+internal sealed class BasketItemRepository : BaseRepository<BasketItem>, IBasketItemRepository
 {
     /// <summary>
     /// Конструктор репозитория

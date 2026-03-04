@@ -14,7 +14,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 /// <summary>
 /// Настройка зависимостей и создание <see cref="UserRoleService"/>
 /// </summary>
-internal class UserRoleFixture
+internal sealed class UserRoleFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
     public Mock<IUserRepository> UserRepo { get; } = new();

@@ -5,7 +5,7 @@ using static OrderPaymentSystem.Domain.Constants.ValidationConstants.User;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
 
-internal class UserConfigurations : IEntityTypeConfiguration<User>
+internal sealed class UserConfigurations : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {

@@ -3,7 +3,7 @@
 /// <summary>
 /// Модель данных для обновления количества
 /// </summary>
-public record UpdateQuantityDto
+public sealed record UpdateQuantityDto
 {
     /// <summary>
     /// Новое количество

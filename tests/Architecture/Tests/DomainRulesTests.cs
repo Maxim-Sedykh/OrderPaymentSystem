@@ -6,7 +6,7 @@ namespace OrderPaymentSystem.ArchitectureTests.Tests;
 /// <summary>
 /// Тестирование богатых доменных моделей.
 /// </summary>
-public class DomainRulesTests : BaseArchitectureTest
+public sealed class DomainRulesTests : BaseArchitectureTest
 {
     /// <summary>
     /// Все классы в папке Entities в проекте Domain должны иметь только приватные сеттеры.

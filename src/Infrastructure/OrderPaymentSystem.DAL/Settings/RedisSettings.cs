@@ -3,7 +3,7 @@
 /// <summary>
 /// Настройки Redis
 /// </summary>
-public class RedisSettings
+public sealed class RedisSettings
 {
     /// <summary>
     /// Url до инстанса Redis

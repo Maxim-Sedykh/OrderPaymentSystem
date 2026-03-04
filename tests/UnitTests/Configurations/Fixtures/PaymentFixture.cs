@@ -13,7 +13,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 /// <summary>
 /// Настройка зависимостей и создание <see cref="PaymentService"/>
 /// </summary>
-internal class PaymentFixture
+internal sealed class PaymentFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
     public Mock<IPaymentRepository> PaymentRepo { get; } = new();

@@ -7,7 +7,7 @@ namespace OrderPaymentSystem.UnitTests.EntityTests;
 /// <summary>
 /// Тесты сущности <see cref="UserToken"/>
 /// </summary>
-public class UserTokenTests
+public sealed class UserTokenTests
 {
     /// <summary>
     /// Создание токена с временем истечения срока в прошлом должно вызывать BusinessException

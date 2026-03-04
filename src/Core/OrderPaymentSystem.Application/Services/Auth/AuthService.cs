@@ -17,7 +17,7 @@ namespace OrderPaymentSystem.Application.Services.Auth;
 /// <summary>
 /// Сервис авторизации и аутентификации
 /// </summary>
-internal class AuthService : IAuthService
+internal sealed class AuthService : IAuthService
 {
     private readonly int _tokenLifeTimeInDays;
 

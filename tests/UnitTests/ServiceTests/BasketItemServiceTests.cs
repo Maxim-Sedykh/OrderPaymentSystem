@@ -14,7 +14,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests;
 /// <summary>
 /// Тесты сервиса <see cref="BasketItemService"/>
 /// </summary>
-public class BasketItemServiceTests
+public sealed class BasketItemServiceTests
 {
     private readonly BasketItemFixture _fixture;
 

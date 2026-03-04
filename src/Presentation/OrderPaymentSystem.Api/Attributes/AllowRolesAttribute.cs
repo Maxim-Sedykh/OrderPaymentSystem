@@ -9,7 +9,7 @@ namespace OrderPaymentSystem.Api.Attributes;
 /// Если пользователь имеет хоть одну роль из списка, то валидация проходит
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-public class AllowRolesAttribute : Attribute, IAuthorizationFilter
+public sealed class AllowRolesAttribute : Attribute, IAuthorizationFilter
 {
     private readonly HashSet<string> _roles;
 

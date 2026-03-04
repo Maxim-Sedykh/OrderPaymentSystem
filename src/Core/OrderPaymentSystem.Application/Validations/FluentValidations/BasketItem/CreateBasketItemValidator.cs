@@ -8,7 +8,7 @@ namespace OrderPaymentSystem.Application.Validations.FluentValidations.BasketIte
 /// <summary>
 /// Валидатор для <see cref="CreateBasketItemDto"/>
 /// </summary>
-public class CreateBasketItemValidator : AbstractValidator<CreateBasketItemDto>
+public sealed class CreateBasketItemValidator : AbstractValidator<CreateBasketItemDto>
 {
     /// <summary>
     /// Конструктор валидатора, создание правил для полей DTO <see cref="CreateBasketItemDto"/>

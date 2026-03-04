@@ -9,7 +9,7 @@ namespace OrderPaymentSystem.Api.HealthChecks;
 /// Написал свой, так как использование HealthCheck.ElasticSearch у меня вызывает ошибку 
 /// с транзитивностью этого пакета к пакету ElasticSearch.Channels.
 /// </summary>
-public class CustomElasticsearchHealthCheck : IHealthCheck
+public sealed class CustomElasticsearchHealthCheck : IHealthCheck
 {
     /// <summary>
     /// Uri до эластика

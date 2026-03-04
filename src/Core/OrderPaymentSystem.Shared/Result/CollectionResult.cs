@@ -5,7 +5,7 @@
 /// Представляет результат операции, содержащий коллекцию элементов или ошибку.
 /// </summary>
 /// <typeparam name="T">Тип элементов в коллекции</typeparam>
-public class CollectionResult<T> : DataResult<IReadOnlyCollection<T>>
+public sealed class CollectionResult<T> : DataResult<IReadOnlyCollection<T>>
 {
     /// <summary>
     /// Инициализирует новый экземпляр класса <see cref="CollectionResult{T}"/>

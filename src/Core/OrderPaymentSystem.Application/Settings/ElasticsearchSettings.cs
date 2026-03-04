@@ -3,7 +3,7 @@
 /// <summary>
 /// Настройки ElasticSearch
 /// </summary>
-public class ElasticsearchSettings
+public sealed class ElasticsearchSettings
 {
     /// <summary>
     /// Название секции в настройках

@@ -15,7 +15,7 @@ namespace OrderPaymentSystem.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
-public class RolesController : ControllerBase
+public sealed class RolesController : ControllerBase
 {
     private readonly IRoleService _roleService;
 

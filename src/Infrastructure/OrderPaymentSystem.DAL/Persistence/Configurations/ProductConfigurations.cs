@@ -6,7 +6,7 @@ using static OrderPaymentSystem.Domain.Constants.ValidationConstants.Product;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
 
-internal class ProductConfiguration : IEntityTypeConfiguration<Product>
+internal sealed class ProductConfiguration : IEntityTypeConfiguration<Product>
 {
 	public void Configure(EntityTypeBuilder<Product> builder)
 	{

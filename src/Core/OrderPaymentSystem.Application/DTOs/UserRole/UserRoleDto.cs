@@ -5,7 +5,7 @@
 /// </summary>
 /// <param name="Login">Логин пользователя</param>
 /// <param name="RoleName">Название роли</param>
-public record UserRoleDto(
+public sealed record UserRoleDto(
         string Login,
         string RoleName
     );

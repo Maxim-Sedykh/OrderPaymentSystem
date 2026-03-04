@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 /// <summary>
 /// Билдер для построения мокового роли
 /// </summary>
-public class RoleBuilder
+public sealed class RoleBuilder
 {
     private int _id = 1;
     private string _name = "Admin";

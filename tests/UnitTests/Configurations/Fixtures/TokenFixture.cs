@@ -10,7 +10,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 /// <summary>
 /// Настройка зависимостей и создание <see cref="UserTokenService"/>
 /// </summary>
-internal class TokenFixture
+internal sealed class TokenFixture
 {
     public UserTokenService Service { get; }
     public FakeTimeProvider TimeProvider { get; } = new();

@@ -7,7 +7,7 @@ namespace OrderPaymentSystem.DAL.Interceptors;
 /// <summary>
 /// Перехватчик запросов. Интерсептор EF Core.
 /// </summary>
-public class AuditInterceptor : SaveChangesInterceptor
+public sealed class AuditInterceptor : SaveChangesInterceptor
 {
     /// <summary>
     /// При вызове <see cref="DbContext.SaveChangesAsync(CancellationToken)"/> перехватываем запрос.

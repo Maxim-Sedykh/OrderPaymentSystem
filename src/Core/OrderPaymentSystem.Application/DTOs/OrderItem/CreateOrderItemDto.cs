@@ -3,7 +3,7 @@
 /// <summary>
 /// Модель для создания элемента заказа
 /// </summary>
-public class CreateOrderItemDto
+public sealed class CreateOrderItemDto
 {
     /// <summary>
     /// Id товара

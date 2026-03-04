@@ -7,4 +7,4 @@
 /// <param name="Description">Описание товара</param>
 /// <param name="Price">Цена за единицу товара</param>
 /// <param name="StockQuantity">Количество товара на складе</param>
-public record CreateProductDto(string Name, string Description, decimal Price, int StockQuantity);
+public sealed record CreateProductDto(string Name, string Description, decimal Price, int StockQuantity);

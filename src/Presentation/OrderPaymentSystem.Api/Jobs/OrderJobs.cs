@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.Api.Jobs;
 /// <summary>
 /// Фоновая задача для заказов.
 /// </summary>
-public class OrderJobs
+public sealed class OrderJobs
 {
     private readonly IOrderMaintenanceService _orderMaintenanceService;
 

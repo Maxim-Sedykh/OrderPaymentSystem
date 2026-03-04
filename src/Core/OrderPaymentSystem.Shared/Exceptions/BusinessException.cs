@@ -6,7 +6,7 @@ namespace OrderPaymentSystem.Shared.Exceptions;
 /// Базовый класс для бизнес-исключений
 /// Используется для обработки ошибок в бизнес-логике доменных моделях
 /// </summary>
-public class BusinessException : Exception
+public sealed class BusinessException : Exception
 {
     /// <summary>
     /// Код ошибки

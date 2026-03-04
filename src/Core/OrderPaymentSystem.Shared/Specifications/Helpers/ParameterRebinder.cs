@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.Shared.Specifications.Helpers;
 /// <summary>
 /// Хелпер для переопределения параметров в дереве выражения
 /// </summary>
-public class ParameterRebinder : ExpressionVisitor
+public sealed class ParameterRebinder : ExpressionVisitor
 {
     private readonly ParameterExpression _parameter;
 

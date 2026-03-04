@@ -9,7 +9,7 @@ namespace OrderPaymentSystem.Application.Validations.FluentValidations.Role;
 /// <summary>
 /// Валидатор для <see cref="CreateRoleDto"/>
 /// </summary>
-public class CreateRoleValidator : AbstractValidator<CreateRoleDto>
+public sealed class CreateRoleValidator : AbstractValidator<CreateRoleDto>
 {
     /// <summary>
     /// Конструктор валидатора, создание правил для полей DTO <see cref="CreateRoleDto"/>

@@ -11,7 +11,7 @@ namespace OrderPaymentSystem.IntegrationTests.Tests;
 /// <summary>
 /// Тестирование взаимодействия с товарами.
 /// </summary>
-public class ProductControllerTests : BaseIntegrationTest
+public sealed class ProductControllerTests : BaseIntegrationTest
 {
     /// <summary>
     /// Конструктор.

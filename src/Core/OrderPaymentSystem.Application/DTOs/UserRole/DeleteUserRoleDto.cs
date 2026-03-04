@@ -5,7 +5,7 @@
 /// </summary>
 /// <param name="Login">Логин пользователя</param>
 /// <param name="RoleId">Id роли</param>
-public record DeleteUserRoleDto(
+public sealed record DeleteUserRoleDto(
         string Login,
         long RoleId
     );

@@ -6,7 +6,7 @@ namespace OrderPaymentSystem.ArchitectureTests.Tests;
 /// <summary>
 /// Тестирование поддержания правил наименований.
 /// </summary>
-public class NamingDesignTests : BaseArchitectureTest
+public sealed class NamingDesignTests : BaseArchitectureTest
 {
     /// <summary>
     /// Все интерфейсы должны начинаться на букву 'I'

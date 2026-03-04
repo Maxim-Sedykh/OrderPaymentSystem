@@ -7,7 +7,7 @@ namespace OrderPaymentSystem.Application.DTOs.Order;
 /// <summary>
 /// Модель данных для представления заказа
 /// </summary>
-public class OrderDto
+public sealed class OrderDto
 {
     /// <summary>
     /// Id заказа

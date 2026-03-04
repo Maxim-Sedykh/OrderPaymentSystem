@@ -4,4 +4,4 @@
 /// Модель данных для создания роли
 /// </summary>
 /// <param name="Name">Название роли</param>
-public record CreateRoleDto(string Name);
+public sealed record CreateRoleDto(string Name);

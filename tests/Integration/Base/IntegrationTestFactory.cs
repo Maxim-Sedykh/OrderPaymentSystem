@@ -19,7 +19,7 @@ namespace OrderPaymentSystem.IntegrationTests.Base;
 /// <summary>
 /// Фабрика для создания всех зависимостей в интеграционном тесте.
 /// </summary>
-public class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLifetime
+public sealed class IntegrationTestFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
     /// <summary>
     /// Тестовый Docker-контейнер PostgreSQL

@@ -15,7 +15,7 @@ namespace OrderPaymentSystem.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/basket")]
-public class BasketItemsController : PrincipalAccessController
+public sealed class BasketItemsController : PrincipalAccessController
 {
     private readonly IBasketItemService _basketItemService;
 

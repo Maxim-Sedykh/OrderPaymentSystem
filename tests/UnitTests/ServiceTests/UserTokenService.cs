@@ -10,7 +10,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests;
 /// <summary>
 /// Тесты сервиса <see cref="UserTokenService"/>
 /// </summary>
-public class UserTokenServiceTests
+public sealed class UserTokenServiceTests
 {
     private readonly TokenFixture _fixture;
 

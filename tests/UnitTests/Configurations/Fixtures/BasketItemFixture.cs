@@ -11,7 +11,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 /// <summary>
 /// Настройка зависимостей и создание <see cref="BasketItemService"/>
 /// </summary>
-internal class BasketItemFixture
+internal sealed class BasketItemFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
     public Mock<IMapper> Mapper { get; } = new();

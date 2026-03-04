@@ -11,7 +11,7 @@ namespace OrderPaymentSystem.Api.Middlewares;
 /// <summary>
 /// Единый обработчик ошибок (глобальный try - catch)
 /// </summary>
-public class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> logger, RequestDelegate next)
+public sealed class ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> logger, RequestDelegate next)
 {
     /// <summary>
     /// Выполнить глобальную обработку ошибок асинхронно

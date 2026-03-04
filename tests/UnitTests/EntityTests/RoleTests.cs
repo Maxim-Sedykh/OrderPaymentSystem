@@ -7,7 +7,7 @@ namespace OrderPaymentSystem.UnitTests.EntityTests;
 /// <summary>
 /// Тесты сущности <see cref="Role"/>
 /// </summary>
-public class RoleTests
+public sealed class RoleTests
 {
     /// <summary>
     /// Обновление роли с валидным именем должно быть успешно

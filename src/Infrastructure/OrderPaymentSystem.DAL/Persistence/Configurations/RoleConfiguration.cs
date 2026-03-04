@@ -5,7 +5,7 @@ using static OrderPaymentSystem.Domain.Constants.ValidationConstants.Role;
 
 namespace OrderPaymentSystem.DAL.Persistence.Configurations;
 
-internal class RoleConfiguration : IEntityTypeConfiguration<Role>
+internal sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
 {
     public void Configure(EntityTypeBuilder<Role> builder)
     {

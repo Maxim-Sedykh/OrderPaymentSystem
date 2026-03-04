@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 /// <summary>
 /// Билдер для построения мокового пользователя
 /// </summary>
-public class UserBuilder
+public sealed class UserBuilder
 {
     private Guid _id = Guid.NewGuid();
     private string _login = "testuser";

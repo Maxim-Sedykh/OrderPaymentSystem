@@ -3,7 +3,7 @@
 /// <summary>
 /// Модель данных для завершения платежа
 /// </summary>
-public class CompletePaymentDto
+public sealed class CompletePaymentDto
 {
     /// <summary>
     /// Сдача

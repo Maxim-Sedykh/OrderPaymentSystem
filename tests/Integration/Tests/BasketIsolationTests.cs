@@ -11,7 +11,7 @@ namespace OrderPaymentSystem.IntegrationTests.Tests;
 /// <summary>
 /// Тестирование функционала с элементами корзины.
 /// </summary>
-public class BasketIsolationTests : BaseIntegrationTest
+public sealed class BasketIsolationTests : BaseIntegrationTest
 {
     /// <summary>
     /// Конструктор.

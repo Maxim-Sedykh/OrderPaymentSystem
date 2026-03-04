@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 /// <summary>
 /// Билдер для построения мокового товара
 /// </summary>
-public class ProductBuilder
+public sealed class ProductBuilder
 {
     private int _id = 1;
     private string _name = "Test Product";

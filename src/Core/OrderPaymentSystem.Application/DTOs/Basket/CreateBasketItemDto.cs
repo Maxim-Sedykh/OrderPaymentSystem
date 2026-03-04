@@ -5,4 +5,4 @@
 /// </summary>
 /// <param name="ProductId">Id товара</param>
 /// <param name="Quantity">Количество товара</param>
-public record CreateBasketItemDto(int ProductId, int Quantity);
+public sealed record CreateBasketItemDto(int ProductId, int Quantity);

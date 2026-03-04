@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 /// <summary>
 /// Билдер для построения мокового токена пользователя
 /// </summary>
-public class UserTokenBuilder
+public sealed class UserTokenBuilder
 {
     private readonly string _token = "refresh_token";
     private readonly DateTime _expire = DateTime.UtcNow.AddDays(7);

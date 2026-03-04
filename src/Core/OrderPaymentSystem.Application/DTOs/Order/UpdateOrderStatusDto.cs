@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.Application.DTOs.Order;
 /// <summary>
 /// Модель данных для обновления статуса заказа
 /// </summary>
-public record UpdateOrderStatusDto
+public sealed record UpdateOrderStatusDto
 {
     /// <summary>
     /// Новый статус для заказа

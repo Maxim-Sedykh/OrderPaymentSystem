@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.Application.DTOs.Payment;
 /// <summary>
 /// Модель для представления платежа
 /// </summary>
-public class PaymentDto
+public sealed class PaymentDto
 {
     /// <summary>
     /// Id платежа

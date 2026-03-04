@@ -12,7 +12,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Fixtures;
 /// <summary>
 /// Настройка зависимостей и создание <see cref="OrderItemService"/>
 /// </summary>
-internal class OrderItemFixture
+internal sealed class OrderItemFixture
 {
     public Mock<IUnitOfWork> Uow { get; } = new();
     public Mock<IMapper> Mapper { get; } = new();

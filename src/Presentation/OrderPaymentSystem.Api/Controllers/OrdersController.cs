@@ -14,7 +14,7 @@ namespace OrderPaymentSystem.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/orders")]
-public class OrdersController : PrincipalAccessController
+public sealed class OrdersController : PrincipalAccessController
 {
     private readonly IOrderService _orderService;
 

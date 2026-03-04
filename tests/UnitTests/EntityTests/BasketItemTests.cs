@@ -9,7 +9,7 @@ namespace OrderPaymentSystem.UnitTests.EntityTests;
 /// <summary>
 /// Тесты сущности <see cref="BasketItem"/>
 /// </summary>
-public class BasketItemTests
+public sealed class BasketItemTests
 {
     private readonly Mock<IStockInfo> _stockMock = new();
 

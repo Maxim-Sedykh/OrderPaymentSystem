@@ -9,7 +9,7 @@ namespace OrderPaymentSystem.Application.Services.Maintenance;
 /// <summary>
 /// Сервис для работы с заказами в фоновых задачах
 /// </summary>
-internal class OrderMaintenanceService : IOrderMaintenanceService
+internal sealed class OrderMaintenanceService : IOrderMaintenanceService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<OrderMaintenanceService> _logger;

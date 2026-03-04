@@ -13,7 +13,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests;
 /// <summary>
 /// Тесты сервиса <see cref="UserRoleService"/>
 /// </summary>
-public class UserRoleServiceTests
+public sealed class UserRoleServiceTests
 {
     private readonly UserRoleFixture _fixture;
 

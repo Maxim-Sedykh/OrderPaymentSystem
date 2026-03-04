@@ -12,7 +12,7 @@ namespace OrderPaymentSystem.UnitTests.ServiceTests;
 /// <summary>
 /// Тесты сервиса <see cref="OrderItemService"/>
 /// </summary>
-public class OrderItemServiceTests
+public sealed class OrderItemServiceTests
 {
     private readonly OrderItemFixture _fixture;
 

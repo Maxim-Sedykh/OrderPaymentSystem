@@ -5,7 +5,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 /// <summary>
 /// Билдер для построения мокового элемента заказа
 /// </summary>
-public class OrderItemBuilder
+public sealed class OrderItemBuilder
 {
     private long _id = 1;
     private int _productId = 1;

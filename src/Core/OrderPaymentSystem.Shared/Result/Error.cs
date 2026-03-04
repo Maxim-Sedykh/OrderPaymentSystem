@@ -3,7 +3,7 @@
 /// <summary>
 /// Ошибка операции
 /// </summary>
-public record Error
+public sealed record Error
 {
     /// <summary>
     /// Сообщение об ошибке

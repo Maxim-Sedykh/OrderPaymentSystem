@@ -6,7 +6,7 @@ namespace OrderPaymentSystem.UnitTests.Configurations.Factories.Builders;
 /// <summary>
 /// Билдер для построения мокового платежа
 /// </summary>
-public class PaymentBuilder
+public sealed class PaymentBuilder
 {
     private long _id = 1;
     private long _orderId = 1;

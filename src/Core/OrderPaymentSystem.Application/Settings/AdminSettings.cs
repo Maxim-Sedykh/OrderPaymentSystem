@@ -3,7 +3,7 @@
 /// <summary>
 /// Креды пользователя с ролью Админ
 /// </summary>
-public class AdminSettings
+public sealed class AdminSettings
 {
     /// <summary>
     /// Логин

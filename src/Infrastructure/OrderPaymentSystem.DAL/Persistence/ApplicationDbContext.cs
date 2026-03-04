@@ -7,7 +7,7 @@ namespace OrderPaymentSystem.DAL.Persistence;
 /// <summary>
 /// Контекст для работы с базой данной приложения
 /// </summary>
-public class ApplicationDbContext : DbContext
+public sealed class ApplicationDbContext : DbContext
 {
     /// <summary>
     /// Конструктор контекста.

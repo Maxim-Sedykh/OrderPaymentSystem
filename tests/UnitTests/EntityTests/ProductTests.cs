@@ -7,7 +7,7 @@ namespace OrderPaymentSystem.UnitTests.EntityTests;
 /// <summary>
 /// Тесты сущности <see cref="Product"/>
 /// </summary>
-public class ProductTests
+public sealed class ProductTests
 {
     /// <summary>
     /// Создание товара с валидными данными должно быть успешно

@@ -7,7 +7,7 @@
 /// <param name="City">Город.</param>
 /// <param name="ZipCode">Почтовый индекс.</param>
 /// <param name="Country">Страна.</param>
-public record Address(
+public sealed record Address(
     string Street,
     string City,
     string ZipCode,

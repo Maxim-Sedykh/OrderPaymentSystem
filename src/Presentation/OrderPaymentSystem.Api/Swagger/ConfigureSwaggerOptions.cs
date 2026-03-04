@@ -12,7 +12,7 @@ namespace OrderPaymentSystem.Api.Swagger;
 /// Конструктор настроек
 /// </remarks>
 /// <param name="provider">Провайдер API описания</param>
-public class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : IConfigureOptions<SwaggerGenOptions>
+public sealed class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider) : IConfigureOptions<SwaggerGenOptions>
 {
     /// <summary>
     /// Выполнить конфигурацию Swagger
