@@ -63,14 +63,8 @@ public sealed class CustomElasticsearchHealthCheck : IHealthCheck
 
         try
         {
-            using var handler = new HttpClientHandler
-            {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            };
+            using var httpClient = _httpClientFactory!.CreateClient("ElasticsearchHealth");
 
-            using var httpClient = _httpClientFactory!.CreateClient();
-
-            httpClient.Timeout = TimeSpan.FromSeconds(10);
             httpClient.BaseAddress = _elasticUri;
 
             var response = await httpClient.GetAsync("/_cluster/health", cancellationToken);

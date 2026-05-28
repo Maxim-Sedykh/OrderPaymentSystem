@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage;
 using OrderPaymentSystem.Application.Interfaces.Databases;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
+using Polly;
 
 namespace OrderPaymentSystem.DAL.Persistence.Repositories.Base;
 
@@ -14,7 +15,8 @@ public sealed class UnitOfWork : IUnitOfWork
     /// Контекст для работы с БД
     /// </summary>
     private readonly ApplicationDbContext _context;
-    
+    private readonly ResiliencePipeline _dbPipeline;
+
     private IOrderRepository? _orders;
     private IProductRepository? _products;
     private IOrderItemRepository? _orderItems;
@@ -31,6 +33,7 @@ public sealed class UnitOfWork : IUnitOfWork
     /// </summary>
     public UnitOfWork(
             ApplicationDbContext context,
+            ResiliencePipeline dbPipeline,
             Func<IOrderRepository> orderFactory,
             Func<IProductRepository> productFactory,
             Func<IOrderItemRepository> orderItemFactory,
@@ -42,6 +45,7 @@ public sealed class UnitOfWork : IUnitOfWork
             Func<IUserTokenRepository> userTokenFactory)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+        _dbPipeline = dbPipeline ?? throw new ArgumentNullException(nameof(dbPipeline));
 
         _repositoryFactories = new Dictionary<Type, Func<object>>
             {
@@ -93,7 +97,8 @@ public sealed class UnitOfWork : IUnitOfWork
     /// <inheritdoc/>
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.SaveChangesAsync(cancellationToken);
+        return await _dbPipeline.ExecuteAsync(async ct =>
+            await _context.SaveChangesAsync(ct), cancellationToken);
     }
 
     /// <summary>

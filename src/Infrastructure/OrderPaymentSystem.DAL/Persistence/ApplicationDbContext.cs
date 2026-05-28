@@ -18,47 +18,47 @@ public sealed class ApplicationDbContext : DbContext
     /// <summary>
     /// Элементы корзины
     /// </summary>
-    public DbSet<BasketItem> BasketItems { get; init; }
+    public DbSet<BasketItem> BasketItems { get; init; } = null!;
 
     /// <summary>
     /// Заказы
     /// </summary>
-    public DbSet<Order> Orders { get; init; }
+    public DbSet<Order> Orders { get; init; } = null!;
 
     /// <summary>
     /// Элементы заказа
     /// </summary>
-    public DbSet<OrderItem> OrderItems { get; init; }
+    public DbSet<OrderItem> OrderItems { get; init; } = null!;
 
     /// <summary>
     /// Платежи
     /// </summary>
-    public DbSet<Payment> Payments { get; init; }
+    public DbSet<Payment> Payments { get; init; } = null!;
 
     /// <summary>
     /// Товары
     /// </summary>
-    public DbSet<Product> Products { get; init; }
+    public DbSet<Product> Products { get; init; } = null!;
 
     /// <summary>
     /// Роли
     /// </summary>
-    public DbSet<Role> Roles { get; init; }
+    public DbSet<Role> Roles { get; init; } = null!;
 
     /// <summary>
     /// Refresh-токены пользователей
     /// </summary>
-    public DbSet<UserToken> UserTokens { get; init; }
+    public DbSet<UserToken> UserTokens { get; init; } = null!;
 
     /// <summary>
     /// Пользователи
     /// </summary>
-    public DbSet<User> Users { get; init; }
-    
+    public DbSet<User> Users { get; init; } = null!;
+
     /// <summary>
     /// Роли пользователей
     /// </summary>
-    public DbSet<UserRole> UserRoles { get; init; }
+    public DbSet<UserRole> UserRoles { get; init; } = null!;
 
     /// <inheritdoc/>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
