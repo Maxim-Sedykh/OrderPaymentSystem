@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using OrderPaymentSystem.Application.DTOs.Product;
 using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.DAL.Cache;
 using OrderPaymentSystem.DAL.Persistence;
 using OrderPaymentSystem.IntegrationTests.Constants;
+using Polly;
 using System.Net.Http.Json;
 using Testcontainers.Elasticsearch;
 using Testcontainers.PostgreSql;
@@ -70,7 +72,12 @@ public sealed class IntegrationTestFactory : WebApplicationFactory<Program>, IAs
                 options.InstanceName = "OrderPaymentSystemTest";
             });
 
-            services.AddScoped<ICacheService, RedisCacheService>();
+            services.AddScoped<ICacheService>(provider =>
+                new RedisCacheService(
+                    provider.GetRequiredService<Microsoft.Extensions.Caching.Distributed.IDistributedCache>(),
+                    provider.GetRequiredService<ILogger<RedisCacheService>>(),
+                    provider.GetRequiredKeyedService<ResiliencePipeline>("cache")
+                ));
         });
     }
 
