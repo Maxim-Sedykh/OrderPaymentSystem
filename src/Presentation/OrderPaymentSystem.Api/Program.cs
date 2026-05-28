@@ -3,6 +3,8 @@ using OrderPaymentSystem.Api.Extensions;
 using OrderPaymentSystem.Api.Middlewares;
 using Prometheus;
 using Serilog;
+using OrderPaymentSystem.Api.Settings;
+using Microsoft.Extensions.Options;
 
 try
 {
@@ -26,6 +28,12 @@ try
     app.UseSwaggerUiConfiguration();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSerilogRequestLogging();
+
+    var rateLimitSettings = app.Services.GetRequiredService<IOptionsMonitor<RateLimitSettings>>().CurrentValue;
+    if (rateLimitSettings.Enabled)
+    {
+        app.UseRateLimit();
+    }
 
     app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
     app.UseHttpsRedirection();

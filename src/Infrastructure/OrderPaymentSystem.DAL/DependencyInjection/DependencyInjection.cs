@@ -4,16 +4,21 @@ using Microsoft.Extensions.DependencyInjection;
 using OrderPaymentSystem.Application.Interfaces.Auth;
 using OrderPaymentSystem.Application.Interfaces.Cache;
 using OrderPaymentSystem.Application.Interfaces.Databases;
+using OrderPaymentSystem.Application.Interfaces.RateLimit;
 using OrderPaymentSystem.DAL.Auth;
 using OrderPaymentSystem.DAL.Cache;
 using OrderPaymentSystem.DAL.Interceptors;
 using OrderPaymentSystem.DAL.Persistence;
 using OrderPaymentSystem.DAL.Persistence.Repositories;
 using OrderPaymentSystem.DAL.Persistence.Repositories.Base;
+using OrderPaymentSystem.DAL.RateLimit;
 using OrderPaymentSystem.DAL.Settings;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories;
 using OrderPaymentSystem.Domain.Abstract.Interfaces.Repositories.Base;
 using OrderPaymentSystem.Domain.Entities;
+using StackExchange.Redis;
+using Order = OrderPaymentSystem.Domain.Entities.Order;
+using Role = OrderPaymentSystem.Domain.Entities.Role;
 
 namespace OrderPaymentSystem.DAL.DependencyInjection;
 
@@ -115,10 +120,24 @@ public static class DependencyInjection
         services.AddScoped<ICacheService, RedisCacheService>();
 
         var redisConfig = configuration.GetSection(nameof(RedisSettings));
+        var redisUrl = redisConfig[nameof(RedisSettings.Url)];
+
+        if (redisUrl is null)
+        {
+            throw new ArgumentNullException($"{nameof(redisUrl)} was null");
+        }
+
         services.AddStackExchangeRedisCache(options =>
         {
-            options.Configuration = redisConfig[nameof(RedisSettings.Url)];
+            options.Configuration = redisUrl;
             options.InstanceName = redisConfig[nameof(RedisSettings.InstanceName)];
         });
+
+        services.AddSingleton<IConnectionMultiplexer>(sp =>
+        {
+            return ConnectionMultiplexer.Connect(redisUrl);
+        });
+
+        services.AddScoped<IRateLimitStore, RedisRateLimitStore>();
     }
 }

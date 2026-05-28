@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using OrderPaymentSystem.Api.HealthChecks;
+using OrderPaymentSystem.Api.Settings;
 using OrderPaymentSystem.Api.Swagger;
 using OrderPaymentSystem.Application.DependencyInjection;
 using OrderPaymentSystem.Application.Settings;
@@ -37,6 +38,7 @@ public static class ServiceCollectionExtensions
         services.Configure<RedisSettings>(configuration.GetSection(nameof(RedisSettings)));
         services.Configure<AdminSettings>(configuration.GetSection(nameof(AdminSettings)));
         services.Configure<ElasticsearchSettings>(configuration.GetSection(ElasticsearchSettings.SectionName));
+        services.Configure<RateLimitSettings>(configuration.GetSection(nameof(RateLimitSettings)));
 
         services.AddEndpointsApiExplorer();
         services.AddControllers();
